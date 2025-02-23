@@ -320,7 +320,7 @@ class VOLDOR_Viewer:
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
         glutInitWindowSize(self.init_screen_size[0], self.init_screen_size[1])
         
-        wind = glutCreateWindow("VOLDOR SLAM VIEWER")
+        wind = glutCreateWindow(b"VOLDOR SLAM VIEWER")
         
         glutDisplayFunc(self.draw_world)
         glutIdleFunc(self.draw_world)
