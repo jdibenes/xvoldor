@@ -13,10 +13,10 @@ nvcc_machine_code = '' #'-m64 -arch=compute_61 -code=sm_61'
 gpu_sources_cpp = ' '.join(glob('../../gpu-kernels/*.cpp'))
 gpu_sources_cu = ' '.join(glob('../../gpu-kernels/*.cu'))
 
-gpu_kernel_build_cmd = f'/usr/local/cuda/bin/nvcc --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code}'
+gpu_kernel_build_cmd = f'nvcc --std=c++11 --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code} -I/usr/include/opencv4'
 os.system(gpu_kernel_build_cmd)
 
-opencv_libs = subprocess.check_output('pkg-config --libs opencv'.split())
+opencv_libs = subprocess.check_output('pkg-config --libs opencv4'.split())
 opencv_libs = [name[2:] for name in str(opencv_libs, 'utf-8').split()][1:]
 
 ext = Extension('pyvoldor_full',
@@ -29,7 +29,7 @@ ext = Extension('pyvoldor_full',
     libraries = ['gpu-kernels', 'cudart', 'ceres', 'glog', \
             'amd','btf','camd','ccolamd','cholmod','colamd','cxsparse',\
             'graphblas','klu','ldl','rbio','spqr','umfpack', 'lapack', 'blas', 'gcc'] + opencv_libs,
-    include_dirs = [numpy.get_include()]+['/usr/include/eigen3']
+    include_dirs = [numpy.get_include()]+['/usr/include/eigen3']+['/usr/include/opencv4']
 )
 
 setup(

@@ -11,8 +11,14 @@ void BuildOptimizationProblem(const VectorOfConstraints& constraints,
 	bool optimize_7dof) {
 
 	ceres::LossFunction* loss_function = NULL;
+#if (CERES_VERSION_MAJOR >= 2 && CERES_VERSION_MINOR >= 1)
+	ceres::Manifold* quaternion_local_parameterization =
+		new ceres::EigenQuaternionManifold;
+#else
 	ceres::LocalParameterization* quaternion_local_parameterization =
 		new ceres::EigenQuaternionParameterization;
+#endif
+
 
 	for (VectorOfConstraints::const_iterator constraints_iter =
 		constraints.begin();
@@ -48,10 +54,17 @@ void BuildOptimizationProblem(const VectorOfConstraints& constraints,
 			pose_begin_iter->second.q.coeffs().data(),
 			&pose_begin_iter->second.s);
 
+#if (CERES_VERSION_MAJOR >= 2 && CERES_VERSION_MINOR >= 1)
+		problem->SetManifold(pose_begin_iter->second.q.coeffs().data(),
+			quaternion_local_parameterization);
+		problem->SetManifold(pose_end_iter->second.q.coeffs().data(),
+			quaternion_local_parameterization);
+#else
 		problem->SetParameterization(pose_begin_iter->second.q.coeffs().data(),
 			quaternion_local_parameterization);
 		problem->SetParameterization(pose_end_iter->second.q.coeffs().data(),
 			quaternion_local_parameterization);
+#endif
 
 		if (!optimize_7dof) {
 			problem->SetParameterBlockConstant(&pose_begin_iter->second.s);

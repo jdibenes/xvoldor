@@ -733,7 +733,7 @@ class VOLDOR_SLAM:
         print('Mapping thread started')
         n_kfs_registered = 0
         next_pgo_kfid = self.pgo_refine_kf_interval
-        link_mask = np.zeros((self.N_FRAMES,self.N_FRAMES), np.bool) # already matched mask
+        link_mask = np.zeros((self.N_FRAMES,self.N_FRAMES), np.bool_) # already matched mask
         priority_mat = np.zeros((self.N_FRAMES, self.N_FRAMES), np.float32)
         lc_pairs = set()
         new_local_link_flag = False
