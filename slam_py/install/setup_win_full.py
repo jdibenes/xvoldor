@@ -8,14 +8,16 @@ import numpy
 import shutil
 
 # Change these folders
-opencv_include_dir = 'C:/opencv/build/include'
-ceres_include_dirs = ['C:/ceres-solver/include', \
-                        'C:/ceres-solver/config', \
-                        'C:/ceres-solver/eigen-3.3.9', \
-                        'C:/ceres-solver/glog/src/windows']
+opencv_include_dir = 'C:/Users/jcds/SDK/opencv_3414/build/include'
+ceres_include_dirs = ['C:/Users/jcds/SDK/ceres_2/ceres-solver/include', \
+                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/config', \
+                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/eigen', \
+                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/build', \
+                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/src', \
+                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/src/windows']
 
-opencv_lib_dir = 'C:/opencv/build/x64/vc15/lib'
-ceres_lib_dirs = ['C:/ceres-solver/ceres-bin/lib/Release', 'C:/ceres-solver/glog/build/Release']
+opencv_lib_dir = 'C:/Users/jcds/SDK/opencv_3414/build/x64/vc15/lib'
+ceres_lib_dirs = ['C:/Users/jcds/SDK/ceres_2/ceres-solver/ceres-bin/lib/Release', 'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/build/Release']
 
 opencv_lib_name = 'opencv_world3414'
 ceres_lib_names = ['ceres', 'glog']
@@ -39,7 +41,8 @@ ext = Extension('pyvoldor_full',
     library_dirs = ['./gpu-kernels.lib', opencv_lib_dir] + ceres_lib_dirs,
     libraries = ['gpu-kernels', opencv_lib_name] + ceres_lib_names,
     include_dirs = [numpy.get_include(), opencv_include_dir] + ceres_include_dirs,
-    define_macros = [('_CRT_NONSTDC_NO_DEPRECATE',''), ('CERES_USE_CXX_THREADS','')]
+    extra_compile_args = ["-MD"],
+    define_macros = [('_CRT_NONSTDC_NO_DEPRECATE',''), ('CERES_USE_CXX_THREADS',''), ('GLOG_USE_GLOG_EXPORT','')]
 )
 
 setup(
