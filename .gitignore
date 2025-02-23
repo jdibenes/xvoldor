@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 
 ORBvoc.yml.gz
+/demo/data
