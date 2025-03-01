@@ -23,6 +23,7 @@ if opt.abs_resize is None:
 
 import sys
 sys.path.append('../slam_py')
+sys.path.append('./lib')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
