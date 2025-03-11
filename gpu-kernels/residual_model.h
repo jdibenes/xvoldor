@@ -4,10 +4,26 @@
 // The model is evaluted on KITTI using PWC-Net with resize factor = 0.5 (flow is estimated under original scale)
 // Thus, if the input flow is not resized with 0.5, an adjustment is done based on given abs_resize_factor (abs_rf).
 #define EST_RF 0.5
+// original
 #define FISK_A1 0.01f
 #define FISK_A2 0.09f
 #define FISK_B1 1.0f
 #define FISK_B2 -0.0022f
+// searaft sintel
+//#define FISK_A1 0.00709057128319797f
+//#define FISK_A2 0.0998004374424094f
+//#define FISK_B1 0.679264915832794f
+//#define FISK_B2 -0.00562735804464144f
+// memflow sintel
+//#define FISK_A1 0.00776953187324095f
+//#define FISK_A2 0.0995796164181682f
+//#define FISK_B1 0.755281255085156f
+//#define FISK_B2 -0.00726591099923796f
+// neuflow2 sintel
+//#define FISK_A1 0.0221840080951996
+//#define FISK_A2 0.0843289358315415
+//#define FISK_B1 0.825200524540773
+//#define FISK_B2 -0.00883217452911775
 #define MIN_OBS_FMAG 2.f
 #define MAX_OBS_FMAG 100.f
 
