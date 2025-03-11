@@ -267,3 +267,7 @@ ORBvoc.yml.gz
 /demo/ptlflow_scripts
 /demo/errors
 /fisk/residuals
+/demo/lib_original
+/demo/stages
+/demo/lib_searaft
+/demo/lib_memflow
