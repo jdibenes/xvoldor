@@ -1,13 +1,12 @@
 
-mag_step = 5;
+mag_step = 2;
+max_mag = 50;
+enable_plots = false;
 
 alpha_all = [];
 beta_all = [];
-alpha_all_init = [];
-beta_all_init = [];
 
-for mag_base = 0:mag_step:100 % param
-
+for mag_base = 0:mag_step:max_mag
 select = (mag >= mag_base) & (mag < (mag_base + mag_step));
 res_sub = res(select);
 res_sub = res_sub.^2;
@@ -33,14 +32,35 @@ beta_direct = median(log(p(:) ./ (1 - p(:))) ./ log(q(:) ./ alpha_direct));
 
 F_direct = fisk(edges(2:end) - (width/2), alpha_direct, beta_direct);
 
-
-figure()
-plot(X, P)
-hold on
-plot(X, F_direct);
-title(['mag ' num2str(mag_base) '-' num2str(mag_base + mag_step)])
+if (enable_plots)
+    figure()
+    plot(X, P)
+    hold on
+    plot(X, F_direct);
+    title(['mag ' num2str(mag_base) '-' num2str(mag_base + mag_step)])
 end
 
+alpha_all = [alpha_all; alpha_direct];
+beta_all = [beta_all; beta_direct];
+end
+
+FX = (0:mag_step:max_mag) + (mag_step / 2);
+
+beta_params  = [FX(:), ones(numel(FX), 1)] \ beta_all;
+alpha_params = [FX(:), ones(numel(FX), 1)] \ log(alpha_all);
+
+figure()
+plot(FX, alpha_all)
+hold on
+plot(FX, exp(alpha_params(1)*FX + alpha_params(2)))
+set(gca, 'YScale', 'log')
+title('alpha');
+
+figure()
+plot(FX, beta_all);
+hold on
+plot(FX, beta_params(1)*FX + beta_params(2))
+title('beta');
 
 
 
