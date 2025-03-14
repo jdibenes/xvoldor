@@ -5,10 +5,10 @@
 // Thus, if the input flow is not resized with 0.5, an adjustment is done based on given abs_resize_factor (abs_rf).
 #define EST_RF 0.5
 // original
-#define FISK_A1 0.01f
-#define FISK_A2 0.09f
-#define FISK_B1 1.0f
-#define FISK_B2 -0.0022f
+//#define FISK_A1 0.01f
+//#define FISK_A2 0.09f
+//#define FISK_B1 1.0f
+//#define FISK_B2 -0.0022f
 // searaft sintel
 //#define FISK_A1 0.00709057128319797f
 //#define FISK_A2 0.0998004374424094f
@@ -24,6 +24,21 @@
 //#define FISK_A2 0.0843289358315415
 //#define FISK_B1 0.825200524540773
 //#define FISK_B2 -0.00883217452911775
+// searaft kitti
+//#define FISK_A1 0.0520742663884482f
+//#define FISK_A2 0.0370118340116516f
+//#define FISK_B1 0.988016544379393f
+//#define FISK_B2 -0.00183456901489589f
+// memflow kitti
+//#define FISK_A1 0.0583325258211253f
+//#define FISK_A2 0.0351330906222779f
+//#define FISK_B1 1.00719867869032f
+//#define FISK_B2 -0.000805832785188497f
+// neuflow2 kitti
+#define FISK_A1 0.0543681774893891
+#define FISK_A2 0.0330927835796658
+#define FISK_B1 1.01308818134828
+#define FISK_B2 -0.00128367644381663
 #define MIN_OBS_FMAG 2.f
 #define MAX_OBS_FMAG 100.f
 
