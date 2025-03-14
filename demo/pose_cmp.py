@@ -21,7 +21,8 @@ def do_cmp(mode, toolname):
     err = []
 
     for sequence, sequence_gt in bigtable:
-        fname_gt = os.path.join('./data', sequence, sequence_gt)
+        fname_base = 'E:/voldor_data/data' #'./data'
+        fname_gt = os.path.join(fname_base, sequence, sequence_gt)
         fname_cmp = os.path.join('./poses', f'pose_{sequence}_{mode}_{toolname}.txt')
 
         poses_gt_obj = kitti.pose_loader(fname_gt)
@@ -45,9 +46,10 @@ def do_cmp(mode, toolname):
     #np.array(err, dtype=np.float64).reshape((-1, 2)).tofile(fname_out, sep=' ')
     #print(err)
 
-for n_mode in ['stereo', 'mono-scaled', 'mono']:
+for n_mode in ['stereo']:#, 'mono-scaled', 'mono']:
     print(n_mode)
-    for n_tool in ['ptl-maskflownet', 'ptl-memflow', 'ptl-neuflow2', 'searaft', 'ptl-pwcnet']:
+    #for n_tool in ['ptl-maskflownet', 'ptl-memflow', 'ptl-neuflow2', 'searaft', 'ptl-pwcnet']:
+    for n_tool in ['ptl-memflow', 'ptl-neuflow2']:
         do_cmp(n_mode, n_tool)
 
 
