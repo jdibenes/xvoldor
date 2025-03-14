@@ -16,16 +16,16 @@ big_table = [
 ]
 
 if __name__ == '__main__':
-    sequence_index = 3
+    sequence_index = 10
     toolset = 'ptl-neuflow2'
-    mode_name = 'mono'
+    mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
     set_enable_loop_closure = True    
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
 
-    path_base = './data'
+    path_base = 'E:/voldor_data/data'#'./data'
     pose_base = './poses'
     path_flow = os.path.join(path_base, sequence, f'flow_{toolset}')
     path_disp = os.path.join(path_base, sequence, f'disp_{toolset}')
