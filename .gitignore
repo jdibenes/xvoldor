@@ -272,3 +272,11 @@ ORBvoc.yml.gz
 /demo/lib_searaft
 /demo/lib_memflow
 /demo/lib_neuflow2
+/demo/lib_sintel_memflow
+/demo/lib_sintel_neuflow2
+/demo/lib_sintel_searaft
+/demo/lib_kitti_searaft
+/fisk/kitti-noc
+/demo/lib_kitti_memflow
+/demo/lib_kitti_neuflow2
+/fisk/residuals_vis
