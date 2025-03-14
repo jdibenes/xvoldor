@@ -1,7 +1,12 @@
 
-mag_step = 2;
+% kitti
+% searaft 5, 100, w=100
+% ptl-memflow 5, 100, w=100
+% ptl-neuflow2 5, 100, w=100
+
+mag_step = 5;
 max_mag = 50;
-enable_plots = false;
+enable_plots = true;
 
 alpha_all = [];
 beta_all = [];
@@ -13,7 +18,7 @@ res_sub = res_sub.^2;
 res_sub_s = sort(res_sub, 'ascend');
 
 max_p = res_sub_s(ceil(0.75*numel(res_sub_s)));
-width = max_p / 1000;
+width = max_p / 100;
 edges = 0:width:max_p;
 C = histcounts(res_sub_s, edges);
 P = C / (numel(res_sub_s) * width);
@@ -34,10 +39,13 @@ F_direct = fisk(edges(2:end) - (width/2), alpha_direct, beta_direct);
 
 if (enable_plots)
     figure()
-    plot(X, P)
+    bar(X, P)
     hold on
-    plot(X, F_direct);
-    title(['mag ' num2str(mag_base) '-' num2str(mag_base + mag_step)])
+    plot(X, F_direct, 'LineWidth', 1.5);
+    title([model ' - ' 'Flow Magnitude range [' num2str(mag_base) ', ' num2str(mag_base + mag_step) ')'])
+    xlabel('Squared Error')
+    ylabel('Probability Density')
+    legend({'Data Histogram', 'Fisk PDF'});
 end
 
 alpha_all = [alpha_all; alpha_direct];
@@ -50,17 +58,30 @@ beta_params  = [FX(:), ones(numel(FX), 1)] \ beta_all;
 alpha_params = [FX(:), ones(numel(FX), 1)] \ log(alpha_all);
 
 figure()
-plot(FX, alpha_all)
+plot(FX, alpha_all, '.', 'MarkerSize', 12)
 hold on
-plot(FX, exp(alpha_params(1)*FX + alpha_params(2)))
+plot(FX, exp(alpha_params(1)*FX + alpha_params(2)), 'LineWidth', 1.5)
 set(gca, 'YScale', 'log')
-title('alpha');
+title(model)
+ylabel('Alpha');
+xlabel('Flow Magnitude')
+legend({'Estimated Parameter', 'Fitted Function'}, 'Location', 'southeast');
 
 figure()
-plot(FX, beta_all);
+plot(FX, beta_all, '.', 'MarkerSize', 12);
 hold on
-plot(FX, beta_params(1)*FX + beta_params(2))
-title('beta');
+plot(FX, beta_params(1)*FX + beta_params(2), 'LineWidth', 1.5)
+title(model)
+ylabel('Beta');
+xlabel('Flow Magnitude')
+ylim([0.2, 0.9]) % kitti [0.6, 1.1]
+legend({'Estimated Parameter', 'Fitted Function'}, 'Location', 'southeast');
+
+
+fisk_a1 = exp(alpha_params(2));
+fisk_a2 = alpha_params(1);
+fisk_b1 = beta_params(2);
+fisk_b2 = beta_params(1);
 
 
 
