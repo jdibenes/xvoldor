@@ -30,6 +30,7 @@ gpu_sources_cu = ' '.join(glob('../../gpu-kernels/*.cu'))
 
 gpu_kernel_build_cmd = f'nvcc {gpu_sources_cpp} {gpu_sources_cu} -I {opencv_include_dir} -L {opencv_lib_dir} -l {opencv_lib_name} \
                         -shared -o ./gpu-kernels.dll -O3 -cudart static {nvcc_machine_code} -Xcompiler /wd4819'
+os.system('nvcc --version')
 os.system(gpu_kernel_build_cmd)
 
 ext = Extension('pyvoldor_full',
