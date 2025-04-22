@@ -8,20 +8,20 @@ import xv_flow
 import flow_viz
 import os
 
-def build_flow(model_name, ckpt_path, sequence, set_disp, factor):
+def build_flow(model_name, ckpt_path, sequence, set_disp, factor, stride):
     path_data = './data'
     path_1 = os.path.join(path_data, f'{sequence}/img')
     path_2 = os.path.join(path_data, f'{sequence}/imgR')
     flow_name = 'disp' if (set_disp) else 'flow'
-    path_out = os.path.join(path_data, f'{sequence}/{flow_name}_ptl-{model_name}')
-    path_out_vis = os.path.join(path_data, f'{sequence}/vis_{flow_name}_ptl-{model_name}')
+    path_out = os.path.join(path_data, f'{sequence}/{flow_name}_{stride}_ptl-{model_name}' if (stride > 1) else f'{sequence}/{flow_name}_ptl-{model_name}')
+    path_out_vis = os.path.join(path_data, f'{sequence}/vis_{flow_name}_{stride}_ptl-{model_name}' if (stride > 1) else f'{sequence}/vis_{flow_name}_ptl-{model_name}')
 
     images_1 = sorted(xv_file.scan_files(path_1))
     if (set_disp):
         images_2 = sorted(xv_file.scan_files(path_2))
     else:
-        images_2 = images_1[1:]
-        images_1 = images_1[:-1]
+        images_2 = images_1[stride:]
+        images_1 = images_1[:-stride]
 
     os.makedirs(path_out, exist_ok=True)
     os.makedirs(path_out_vis, exist_ok=True)
@@ -68,18 +68,32 @@ def build_flow(model_name, ckpt_path, sequence, set_disp, factor):
 
 
 if __name__ == '__main__':
-    param_model_name = 'memflow'
-    param_ckpt_path = 'spring'
-    param_factor = 0.5
+    #param_model_name = 'memflow'
+    #param_ckpt_path = 'spring'
+    #param_model_name = 'neuflow2'
+    #param_ckpt_path = 'mixed'
+    #param_model_name = 'pwcnet'
+    #param_ckpt_path = 'sintel'
+    param_model_name = 'maskflownet'
+    param_ckpt_path = 'kitti'
+    param_factor = 1.0
+    stride = 1
+    #param_factor = 1.0
 
     #sequences = ['KITTI-00','KITTI-01','KITTI-02','KITTI-04','KITTI-06','KITTI-07','KITTI-08','KITTI-09','KITTI-10']
     #sequences = ['KITTI-03', 'KITTI-05']
-    sequences = ['KITTI-00','KITTI-01','KITTI-02','KITTI-03','KITTI-04','KITTI-06','KITTI-07','KITTI-08','KITTI-09','KITTI-10']
+    #sequences = ['KITTI-00','KITTI-01','KITTI-02','KITTI-03','KITTI-04','KITTI-06','KITTI-07','KITTI-08','KITTI-09','KITTI-10']
+    #sequences = ['c1', 'c2', 'c3', 'c4']
+    #sequences = ['KITTI-03', 'KITTI-05']
+    sequences = ['c1', 'hl2_4']
+    sets_disp = [False]
+    sets_stride = [1, 2]
 
-    for n_sequence in sequences:
-        for n_set_disp in [False, True]:
-            print(f'generating {n_sequence} disp={n_set_disp}')
-            build_flow(param_model_name, param_ckpt_path, n_sequence, n_set_disp, param_factor)
+    for stride in sets_stride:
+        for n_sequence in sequences:
+            for n_set_disp in sets_disp:
+                print(f'generating {n_sequence} disp={n_set_disp}')
+                build_flow(param_model_name, param_ckpt_path, n_sequence, n_set_disp, param_factor, stride)
 
 
 
