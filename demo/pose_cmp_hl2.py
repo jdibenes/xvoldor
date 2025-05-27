@@ -4,9 +4,9 @@ import kitti
 import xv_file
 import os
 
-sequence = 'hl2_6'
+sequence = 'hl2_5'
 mode = 'stereo'
-toolname = 'gt'
+toolname = 'searaft'
 fname_cmp = os.path.join('./poses', f'pose_{sequence}_{mode}_{toolname}.txt')
 
 poses_cmp_obj = kitti.pose_loader(fname_cmp)
