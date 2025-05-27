@@ -41,8 +41,8 @@ big_table = [
 '''
 
 if __name__ == '__main__':
-    sequence_index = 20
-    toolset = 'gt'
+    sequence_index = 18
+    toolset = 'searaft'
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
