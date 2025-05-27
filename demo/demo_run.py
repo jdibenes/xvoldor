@@ -42,7 +42,7 @@ big_table = [
 
 if __name__ == '__main__':
     sequence_index = 18
-    toolset = 'searaft'
+    toolset = 'searaft_masked'
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
