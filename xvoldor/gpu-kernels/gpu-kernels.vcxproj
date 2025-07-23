@@ -35,6 +35,12 @@
     <ClInclude Include="..\..\gpu-kernels\svd3_cuda.h" />
     <ClInclude Include="..\..\gpu-kernels\utils.h" />
     <ClInclude Include="..\..\gpu-kernels\vops.h" />
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h" />
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h" />
+    <ClInclude Include="..\..\lambdatwist\matrix.h" />
+    <ClInclude Include="..\..\lambdatwist\refine_lambda.h" />
+    <ClInclude Include="..\..\lambdatwist\solve_cubic.h" />
+    <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0657129-07DF-437B-BD66-DC2EDEC5E3A7}</ProjectGuid>

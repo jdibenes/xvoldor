@@ -19,6 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h" />
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h" />
+    <ClInclude Include="..\..\lambdatwist\matrix.h" />
+    <ClInclude Include="..\..\lambdatwist\refine_lambda.h" />
+    <ClInclude Include="..\..\lambdatwist\solve_cubic.h" />
+    <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />

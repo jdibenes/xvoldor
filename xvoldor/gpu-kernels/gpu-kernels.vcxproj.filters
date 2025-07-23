@@ -7,6 +7,12 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{51497303-dab5-4e16-b730-a9c4ef18a706}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{3cacde8f-709b-4414-880d-d45679c16253}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\lambdatwist">
+      <UniqueIdentifier>{304dc414-bc11-4bb6-9cd4-8538532e61a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gpu-kernels\aux_funs.cpp">
@@ -72,6 +78,24 @@
     </ClInclude>
     <ClInclude Include="..\..\gpu-kernels\vops.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\matrix.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\refine_lambda.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\solve_cubic.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
+      <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

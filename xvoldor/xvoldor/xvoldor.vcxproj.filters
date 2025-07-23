@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{2cbdc906-d99d-417c-ab4c-f40208529c0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\voldor\config.h">
@@ -29,6 +32,24 @@
     </ClInclude>
     <ClInclude Include="..\..\voldor\voldor.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\matrix.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\refine_lambda.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\solve_cubic.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
+      <Filter>Libraries</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
