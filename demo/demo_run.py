@@ -42,16 +42,17 @@ big_table = [
 
 if __name__ == '__main__':
     sequence_index = 18
-    toolset = 'searaft_masked'
+    toolset = 'gt'
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
-    set_enable_loop_closure = True    
+    set_enable_loop_closure = False    
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
 
     path_base = './data' #'E:/voldor_data/data'#'./data'
     pose_base = './poses'
+    voc_file = 'hl2_5_ORBvoc.bin' #'./ORBvoc.bin'
     path_flow = os.path.join(path_base, sequence, f'flow_{toolset}')
     path_disp = os.path.join(path_base, sequence, f'disp_{toolset}')
     #path_disp = os.path.join(path_base, sequence, f'disp')
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     disp_dir = f'--disp_dir {path_disp}'
     mode = f'--mode {mode_name}'
     enable_mapping = '--enable_mapping' if (set_enable_mapping) else ''
-    enable_loop_closure = '--enable_loop_closure ./ORBvoc.bin' if (set_enable_loop_closure) else ''
+    enable_loop_closure = f'--enable_loop_closure {voc_file}' if (set_enable_loop_closure) else ''
     resize = f'--resize {resize_val}'
     abs_resize = f'--abs_resize {abs_resize_val}'
     save_pose = f'--save_pose {fname_pose}' if (set_save_pose) else ''
