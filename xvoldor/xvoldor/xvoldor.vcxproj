@@ -37,6 +37,7 @@
     <ClCompile Include="..\..\voldor\py_export.cpp" />
     <ClCompile Include="..\..\voldor\utils.cpp" />
     <ClCompile Include="..\..\voldor\voldor.cpp" />
+    <ClCompile Include="x_utils.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -147,7 +148,7 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3414\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

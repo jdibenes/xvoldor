@@ -68,5 +68,8 @@
     <ClCompile Include="..\..\voldor\voldor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="x_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
