@@ -1,29 +1,27 @@
+
 #include "utils.h"
 
-using namespace cv;
-using namespace std;
-
-Mat vis_flow(Mat flow, float mag_scale) {
-	Mat flow_xy[2];
-	Mat mag, angle;
+cv::Mat vis_flow(cv::Mat flow, float mag_scale) {
+	cv::Mat flow_xy[2];
+	cv::Mat mag, angle;
 	split(flow, flow_xy);
-	cartToPolar(flow_xy[0], flow_xy[1], mag, angle, true);
+	cv::cartToPolar(flow_xy[0], flow_xy[1], mag, angle, true);
 	if (mag_scale <= 0)
-		normalize(mag, mag, 0, 1, NORM_MINMAX);
+		normalize(mag, mag, 0, 1, cv::NORM_MINMAX);
 	else
 		mag /= mag_scale;
-	Mat dst;
-	std::vector<Mat> src{ angle, mag, Mat::ones(flow.size(), CV_32F) };
+	cv::Mat dst;
+	std::vector<cv::Mat> src{ angle, mag, cv::Mat::ones(flow.size(), CV_32F) };
 	merge(src, dst);
-	cvtColor(dst, dst, COLOR_HSV2BGR);
+	cvtColor(dst, dst, cv::COLOR_HSV2BGR);
 	return dst;
 }
 
 
-Mat load_flow(const char* file_path) {
+cv::Mat load_flow(const char* file_path) {
 	FILE* fs = fopen(file_path, "rb");
 	if (fs == NULL) {
-		cout << file_path << " does not exist~!" << endl;
+		std::cout << file_path << " does not exist~!" << std::endl;
 		throw;
 	}
 
@@ -34,25 +32,25 @@ Mat load_flow(const char* file_path) {
 	fread(&w, sizeof(int), 1, fs);
 	fread(&h, sizeof(int), 1, fs);
 
-	Mat flow(Size(w, h), CV_32FC2);
+	cv::Mat flow(cv::Size(w, h), CV_32FC2);
 	fread(flow.data, sizeof(float), w*h * 2, fs);
 	fclose(fs);
 	return flow;
 }
 
-Mat rot_mat_3d(float degx, float degy, float degz) {
+cv::Mat rot_mat_3d(float degx, float degy, float degz) {
 	degx /= 180 * 3.14159;
 	degy /= 180 * 3.14159;
 	degz /= 180 * 3.14159;
-	Mat Rx = (Mat_<float>(3, 3) <<
+	cv::Mat Rx = (cv::Mat_<float>(3, 3) <<
 		1, 0, 0,
 		0, cosf(degx), -sinf(degx),
 		0, sinf(degx), cosf(degx));
-	Mat Ry = (Mat_<float>(3, 3) <<
+	cv::Mat Ry = (cv::Mat_<float>(3, 3) <<
 		cosf(degy), 0, sinf(degy),
 		0, 1, 0,
 		-sinf(degy), 0, cosf(degy));
-	Mat Rz = (Mat_<float>(3, 3) <<
+	cv::Mat Rz = (cv::Mat_<float>(3, 3) <<
 		cosf(degz), -sinf(degz), 0,
 		sinf(degz), cosf(degz), 0,
 		0, 0, 1);

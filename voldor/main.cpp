@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
 	float* poses_covar = new float[N * 6 * 6];
 	float* depth = new float[w * h];
 	float* depth_conf = new float[w * h];
+	memset(poses, 0, N * 6);
 
 	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000061.flo", flows_pt + 0 * (w * h * 2), 12, -1);
 	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000062.flo", flows_pt + 1 * (w * h * 2), 12, -1);

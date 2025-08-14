@@ -1,12 +1,17 @@
 #include "voldor.h"
 
 
-void VOLDOR::init(vector<Mat> _flows,
-	Mat _disparity,
-	Mat _disparity_pconf,
-	vector<Mat> _depth_priors,
-	vector<Vec6f> _depth_prior_poses,
-	vector<Mat> _depth_prior_pconfs) {
+void
+VOLDOR::init
+(
+	std::vector<cv::Mat> _flows,
+	cv::Mat _disparity,
+	cv::Mat _disparity_pconf,
+	std::vector<cv::Mat> _depth_priors,
+	std::vector<cv::Vec6f> _depth_prior_poses,
+	std::vector<cv::Mat> _depth_prior_pconfs
+)
+{
 
 	// clear
 	flows.clear();
@@ -20,9 +25,9 @@ void VOLDOR::init(vector<Mat> _flows,
 
 	// copy flows
 	for (int i = 0; i < _flows.size(); i++) {
-		Mat flow = _flows[i].clone();
+		cv::Mat flow = _flows[i].clone();
 		if (cfg.resize_factor != 1) {
-			cv::resize(flow, flow, Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+			cv::resize(flow, flow, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
 			flow *= cfg.resize_factor;
 		}
 		flows.push_back(flow);
@@ -30,9 +35,9 @@ void VOLDOR::init(vector<Mat> _flows,
 
 	// convert disparity to general depth prior
 	if (!_disparity.empty()) {
-		Mat depth_prior = cfg.basefocal / _disparity;
+		cv::Mat depth_prior = cfg.basefocal / _disparity;
 		if (cfg.resize_factor != 1) {
-			cv::resize(depth_prior, depth_prior, Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+			cv::resize(depth_prior, depth_prior, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
 			depth_prior *= cfg.resize_factor;
 		}
 		depth_priors.push_back(depth_prior);
@@ -40,11 +45,11 @@ void VOLDOR::init(vector<Mat> _flows,
 		if (!_disparity_pconf.empty())
 			depth_prior_pconfs.push_back(_disparity_pconf);
 		else
-			depth_prior_pconfs.push_back(Mat::ones(_disparity.rows, _disparity.cols, CV_32F));
+			depth_prior_pconfs.push_back(cv::Mat::ones(_disparity.rows, _disparity.cols, CV_32F));
 
 		Camera cam;
-		cam.R = Mat::eye(3, 3, CV_32F);
-		cam.t = Mat::zeros(3, 1, CV_32F);
+		cam.R = cv::Mat::eye(3, 3, CV_32F);
+		cam.t = cv::Mat::zeros(3, 1, CV_32F);
 		depth_prior_poses.push_back(cam);
 	}
 
@@ -55,13 +60,13 @@ void VOLDOR::init(vector<Mat> _flows,
 		if (_depth_prior_pconfs.size() > 0)
 			depth_prior_pconfs.push_back(_depth_prior_pconfs[i].clone());
 		else
-			depth_prior_pconfs.push_back(Mat::ones(_depth_priors[i].rows, _depth_priors[i].cols, CV_32F));
+			depth_prior_pconfs.push_back(cv::Mat::ones(_depth_priors[i].rows, _depth_priors[i].cols, CV_32F));
 
 		Camera cam;
-		Vec3f rvec = Vec3f(_depth_prior_poses[i][0], _depth_prior_poses[i][1], _depth_prior_poses[i][2]);
-		Vec3f tvec = Vec3f(_depth_prior_poses[i][3], _depth_prior_poses[i][4], _depth_prior_poses[i][5]);
+		cv::Vec3f rvec = cv::Vec3f(_depth_prior_poses[i][0], _depth_prior_poses[i][1], _depth_prior_poses[i][2]);
+		cv::Vec3f tvec = cv::Vec3f(_depth_prior_poses[i][3], _depth_prior_poses[i][4], _depth_prior_poses[i][5]);
 		Rodrigues(rvec, cam.R);
-		cam.t.at<Vec3f>(0) = tvec;
+		cam.t.at<cv::Vec3f>(0) = tvec;
 		depth_prior_poses.push_back(cam);
 	}
 
@@ -87,19 +92,19 @@ void VOLDOR::init(vector<Mat> _flows,
 
 	// init dp confs
 	for (int i = 0; i < n_depth_priors; i++)
-		depth_prior_confs.push_back(Mat::ones(Size(w, h), CV_32F));
+		depth_prior_confs.push_back(cv::Mat::ones(cv::Size(w, h), CV_32F));
 
 	// init rigidnesses
 	for (int i = 0; i < n_flows; i++)
-		rigidnesses.push_back(Mat::ones(Size(w, h), CV_32F));
+		rigidnesses.push_back(cv::Mat::ones(cv::Size(w, h), CV_32F));
 
 
 	// init cams
-	Mat K = (Mat_<float>(3, 3) <<
+	cv::Mat K = (cv::Mat_<float>(3, 3) <<
 		cfg.fx, 0, cfg.cx,
 		0, cfg.fy, cfg.cy,
 		0, 0, 1);
-	Mat K_inv = K.inv();
+	cv::Mat K_inv = K.inv();
 	for (int i = 0; i < n_flows; i++) {
 		Camera cam;
 		cam.K = K.clone();
@@ -116,14 +121,14 @@ void VOLDOR::init(vector<Mat> _flows,
 			optimize_depth(OD_ONLY_USE_DEPTH_PRIOR); 
 	}
 	else {
-		depth = Mat::ones(Size(w, h), CV_32F);
+		depth = cv::Mat::ones(cv::Size(w, h), CV_32F);
 	}
 
 	if (!cfg.silent) {
-		cout << n_flows_init << " flows loaded" << endl;
-		cout << n_depth_priors << " depth priors loaded" << endl;
-		cout << "w = " << w << ", h = " << h << endl << endl;
-		cout << "============================================" << endl;
+		std::cout << n_flows_init << " flows loaded" << std::endl;
+		std::cout << n_depth_priors << " depth priors loaded" << std::endl;
+		std::cout << "w = " << w << ", h = " << h << std::endl << std::endl;
+		std::cout << "============================================" << std::endl;
 	}
 }
 
@@ -142,7 +147,7 @@ int VOLDOR::solve() {
 		if (cfg.debug)
 			debug();
 	}
-	destroyAllWindows();
+	cv::destroyAllWindows();
 	if (cfg.kitti_estimate_ground)
 		estimate_kitti_ground();
 	return iters_cur;
@@ -157,7 +162,7 @@ void VOLDOR::bootstrap() {
 	if (!cfg.silent) {
 		cams[0].print_info();
 		toc("bootstrap");
-		cout << "============================================" << endl;
+		std::cout << "============================================" << std::endl;
 	}
 }
 
@@ -187,8 +192,8 @@ void VOLDOR::optimize_cameras() {
 		if (!optimize_success || // check failure
 			(allow_trunc && cams[i].pose_density < cfg.trunc_sample_density)) { // truncate confidence
 			if (!cfg.silent)
-				cout << "truncated at camera " << i << endl;
-			iters_remain = max(iters_remain, cfg.min_iters_after_trunc);
+				std::cout << "truncated at camera " << i << std::endl;
+			iters_remain = std::max(iters_remain, cfg.min_iters_after_trunc);
 			n_flows = i;
 			break;
 		}
@@ -196,7 +201,7 @@ void VOLDOR::optimize_cameras() {
 
 	if (!cfg.silent) {
 		toc("optimize_cameras");
-		cout << "============================================" << endl;
+		std::cout << "============================================" << std::endl;
 	}
 }
 
@@ -302,7 +307,7 @@ void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
 
 	if (!cfg.silent) {
 		toc("optimize_depth");
-		cout << "============================================" << endl;
+		std::cout << "============================================" << std::endl;
 	}
 }
 
@@ -317,20 +322,29 @@ void VOLDOR::normalize_world_scale() {
 }
 
 
-void VOLDOR::estimate_kitti_ground() {
+void
+VOLDOR::estimate_kitti_ground
+(
+)
+{
 	tic();
 
-	Rect roi = Rect(w*0.5*(1 - cfg.kitti_ground_roi), h*(1 - cfg.kitti_ground_roi), w*cfg.kitti_ground_roi, h*cfg.kitti_ground_roi);
+	cv::Rect roi = cv::Rect(w*0.5*(1 - cfg.kitti_ground_roi), h*(1 - cfg.kitti_ground_roi), w*cfg.kitti_ground_roi, h*cfg.kitti_ground_roi);
 	ground = estimate_kitti_ground_plane(depth, roi, cams[0].K, cfg.kitti_ground_holo_width, cfg.kitti_ground_meanshift_kernel_var);
 
 	if (!cfg.silent) {
 		ground.print_info();
 		toc("estimate_ground");
-		cout << "============================================" << endl;
+		std::cout << "============================================" << std::endl;
 	}
 }
 
-void VOLDOR::save_result(string save_dir) {
+void
+VOLDOR::save_result
+(
+	std::string save_dir
+)
+{
 	FILE* fs;
 
 	// save depth
@@ -345,7 +359,7 @@ void VOLDOR::save_result(string save_dir) {
 	fclose(fs);
 
 	// save normalized rigidness sum
-	Mat rigidness_sum = Mat::zeros(Size(w, h), CV_32F);
+	cv::Mat rigidness_sum = cv::Mat::zeros(cv::Size(w, h), CV_32F);
 	for (int i = 0; i < n_flows; i++)
 		rigidness_sum += rigidnesses[i];
 	imwrite(save_dir + PATH_SEPARATOR + "rigidness_sum.png", 255 * rigidness_sum / (float)n_flows);
@@ -362,35 +376,39 @@ void VOLDOR::save_result(string save_dir) {
 	if (cfg.save_everything) {
 		// save rigidness maps and flow viz
 		for (int i = 0; i < flows.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "flow-" + to_string(i) + ".png", 255 * vis_flow(flows[i]));
+			imwrite(save_dir + PATH_SEPARATOR + "flow-" + std::to_string(i) + ".png", 255 * vis_flow(flows[i]));
 		for (int i = 0; i < rigidnesses.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "rigidness-" + to_string(i) + ".png", rigidnesses[i]);
+			imwrite(save_dir + PATH_SEPARATOR + "rigidness-" + std::to_string(i) + ".png", rigidnesses[i]);
 		for (int i = 0; i < depth_prior_confs.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "depth_prior_conf-" + to_string(i) + ".png", depth_prior_confs[i]);
+			imwrite(save_dir + PATH_SEPARATOR + "depth_prior_conf-" + std::to_string(i) + ".png", depth_prior_confs[i]);
 	}
 
 	if (!cfg.silent) {
-		cout << "results saved to " << save_dir << endl;
-		cout << "============================================" << endl;
+		std::cout << "results saved to " << save_dir << std::endl;
+		std::cout << "============================================" << std::endl;
 	}
 }
 
-void VOLDOR::debug() {
+void
+VOLDOR::debug
+(
+)
+{
 	if (cfg.kitti_estimate_ground)
 		estimate_kitti_ground();
 
 	int vis_img_per_col = div_ceil(n_flows_init, cfg.viz_img_per_row);
-	Mat rigidnesses_world = Mat::zeros(Size(w * cfg.viz_img_per_row, h*vis_img_per_col), CV_32F);
+	cv::Mat rigidnesses_world = cv::Mat::zeros(cv::Size(w * cfg.viz_img_per_row, h*vis_img_per_col), CV_32F);
 	for (int i = 0; i < n_flows_init; i++)
-		rigidnesses[i].copyTo(rigidnesses_world(Rect(w*(i / vis_img_per_col), h*(i % vis_img_per_col), w, h)));
+		rigidnesses[i].copyTo(rigidnesses_world(cv::Rect(w * (i / vis_img_per_col), h * (i % vis_img_per_col), w, h)));
 
-	imshow("rigidnesses_world", rigidnesses_world);
-	imshow("depth_est", cfg.viz_depth_scale / depth);
+	cv::imshow("rigidnesses_world", rigidnesses_world);
+	cv::imshow("depth_est", cfg.viz_depth_scale / depth);
 	for (int i = 0; i < n_depth_priors; i++) {
-		imshow("depth_prior_" + to_string(i), cfg.viz_depth_scale / depth_priors[i]);
-		imshow("depth_prior_conf_" + to_string(i), depth_prior_confs[i]);
-		imshow("depth_prior_pconf_" + to_string(i), depth_prior_pconfs[i]);
+		cv::imshow("depth_prior_" + std::to_string(i), cfg.viz_depth_scale / depth_priors[i]);
+		cv::imshow("depth_prior_conf_" + std::to_string(i), depth_prior_confs[i]);
+		cv::imshow("depth_prior_pconf_" + std::to_string(i), depth_prior_pconfs[i]);
 	}
-	if (waitKey(0) == 'q')
+	if (cv::waitKey(0) == 'q')
 		exit(0);
 }

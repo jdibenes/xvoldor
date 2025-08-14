@@ -27,12 +27,14 @@
     <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
+    <ClInclude Include="..\..\voldor\kitti.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
     <ClInclude Include="..\..\voldor\utils.h" />
     <ClInclude Include="..\..\voldor\voldor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp" />
+    <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp" />
     <ClCompile Include="..\..\voldor\py_export.cpp" />
     <ClCompile Include="..\..\voldor\utils.cpp" />

@@ -22,20 +22,19 @@
 #include <cmath>
 #include <random>
 
-using namespace cv;
-using namespace std;
 
 #define div_ceil(x, y) ( (x) / (y) + ((x) % (y) > 0) )
 
 
 struct Camera {
-	Mat F, E;
+	cv::Mat F;
+	cv::Mat E;
 
-	Mat K = Mat::eye(3, 3, CV_32F);
-	Mat K_inv = Mat::eye(3, 3, CV_32F);
-	Mat R = Mat::eye(3, 3, CV_32F);
-	Mat t = Mat::zeros(3, 1, CV_32F);
-	Mat pose_covar = Mat::zeros(6, 6, CV_32F);
+	cv::Mat K = cv::Mat::eye(3, 3, CV_32F);
+	cv::Mat K_inv = cv::Mat::eye(3, 3, CV_32F);
+	cv::Mat R = cv::Mat::eye(3, 3, CV_32F);
+	cv::Mat t = cv::Mat::zeros(3, 1, CV_32F);
+	cv::Mat pose_covar = cv::Mat::zeros(6, 6, CV_32F);
 	//Mat _R2;
 	//Mat pose_sample_mask;
 	float pose_density = 0;
@@ -44,19 +43,19 @@ struct Camera {
 	int last_used_ms_iters = 0;
 	int last_used_gu_iters = 0;
 
-	Vec6f pose6() {
-		Vec3f r = this->rvec();
-		return Vec6f(r.val[0], r.val[1], r.val[2], t.at<float>(0), t.at<float>(1), t.at<float>(2));
+	cv::Vec6f pose6() {
+		cv::Vec3f r = this->rvec();
+		return cv::Vec6f(r.val[0], r.val[1], r.val[2], t.at<float>(0), t.at<float>(1), t.at<float>(2));
 	}
 
-	Vec3f rvec() {
-		Vec3f ret;
+	cv::Vec3f rvec() {
+		cv::Vec3f ret;
 		Rodrigues(this->R, ret);
 		return ret;
 	}
 
 	void save(FILE* fs) {
-		Vec3f r = this->rvec();
+		cv::Vec3f r = this->rvec();
 		//           r1 r2 r3 t1 t2 t3
 		fprintf(fs, "%f %f %f %f %f %f\n",
 			r.val[0], r.val[1], r.val[2],
@@ -64,40 +63,19 @@ struct Camera {
 	}
 
 	void print_info() {
-		cout << "pose pool size = " << this->pose_sample_count << endl;
-		cout << "rigidness density = " << this->pose_rigidness_density << endl;
-		cout << "pose density = " << this->pose_density << endl;
-		cout << "pose covar mean scale = " << mean(pose_covar.diag())[0] << endl;;
+		std::cout << "pose pool size = " << this->pose_sample_count << std::endl;
+		std::cout << "rigidness density = " << this->pose_rigidness_density << std::endl;
+		std::cout << "pose density = " << this->pose_density << std::endl;
+		std::cout << "pose covar mean scale = " << mean(pose_covar.diag())[0] << std::endl;;
 		//cout << pose_covar.diag() << endl;
-		cout << "last used meanshift iters = " << this->last_used_ms_iters << endl;
-		cout << "last used gu iters = " << this->last_used_gu_iters << endl;
-		cout << "pose trans mag = " << norm(this->t, NORM_L2) << endl;
-		cout << "pose rot mag = " << norm(this->rvec(), NORM_L2) * 180 / 3.14159 << endl << endl;
+		std::cout << "last used meanshift iters = " << this->last_used_ms_iters << std::endl;
+		std::cout << "last used gu iters = " << this->last_used_gu_iters << std::endl;
+		std::cout << "pose trans mag = " << cv::norm(this->t, cv::NORM_L2) << std::endl;
+		std::cout << "pose rot mag = " << cv::norm(this->rvec(), cv::NORM_L2) * 180 / 3.14159 << std::endl << std::endl;
 	}
 };
 
 
-Mat vis_flow(Mat flow, float mag_scale = 0);
+cv::Mat vis_flow(cv::Mat flow, float mag_scale = 0);
 
-Mat load_flow(const char* file_path);
-
-
-struct KittiGround {
-	Vec3f normal = Vec3f(0, 0, 0);
-	float height = 0;
-	float confidence = 0;
-	int used_iters = 0;
-	float _height_median = 0;
-
-	void save(FILE* fs) {
-		fprintf(fs, "%f %f %f %f %f\n", this->height, this->normal.val[0], this->normal.val[1], this->normal.val[2], this->confidence);
-	}
-
-	void print_info() {
-		cout << "ground height = " << this->height << endl;
-		cout << "ground normal = " << this->normal << endl;
-		cout << "ground confidence = " << this->confidence << endl;
-		cout << "ground used iters = " << this->used_iters << endl;
-		cout << "ground height median = " << this->_height_median << endl;
-	}
-};
+cv::Mat load_flow(const char* file_path);

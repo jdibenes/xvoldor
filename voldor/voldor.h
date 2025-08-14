@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "config.h"
 #include "geometry.h"
+#include "kitti.h"
 #include "../gpu-kernels/gpu_kernels.h"
 
 enum OPTIMIZE_DEPTH_FLAG {
@@ -22,14 +23,14 @@ public:
 	Config cfg;
 	bool has_disparity;
 
-	Mat depth;
-	vector<Mat> depth_priors;
-	vector<Camera> depth_prior_poses;
-	vector<Mat> depth_prior_pconfs;
-	vector<Mat> depth_prior_confs;
-	vector<Mat> flows;
-	vector<Mat> rigidnesses;
-	vector<Camera> cams;
+	cv::Mat depth;
+	std::vector<cv::Mat> depth_priors;
+	std::vector<Camera> depth_prior_poses;
+	std::vector<cv::Mat> depth_prior_pconfs;
+	std::vector<cv::Mat> depth_prior_confs;
+	std::vector<cv::Mat> flows;
+	std::vector<cv::Mat> rigidnesses;
+	std::vector<Camera> cams;
 
 	KittiGround ground;
 
@@ -39,11 +40,11 @@ public:
 			cfg.print_info();
 	}
 
-	void init(vector<Mat> _flows,
-		Mat _disparity = Mat(), Mat _disparity_pconf = Mat(),
-		vector<Mat> _depth_priors = vector<Mat>(),
-		vector<Vec6f> _depth_prior_poses = vector<Vec6f>(),
-		vector<Mat> _depth_prior_pconfs = vector<Mat>());
+	void init(std::vector<cv::Mat> _flows,
+		cv::Mat _disparity = cv::Mat(), cv::Mat _disparity_pconf = cv::Mat(),
+		std::vector<cv::Mat> _depth_priors = std::vector<cv::Mat>(),
+		std::vector<cv::Vec6f> _depth_prior_poses = std::vector<cv::Vec6f>(),
+		std::vector<cv::Mat> _depth_prior_pconfs = std::vector<cv::Mat>());
 
 	int solve();
 
@@ -58,26 +59,26 @@ public:
 
 	void estimate_kitti_ground();
 
-	void save_result(string save_dir);
+	void save_result(std::string save_dir);
 
 	void debug();
 
 
 private:
 #if defined(WIN32) || defined(_WIN32)
-	chrono::time_point<chrono::steady_clock> time_stamp;
+	std::chrono::time_point<std::chrono::steady_clock> time_stamp;
 #else
-	chrono::system_clock::time_point time_stamp;
+	std::chrono::system_clock::time_point time_stamp;
 #endif
 	void tic() {
-		time_stamp = chrono::high_resolution_clock::now();
+		time_stamp = std::chrono::high_resolution_clock::now();
 	}
 
 	float toc() {
-		return chrono::duration_cast<std::chrono::nanoseconds>(chrono::high_resolution_clock::now() - time_stamp).count() / 1e6;
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6;
 	}
-	void toc(string job_name) {
-		cout << job_name << " elapsed time = " << toc() << "ms." << endl;
+	void toc(std::string job_name) {
+		std::cout << job_name << " elapsed time = " << toc() << "ms." << std::endl;
 	}
 
 };

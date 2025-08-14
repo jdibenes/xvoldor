@@ -51,6 +51,9 @@
     <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
       <Filter>Libraries</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\kitti.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
@@ -69,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="x_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\kitti.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
