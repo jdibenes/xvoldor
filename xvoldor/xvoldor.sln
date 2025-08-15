@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.36227.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xvoldor", "xvoldor\xvoldor.vcxproj", "{160EBF22-8977-43F7-BD4D-1B463E0FE369}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C0657129-07DF-437B-BD66-DC2EDEC5E3A7} = {C0657129-07DF-437B-BD66-DC2EDEC5E3A7}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gpu-kernels", "gpu-kernels\gpu-kernels.vcxproj", "{C0657129-07DF-437B-BD66-DC2EDEC5E3A7}"
 EndProject
