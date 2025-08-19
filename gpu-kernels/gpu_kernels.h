@@ -21,18 +21,28 @@ DLL_EXPORT int fit_robust_gaussian(
 	int N, int dims,
 	float epsilon, int max_iters);
 
-DLL_EXPORT int collect_p3p_instances(
-	float* h_flows[], float* h_rigidnesses[],
-	float* h_depth,
-	float* h_K, float* h_Rs[], float* h_ts[],
-	float* h_o_p2_map, float* h_o_p3_map,
-	int N, int w, int h,
+DLL_EXPORT
+int
+collect_p3p_instances
+(
+	float const* h_flows[],
+	float const* h_rigidnesses[],
+	float const* h_depth,
+	float const* h_K,
+	float const* h_Rs[],
+	float const* h_ts[],
+	float* h_o_p2_map,
+	float* h_o_p3_map,
+	int N,
+	int w,
+	int h,
 	int active_idx,
 	float rigidness_thresh,
 	float rigidness_sum_thresh,
 	float sample_min_depth,
 	float sample_max_depth,
-	int max_trace_on_flow);
+	int max_trace_on_flow
+);
 
 DLL_EXPORT int solve_batch_p3p_ap3p_gpu(float* h_p3s, float* h_p2s,
 	float* h_o_rvecs, float* h_o_tvecs,
