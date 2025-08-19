@@ -178,7 +178,8 @@ void VOLDOR::optimize_cameras() {
 		int optimize_success = 0;
 		if (!allow_trunc || cams[i].pose_rigidness_density > cfg.trunc_rigidness_density) {
 			optimize_success = optimize_camera_pose(flows, rigidnesses, depth, cams,
-				n_flows, i,
+				n_flows,
+				i, // active idx (from 0 to n_flows-1)
 				cams[i].pose_sample_count == 0 ? false : true, //successive pose?
 				cfg.rg_refine && (!cfg.rg_refine_last_only || iters_remain == 0), //rg_refine?
 				!cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0),  //update batch instance?
