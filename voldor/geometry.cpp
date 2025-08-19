@@ -5,17 +5,17 @@
 int 
 optimize_camera_pose
 (
-	std::vector<cv::Mat> flows,
-	std::vector<cv::Mat> rigidnesses,
-	cv::Mat depth,
-	std::vector<Camera>& cams,
+	std::vector<cv::Mat> const& flows,
+	std::vector<cv::Mat> const& rigidnesses,
+	cv::Mat const& depth,
+	std::vector<Camera>& cams, // MODIFIED
 	int n_flows,
 	int active_idx,
 	bool successive_pose,
 	bool rg_refine,
 	bool update_batch_instance,
 	bool update_iter_instance,
-	Config cfg
+	Config const& cfg
 ) 
 {
 
@@ -28,10 +28,10 @@ optimize_camera_pose
 	cv::Point3f* pts3 = new cv::Point3f[w*h]; // pts3 is related to frame(active_idx-1).
 							// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
 
-	float** h_flows = new float*[n_flows];
-	float** h_rigidnesses = new float*[n_flows];
-	float** h_Rs = new float*[n_flows];
-	float** h_ts = new float*[n_flows];
+	float const** h_flows = new float const*[n_flows];
+	float const** h_rigidnesses = new float const*[n_flows];
+	float const** h_Rs = new float const*[n_flows];
+	float const** h_ts = new float const*[n_flows];
 
 	for (int i = 0; i < n_flows; i++) {
 		h_flows[i] = (float*)flows[i].data;
