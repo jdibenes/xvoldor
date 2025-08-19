@@ -144,18 +144,28 @@ __global__ static void compute_p3p_map(
 
 }
 
-int collect_p3p_instances(
-	float* h_flows[], float* h_rigidnesses[],
-	float* h_depth,
-	float* h_K, float* h_Rs[], float* h_ts[],
-	float* h_o_p2_map, float* h_o_p3_map,
-	int N, int w, int h,
+int
+collect_p3p_instances
+(
+	float const* h_flows[],
+	float const* h_rigidnesses[],
+	float const* h_depth,
+	float const* h_K,
+	float const* h_Rs[],
+	float const* h_ts[],
+	float* h_o_p2_map,
+	float* h_o_p3_map,
+	int N,
+	int w,
+	int h,
 	int active_idx,
 	float rigidness_thresh,
 	float rigidness_sum_thresh,
 	float sample_min_depth,
 	float sample_max_depth,
-	int max_trace_on_flow) {
+	int max_trace_on_flow
+)
+{
 
 	// for pixel-wise op
 	const dim3 block_size(BLOCK_WIDTH, BLOCK_WIDTH);
