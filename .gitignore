@@ -281,3 +281,5 @@ ORBvoc.yml.gz
 /demo/lib_kitti_neuflow2
 /fisk/residuals_vis
 /demo/lib_VS_test
+/slam_py/install/.vscode
+slam_py/install/pyvoldor_full.cpp
