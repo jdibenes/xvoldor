@@ -131,78 +131,32 @@ collect_p3p_correspondences
 
 
 
-
-
-
-
-int 
-optimize_camera_pose
+int
+solve_p3p_pool
 (
-	std::vector<cv::Mat> const& flows,
-	std::vector<cv::Mat> const& rigidnesses,
-	cv::Mat const& depth,
-	std::vector<Camera>& cams, // MODIFIED
-	int n_flows,
+	std::vector<Camera> const& cams,
+	cv::Mat const& pts2_map,
+	cv::Mat const& pts3_map,
+	int n_points,
 	int active_idx,
-	bool successive_pose,
-	bool rg_refine,
-	bool update_batch_instance,
-	bool update_iter_instance,
-	Config const& cfg
-) 
+	Config const& cfg,
+	cv::Mat& poses_pool
+)
 {
-
-	int const w = flows[0].cols;
-	int const h = flows[0].rows;
-
-	//----------------------------------------------------------------------------
-
-	auto time_stamp = std::chrono::high_resolution_clock::now();
-
-	cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
-	cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
-
-	int n_points = collect_p3p_correspondences(flows, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map);
-
 	cv::Point2f const* pts2 = (cv::Point2f*)pts2_map.data;
 	cv::Point3f const* pts3 = (cv::Point3f*)pts3_map.data;
-
-	// check if able to have at least one pose
-	if (n_points < 4)
-	{
-		return 0;
-	}
-
-	if (!cfg.silent)
-	{
-		std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
-
-	//----------------------------------------------------------------------------
-
-	time_stamp = std::chrono::high_resolution_clock::now();
-
-	
-
-
-
-
-
-	
-
-
-
-	cv::Mat poses_pool(cfg.n_poses_to_sample, 6, CV_32F);
 	int poses_pool_used = 0;
 
-	if (cfg.cpu_p3p) {
+
+	if (cfg.cpu_p3p)
+	{
 
 
 		for (int i = 0; i < cfg.n_poses_to_sample; i++) {
-			int i1 = ((float)rand() / (float)RAND_MAX)*n_points;
-			int i2 = ((float)rand() / (float)RAND_MAX)*n_points;
-			int i3 = ((float)rand() / (float)RAND_MAX)*n_points;
-			int i4 = ((float)rand() / (float)RAND_MAX)*n_points;
+			int i1 = ((float)rand() / (float)RAND_MAX) * n_points;
+			int i2 = ((float)rand() / (float)RAND_MAX) * n_points;
+			int i3 = ((float)rand() / (float)RAND_MAX) * n_points;
+			int i4 = ((float)rand() / (float)RAND_MAX) * n_points;
 
 
 			if (cfg.lambdatwist) {
@@ -241,7 +195,8 @@ optimize_camera_pose
 			}
 		}
 	}
-	else {
+	else
+	{
 		float* ret_Rs = new float[cfg.n_poses_to_sample * 3];
 		float* ret_ts = new float[cfg.n_poses_to_sample * 3];
 
@@ -267,13 +222,73 @@ optimize_camera_pose
 		delete[] ret_ts;
 	}
 
+	return poses_pool_used;
+}
+
+
+
+
+
+
+int 
+optimize_camera_pose
+(
+	std::vector<cv::Mat> const& flows,
+	std::vector<cv::Mat> const& rigidnesses,
+	cv::Mat const& depth,
+	std::vector<Camera>& cams, // MODIFIED
+	int n_flows,
+	int active_idx,
+	bool successive_pose,
+	bool rg_refine,
+	bool update_batch_instance,
+	bool update_iter_instance,
+	Config const& cfg
+) 
+{
+
+	int const w = flows[0].cols;
+	int const h = flows[0].rows;
+
+	//----------------------------------------------------------------------------
+
+	auto time_stamp = std::chrono::high_resolution_clock::now();
+
+	cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
+	cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
+
+	int n_points = collect_p3p_correspondences(flows, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map);
+
+	// check if able to have at least one pose
+	if (n_points < 4)
+	{
+		return 0;
+	}
+
+	if (!cfg.silent)
+	{
+		std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+	}
+
+	//----------------------------------------------------------------------------
+
+	time_stamp = std::chrono::high_resolution_clock::now();
+
+	cv::Mat poses_pool(cfg.n_poses_to_sample, 6, CV_32F);
+	int poses_pool_used = solve_p3p_pool(cams, pts2_map, pts3_map, n_points, active_idx, cfg, poses_pool);
+
+	if (!cfg.silent)
+	{
+		std::cout << "p3p computing time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+	}
 
 	//----------------------------------------------------------------------------------
 
+	time_stamp = std::chrono::high_resolution_clock::now(); // TODO: ???
 
-	if (!cfg.silent)
-		std::cout << "p3p computing time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	time_stamp = std::chrono::high_resolution_clock::now();
+
+
+
 
 	if (poses_pool_used == 0)
 		return 0;
@@ -283,6 +298,8 @@ optimize_camera_pose
 	cv::Mat pose_opm(1, 6, CV_32F);
 	Rodrigues(cams[active_idx].R, pose_opm.at<cv::Vec3f>(0));
 	pose_opm.at<cv::Vec3f>(1) = cams[active_idx].t.at<cv::Vec3f>(0);
+
+	//----------------------------------------------------------------------------
 
 
 	// scale and do meanshift
@@ -297,6 +314,7 @@ optimize_camera_pose
 	if (!cfg.silent)
 		std::cout << "meanshift time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 
+	//-------------------------------------------------------------------------
 
 	if (rg_refine) {
 		time_stamp = std::chrono::high_resolution_clock::now();
