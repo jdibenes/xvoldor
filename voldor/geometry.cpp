@@ -3,8 +3,8 @@
 #include "../lambdatwist/lambdatwist_p4p.h"
 
 
-void
-collect_p3p
+int
+collect_p3p_correspondences
 (
 	std::vector<cv::Mat> const& flows,
 	std::vector<cv::Mat> const& rigidnesses,
@@ -106,6 +106,27 @@ collect_p3p
 	delete[] h_rigidnesses;
 	delete[] h_Rs;
 	delete[] h_ts;
+
+	int n_points = 0;
+	cv::Point2f const* pts2_pt = (cv::Point2f*)pts2_map.data;
+	cv::Point3f const* pts3_pt = (cv::Point3f*)pts3_map.data;
+	cv::Point2f* pts2 = (cv::Point2f*)pts2_map.data; // pts2 is related to frame(active_idx)
+	cv::Point3f* pts3 = (cv::Point3f*)pts3_map.data; // pts3 is related to frame(active_idx-1).
+							                         // Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
+
+	for (int i = 0; i < w * h; i++)
+	{
+		if (isfinite(pts2_pt->x + pts2_pt->y + pts3_pt->x + pts3_pt->y + pts3_pt->z))
+		{
+			pts2[n_points] = *pts2_pt;
+			pts3[n_points] = *pts3_pt;
+			n_points++;
+		}
+		pts2_pt++;
+		pts3_pt++;
+	}
+
+	return n_points;
 }
 
 
@@ -134,8 +155,6 @@ optimize_camera_pose
 	int const w = flows[0].cols;
 	int const h = flows[0].rows;
 
-	
-
 	//----------------------------------------------------------------------------
 
 	auto time_stamp = std::chrono::high_resolution_clock::now();
@@ -143,35 +162,14 @@ optimize_camera_pose
 	cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
 	cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
 
-	collect_p3p(flows, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map);
+	int n_points = collect_p3p_correspondences(flows, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map);
 
-	cv::Point2f* pts2 = (cv::Point2f*)pts2_map.data;//new cv::Point2f[w * h]; // pts2 is related to frame(active_idx)
-	cv::Point3f* pts3 = (cv::Point3f*)pts3_map.data;//new cv::Point3f[w * h]; // pts3 is related to frame(active_idx-1).
-							// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
-
-
-	int n_points = 0;
-
-	cv::Point2f* pts2_pt = (cv::Point2f*)pts2_map.data;
-	cv::Point3f* pts3_pt = (cv::Point3f*)pts3_map.data;
-
-	for (int i = 0; i < w * h; i++)
-	{
-		if (isfinite(pts2_pt->x + pts2_pt->y + pts3_pt->x + pts3_pt->y + pts3_pt->z))
-		{
-			pts2[n_points] = *pts2_pt;
-			pts3[n_points] = *pts3_pt;
-			n_points++;
-		}
-		pts2_pt++;
-		pts3_pt++;
-	}
+	cv::Point2f const* pts2 = (cv::Point2f*)pts2_map.data;
+	cv::Point3f const* pts3 = (cv::Point3f*)pts3_map.data;
 
 	// check if able to have at least one pose
 	if (n_points < 4)
 	{
-		//delete[] pts2;
-		//delete[] pts3;
 		return 0;
 	}
 
@@ -269,8 +267,6 @@ optimize_camera_pose
 		delete[] ret_ts;
 	}
 
-	//delete[] pts2;
-	//delete[] pts3;
 
 	//----------------------------------------------------------------------------------
 
