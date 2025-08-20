@@ -155,7 +155,7 @@ collect_p3p_instances
 	float const* h_ts[],
 	float* h_o_p2_map,
 	float* h_o_p3_map,
-	int N,
+	int N, // n_flows
 	int w,
 	int h,
 	int active_idx,
