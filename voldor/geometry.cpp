@@ -2,46 +2,38 @@
 #include "../gpu-kernels/gpu_kernels.h"
 #include "../lambdatwist/lambdatwist_p4p.h"
 
-int 
-optimize_camera_pose
+
+void
+collect_p3p
 (
 	std::vector<cv::Mat> const& flows,
 	std::vector<cv::Mat> const& rigidnesses,
 	cv::Mat const& depth,
-	std::vector<Camera>& cams, // MODIFIED
+	std::vector<Camera> const& cams,
 	int n_flows,
 	int active_idx,
-	bool successive_pose,
-	bool rg_refine,
 	bool update_batch_instance,
 	bool update_iter_instance,
-	Config const& cfg
-) 
+	Config const& cfg,
+	cv::Mat& pts2_map,
+	cv::Mat& pts3_map
+)
 {
+	int const w = flows[0].cols;
+	int const h = flows[0].rows;
 
-	const int w = flows[0].cols;
-	const int h = flows[0].rows;
+	float const** h_flows       = new float const* [n_flows];
+	float const** h_rigidnesses = new float const* [n_flows];
+	float const** h_Rs          = new float const* [n_flows];
+	float const** h_ts          = new float const* [n_flows];
 
-	auto time_stamp = std::chrono::high_resolution_clock::now();
-
-	cv::Point2f* pts2 = new cv::Point2f[w*h]; // pts2 is related to frame(active_idx)
-	cv::Point3f* pts3 = new cv::Point3f[w*h]; // pts3 is related to frame(active_idx-1).
-							// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
-
-	float const** h_flows = new float const*[n_flows];
-	float const** h_rigidnesses = new float const*[n_flows];
-	float const** h_Rs = new float const*[n_flows];
-	float const** h_ts = new float const*[n_flows];
-
-	for (int i = 0; i < n_flows; i++) {
-		h_flows[i] = (float*)flows[i].data;
+	for (int i = 0; i < n_flows; i++)
+	{
+		h_flows[i]       = (float*)flows[i].data;
 		h_rigidnesses[i] = (float*)rigidnesses[i].data;
-		h_Rs[i] = (float*)cams[i].R.data;
-		h_ts[i] = (float*)cams[i].t.data;
+		h_Rs[i]          = (float*)cams[i].R.data;
+		h_ts[i]          = (float*)cams[i].t.data;
 	}
-
-	cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
-	cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
 
 	if (update_batch_instance) {
 		collect_p3p_instances
@@ -100,7 +92,7 @@ optimize_camera_pose
 			(float*)pts3_map.data,
 			n_flows,
 			w,
-			h, 
+			h,
 			active_idx,
 			cfg.rigidness_threshold,
 			cfg.rigidness_sum_threshold,
@@ -114,8 +106,48 @@ optimize_camera_pose
 	delete[] h_rigidnesses;
 	delete[] h_Rs;
 	delete[] h_ts;
+}
 
-	//------------------------------------------------------------------
+
+
+
+
+
+
+int 
+optimize_camera_pose
+(
+	std::vector<cv::Mat> const& flows,
+	std::vector<cv::Mat> const& rigidnesses,
+	cv::Mat const& depth,
+	std::vector<Camera>& cams, // MODIFIED
+	int n_flows,
+	int active_idx,
+	bool successive_pose,
+	bool rg_refine,
+	bool update_batch_instance,
+	bool update_iter_instance,
+	Config const& cfg
+) 
+{
+
+	int const w = flows[0].cols;
+	int const h = flows[0].rows;
+
+	
+
+	//----------------------------------------------------------------------------
+
+	auto time_stamp = std::chrono::high_resolution_clock::now();
+
+	cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
+	cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
+
+	collect_p3p(flows, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map);
+
+	cv::Point2f* pts2 = (cv::Point2f*)pts2_map.data;//new cv::Point2f[w * h]; // pts2 is related to frame(active_idx)
+	cv::Point3f* pts3 = (cv::Point3f*)pts3_map.data;//new cv::Point3f[w * h]; // pts3 is related to frame(active_idx-1).
+							// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
 
 
 	int n_points = 0;
@@ -123,8 +155,10 @@ optimize_camera_pose
 	cv::Point2f* pts2_pt = (cv::Point2f*)pts2_map.data;
 	cv::Point3f* pts3_pt = (cv::Point3f*)pts3_map.data;
 
-	for (int i = 0; i < w*h; i++) {
-		if (isfinite(pts2_pt->x + pts2_pt->y + pts3_pt->x + pts3_pt->y + pts3_pt->z)) {
+	for (int i = 0; i < w * h; i++)
+	{
+		if (isfinite(pts2_pt->x + pts2_pt->y + pts3_pt->x + pts3_pt->y + pts3_pt->z))
+		{
 			pts2[n_points] = *pts2_pt;
 			pts3[n_points] = *pts3_pt;
 			n_points++;
@@ -133,17 +167,30 @@ optimize_camera_pose
 		pts3_pt++;
 	}
 
-
 	// check if able to have at least one pose
-	if (n_points < 4) {
-		delete[] pts2;
-		delete[] pts3;
+	if (n_points < 4)
+	{
+		//delete[] pts2;
+		//delete[] pts3;
 		return 0;
 	}
 
 	if (!cfg.silent)
+	{
 		std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+	}
+
+	//----------------------------------------------------------------------------
+
 	time_stamp = std::chrono::high_resolution_clock::now();
+
+	
+
+
+
+
+
+	
 
 
 
@@ -222,8 +269,8 @@ optimize_camera_pose
 		delete[] ret_ts;
 	}
 
-	delete[] pts2;
-	delete[] pts3;
+	//delete[] pts2;
+	//delete[] pts3;
 
 	//----------------------------------------------------------------------------------
 
