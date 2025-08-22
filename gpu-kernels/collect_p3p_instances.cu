@@ -67,41 +67,58 @@ __global__ static void compute_rigidnesses_sum() {
 }
 
 
-__global__ static void compute_p3p_map(
+__global__
+static
+void
+compute_p3p_map
+(
 	const int active_idx,
 	const float rigidness_thresh,
 	const float rigidness_sum_thresh,
 	const float sample_min_depth,
 	const float sample_max_depth,
-	const int max_trace_on_flow) {
+	const int max_trace_on_flow
+)
+{
 
 	int x = blockDim.x*blockIdx.x + threadIdx.x;
 	int y = blockDim.y*blockIdx.y + threadIdx.y;
 	
-	if (x < _w && y < _h) {
+	if (x < _w && y < _h)
+	{
 		_d_p2_map.at(x, y) = make_float2(CUDART_NAN_F, CUDART_NAN_F);
 		_d_p3_map.at(x, y) = make_float3(CUDART_NAN_F, CUDART_NAN_F, CUDART_NAN_F);
 
 		float depth = _d_depth.at(x, y);
 		if (depth < sample_min_depth || (sample_max_depth > 0 && depth > sample_max_depth))
+		{
 			return;
-		if (_d_rigidnesses_sum.at(x, y) < rigidness_sum_thresh &&
-			rigidness_sum_thresh > _N + 1)
+		}
+
+		if (_d_rigidnesses_sum.at(x, y) < rigidness_sum_thresh && rigidness_sum_thresh > _N + 1) // TODO: ?
+		{
 			return;
+		}
 
 		int n_trace_on_flow = 0;
 		float trace_product = 1;
-		for (int i = active_idx; i >= (max_trace_on_flow > 0 ? max(0, active_idx - max_trace_on_flow + 1) : 0); i--) {
+		for (int i = active_idx; i >= (max_trace_on_flow > 0 ? max(0, active_idx - max_trace_on_flow + 1) : 0); i--)
+		{
 			trace_product *= _d_rigidnesses.at(x, y, i);
 			if (trace_product > rigidness_thresh)
+			{
 				n_trace_on_flow++;
+			}
 			else
+			{
 				break;
+			}
 		}
 
 		if (n_trace_on_flow <= 0)
+		{
 			return;
-
+		}
 
 		bool p2_trace_out_boundary = false;
 		float px, py;
@@ -134,14 +151,12 @@ __global__ static void compute_p3p_map(
 
 
 		// check depth w.r.t. frame active_idx
-		if (!p2_trace_out_boundary && oz > sample_min_depth && (sample_max_depth <= 0 || oz < sample_max_depth)) {
+		if (!p2_trace_out_boundary && oz > sample_min_depth && (sample_max_depth <= 0 || oz < sample_max_depth))
+		{
 			_d_p2_map.at(x, y) = make_float2(px, py);
 			_d_p3_map.at(x, y) = make_float3(ox, oy, oz);
 		}
-
-
 	}
-
 }
 
 int
