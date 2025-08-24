@@ -1,6 +1,7 @@
 #include "geometry.h"
 #include "../gpu-kernels/gpu_kernels.h"
 #include "../lambdatwist/lambdatwist_p4p.h"
+#include "trifocal.h"
 
 
 int
@@ -16,7 +17,11 @@ collect_p3p_correspondences
 	bool update_iter_instance,
 	Config const& cfg,
 	cv::Mat& pts2_map,
-	cv::Mat& pts3_map
+	cv::Mat& pts3_map,
+	std::vector<cv::Mat> const& flows_2,
+	cv::Mat& trifocal_map_0,
+	cv::Mat& trifocal_map_1,
+	cv::Mat& trifocal_map_2
 )
 {
 	int const w = flows[0].cols;
@@ -26,6 +31,7 @@ collect_p3p_correspondences
 	float const** h_rigidnesses = new float const* [n_flows];
 	float const** h_Rs          = new float const* [n_flows];
 	float const** h_ts          = new float const* [n_flows];
+	float const** h_flows_2     = new float const* [n_flows];
 
 	for (int i = 0; i < n_flows; i++)
 	{
@@ -33,6 +39,7 @@ collect_p3p_correspondences
 		h_rigidnesses[i] = (float*)rigidnesses[i].data;
 		h_Rs[i]          = (float*)cams[i].R.data;
 		h_ts[i]          = (float*)cams[i].t.data;
+		h_flows_2[i]     = (float*)flows_2[i].data;
 	}
 
 	if (update_batch_instance) {
@@ -54,7 +61,11 @@ collect_p3p_correspondences
 			cfg.rigidness_sum_threshold,
 			cfg.pose_sample_min_depth,
 			cfg.pose_sample_max_depth,
-			cfg.max_trace_on_flow
+			cfg.max_trace_on_flow,
+			h_flows_2,
+			(float*)trifocal_map_0.data,
+			(float*)trifocal_map_1.data,
+			(float*)trifocal_map_2.data
 		);
 	}
 	else if (update_iter_instance) {
@@ -76,7 +87,11 @@ collect_p3p_correspondences
 			cfg.rigidness_sum_threshold,
 			cfg.pose_sample_min_depth,
 			cfg.pose_sample_max_depth,
-			cfg.max_trace_on_flow
+			cfg.max_trace_on_flow,
+			NULL,
+			(float*)trifocal_map_0.data,
+			(float*)trifocal_map_1.data,
+			(float*)trifocal_map_2.data
 		);
 	}
 	else {
@@ -98,7 +113,11 @@ collect_p3p_correspondences
 			cfg.rigidness_sum_threshold,
 			cfg.pose_sample_min_depth,
 			cfg.pose_sample_max_depth,
-			cfg.max_trace_on_flow
+			cfg.max_trace_on_flow,
+			NULL,
+			(float*)trifocal_map_0.data,
+			(float*)trifocal_map_1.data,
+			(float*)trifocal_map_2.data
 		);
 	}
 
@@ -106,6 +125,7 @@ collect_p3p_correspondences
 	delete[] h_rigidnesses;
 	delete[] h_Rs;
 	delete[] h_ts;
+	delete[] h_flows_2;
 
 	int n_points = 0;
 	cv::Point2f const* pts2_pt = (cv::Point2f*)pts2_map.data;
@@ -113,6 +133,14 @@ collect_p3p_correspondences
 	cv::Point2f* pts2 = (cv::Point2f*)pts2_map.data; // pts2 is related to frame(active_idx)
 	cv::Point3f* pts3 = (cv::Point3f*)pts3_map.data; // pts3 is related to frame(active_idx-1).
 							                         // Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
+	
+	cv::Point2f const* tri_pt_0 = (cv::Point2f*)trifocal_map_0.data;
+	cv::Point2f const* tri_pt_1 = (cv::Point2f*)trifocal_map_1.data;
+	cv::Point2f const* tri_pt_2 = (cv::Point2f*)trifocal_map_2.data;
+
+	cv::Point2f* tri_0 = (cv::Point2f*)trifocal_map_0.data;
+	cv::Point2f* tri_1 = (cv::Point2f*)trifocal_map_1.data;
+	cv::Point2f* tri_2 = (cv::Point2f*)trifocal_map_2.data;
 
 	for (int i = 0; i < w * h; i++)
 	{
@@ -120,10 +148,20 @@ collect_p3p_correspondences
 		{
 			pts2[n_points] = *pts2_pt;
 			pts3[n_points] = *pts3_pt;
+
+			tri_0[n_points] = *tri_pt_0;
+			tri_1[n_points] = *tri_pt_1;
+			tri_2[n_points] = *tri_pt_2;
+
 			n_points++;
 		}
+
 		pts2_pt++;
 		pts3_pt++;
+
+		tri_pt_0++;
+		tri_pt_1++;
+		tri_pt_2++;
 	}
 
 	return n_points;
@@ -140,7 +178,10 @@ solve_p3p_pool
 	int n_points,
 	int active_idx,
 	Config const& cfg,
-	cv::Mat& poses_pool
+	cv::Mat& poses_pool,
+	cv::Mat const& trifocal_map_0,
+	cv::Mat const& trifocal_map_1,
+	cv::Mat const& trifocal_map_2
 )
 {
 	cv::Point2f const* pts2 = (cv::Point2f*)pts2_map.data;
@@ -222,8 +263,64 @@ solve_p3p_pool
 		delete[] ret_ts;
 	}
 
+	cv::Point2f const* tm0 = (cv::Point2f*)trifocal_map_0.data;
+	cv::Point2f const* tm1 = (cv::Point2f*)trifocal_map_1.data;
+	cv::Point2f const* tm2 = (cv::Point2f*)trifocal_map_2.data;
+
+
+	std::cout << "TRI CYCLE ---------------------------------------" << std::endl;
+
+	float* points_2D = new float[6 * 7]; // delete
+	float* points_3D = new float[3 * 7]; // delete
+	float fx[3] = { cfg.fx, cfg.fx, cfg.fx };
+	float fy[3] = { cfg.fy, cfg.fy, cfg.fy };
+	float cx[3] = { cfg.cx, cfg.cx, cfg.cx };
+	float cy[3] = { cfg.cy, cfg.cy, cfg.cy };
+	float tft[27];
+	float rt0[3 * 4];
+	float rt1[3 * 4];
+
+	for (int i = 0; i < 10; ++i)//cfg.n_poses_to_sample; i++) 
+	{
+		for (int p = 0; p < 7; ++p)
+		{
+			int idx = ((float)rand() / (float)RAND_MAX) * n_points;
+			memcpy(points_2D + (6 * p) + 0, &tm0[idx], sizeof(cv::Point2f));
+			memcpy(points_2D + (6 * p) + 2, &tm1[idx], sizeof(cv::Point2f));
+			memcpy(points_2D + (6 * p) + 4, &tm2[idx], sizeof(cv::Point2f));
+			memcpy(points_3D + (3 * p) + 0, &pts3[idx], sizeof(cv::Point3f));
+		}
+
+		compute_TFT(points_2D, 7, fx, fy, cx, cy, points_3D, tft, rt0, rt1);
+
+		if (i == 0) 
+		{ 
+			std::cout << "first TFT" << std::endl;
+			print_TFT(tft);
+			std::cout << "first rot/t" << std::endl;
+			cv::Mat R(3, 3, CV_32FC1, rt0);
+			cv::Mat r(3, 1, CV_32FC1);
+			cv::Mat t(3, 1, CV_32FC1, rt0 + 9);
+			cv::Rodrigues(R, r);
+			std::cout << r << std::endl;
+			std::cout << t << std::endl;
+		}
+
+
+
+
+		//std::cout << "TRI RAND SEL" << std::endl;
+		//std::cout << tm0[i1] << std::endl;
+		//std::cout << tm1[i1] << std::endl;
+	    //std::cout << tm2[i1] << std::endl;
+	}
+	
+	delete[] points_2D;
+	delete[] points_3D;
+
 	return poses_pool_used;
 }
+
 
 
 
@@ -243,7 +340,8 @@ optimize_camera_pose
 	bool rg_refine,
 	bool update_batch_instance,
 	bool update_iter_instance,
-	Config const& cfg
+	Config const& cfg,
+	std::vector<cv::Mat> const& flows_2
 ) 
 {
 
@@ -257,7 +355,25 @@ optimize_camera_pose
 	cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
 	cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
 
-	int n_points = collect_p3p_correspondences(flows, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map);
+	cv::Mat trifocal_map_0(cv::Size(w, h), CV_32FC2);
+	cv::Mat trifocal_map_1(cv::Size(w, h), CV_32FC2);
+	cv::Mat trifocal_map_2(cv::Size(w, h), CV_32FC2);
+
+	int n_points = collect_p3p_correspondences(flows, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map, flows_2, trifocal_map_0, trifocal_map_1, trifocal_map_2);
+
+	cv::Point2f* tm0 = (cv::Point2f*)trifocal_map_0.data;
+	cv::Point2f* tm1 = (cv::Point2f*)trifocal_map_1.data;
+	cv::Point2f* tm2 = (cv::Point2f*)trifocal_map_2.data;
+
+	/*
+	std::cout << "P3P points: " << n_points << std::endl;
+	std::cout << "TRI (0)" << std::endl;
+	std::cout << tm0[0] << std::endl;
+	std::cout << "TRI (1)" << std::endl;
+	std::cout << tm1[0] << std::endl;
+	std::cout << "TRI (2)" << std::endl;
+	std::cout << tm2[0] << std::endl;
+	*/
 
 	// check if able to have at least one pose
 	if (n_points < 4)
@@ -272,10 +388,17 @@ optimize_camera_pose
 
 	//----------------------------------------------------------------------------
 
+	// TODO: TRI
+
 	time_stamp = std::chrono::high_resolution_clock::now();
 
 	cv::Mat poses_pool(cfg.n_poses_to_sample, 6, CV_32F);
-	int poses_pool_used = solve_p3p_pool(cams, pts2_map, pts3_map, n_points, active_idx, cfg, poses_pool);
+	int poses_pool_used = solve_p3p_pool(cams, pts2_map, pts3_map, n_points, active_idx, cfg, poses_pool, trifocal_map_0, trifocal_map_1, trifocal_map_2);
+
+	if (poses_pool_used == 0)
+	{
+		return 0;
+	}
 
 	if (!cfg.silent)
 	{
@@ -290,8 +413,8 @@ optimize_camera_pose
 
 
 
-	if (poses_pool_used == 0)
-		return 0;
+
+	
 	poses_pool = poses_pool.rowRange(0, poses_pool_used);
 	cams[active_idx].pose_sample_count = poses_pool_used;
 
@@ -307,12 +430,26 @@ optimize_camera_pose
 
 	poses_pool.colRange(0, 3) *= cfg.meanshift_rvec_scale;
 	pose_opm.colRange(0, 3) *= cfg.meanshift_rvec_scale;
-	meanshift_gpu((float*)poses_pool.data, cfg.meanshift_kernel_var,
-		(float*)pose_opm.data, &cams[active_idx].pose_density, &cams[active_idx].last_used_ms_iters, successive_pose,
-		poses_pool_used, 6, cfg.meanshift_epsilon, cfg.meanshift_max_iters, cfg.meanshift_max_init_trials, cfg.meanshift_good_init_confidence);
+	meanshift_gpu
+	(
+		(float*)poses_pool.data,
+		cfg.meanshift_kernel_var,
+		(float*)pose_opm.data,
+		&cams[active_idx].pose_density,
+		&cams[active_idx].last_used_ms_iters,
+		successive_pose,
+		poses_pool_used,
+		6,
+		cfg.meanshift_epsilon,
+		cfg.meanshift_max_iters,
+		cfg.meanshift_max_init_trials,
+		cfg.meanshift_good_init_confidence
+	);
 
 	if (!cfg.silent)
+	{
 		std::cout << "meanshift time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+	}
 
 	//-------------------------------------------------------------------------
 
