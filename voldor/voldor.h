@@ -31,6 +31,7 @@ public:
 	std::vector<cv::Mat> flows;
 	std::vector<cv::Mat> rigidnesses;
 	std::vector<Camera> cams;
+	std::vector<cv::Mat> flows_2;
 
 	KittiGround ground;
 
@@ -44,7 +45,8 @@ public:
 		cv::Mat _disparity = cv::Mat(), cv::Mat _disparity_pconf = cv::Mat(),
 		std::vector<cv::Mat> _depth_priors = std::vector<cv::Mat>(),
 		std::vector<cv::Vec6f> _depth_prior_poses = std::vector<cv::Vec6f>(),
-		std::vector<cv::Mat> _depth_prior_pconfs = std::vector<cv::Mat>());
+		std::vector<cv::Mat> _depth_prior_pconfs = std::vector<cv::Mat>(),
+		std::vector<cv::Mat> _flows_2 = std::vector<cv::Mat>());
 
 	int solve();
 

@@ -9,7 +9,8 @@ VOLDOR::init
 	cv::Mat _disparity_pconf,
 	std::vector<cv::Mat> _depth_priors,
 	std::vector<cv::Vec6f> _depth_prior_poses,
-	std::vector<cv::Mat> _depth_prior_pconfs
+	std::vector<cv::Mat> _depth_prior_pconfs,
+	std::vector<cv::Mat> _flows_2
 )
 {
 
@@ -17,20 +18,31 @@ VOLDOR::init
 	flows.clear();
 	rigidnesses.clear();
 	cams.clear();
+	flows_2.clear();
+
 	iters_cur = 0;
 	iters_remain = cfg.max_iters;
 
 	// we assume flow, disparity and camera parameters need apply resize
 	// while depth_prior and their poses are pre-resized since they are usually previous VOLDOR result
+	if (_flows.size() != _flows_2.size())
+	{
+		std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
+		throw;
+	}
 
 	// copy flows
 	for (int i = 0; i < _flows.size(); i++) {
 		cv::Mat flow = _flows[i].clone();
+		cv::Mat flow_2 = _flows_2[i].clone();
 		if (cfg.resize_factor != 1) {
 			cv::resize(flow, flow, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
 			flow *= cfg.resize_factor;
+			cv::resize(flow_2, flow_2, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+			flow_2 *= cfg.resize_factor;
 		}
 		flows.push_back(flow);
+		flows_2.push_back(flow_2);
 	}
 
 	// convert disparity to general depth prior
@@ -184,7 +196,9 @@ void VOLDOR::optimize_cameras() {
 				cfg.rg_refine && (!cfg.rg_refine_last_only || iters_remain == 0), //rg_refine?
 				!cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0),  //update batch instance?
 				i == 0, //update iter instance?
-				cfg);
+				cfg,
+				flows_2
+			);
 		}
 
 		if (!cfg.silent)
