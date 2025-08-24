@@ -41,7 +41,11 @@ collect_p3p_instances
 	float rigidness_sum_thresh,
 	float sample_min_depth,
 	float sample_max_depth,
-	int max_trace_on_flow
+	int max_trace_on_flow,
+	float const* h_flows_2[],
+	float* h_o_trifocal_p2_map_0,
+	float* h_o_trifocal_p2_map_1,
+	float* h_o_trifocal_p2_map_2
 );
 
 DLL_EXPORT int solve_batch_p3p_ap3p_gpu(float* h_p3s, float* h_p2s,

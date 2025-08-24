@@ -16,8 +16,6 @@ __constant__ static float _ts[MAX_FRAMES][3];
 
 __constant__ static int _N, _w, _h;
 
-
-
 __constant__ static GMatf2 _d_flows;
 __constant__ static GMatf _d_depth;
 __constant__ static GMatf _d_rigidnesses;
@@ -26,12 +24,23 @@ __constant__ static GMatf2 _d_p2_map;
 __constant__ static GMatf3 _d_p3_map;
 
 
+__constant__ static GMatf2 g_gpu_trifocal_flows_2;
+__constant__ static GMatf2 g_gpu_trifocal_p2_map_0;
+__constant__ static GMatf2 g_gpu_trifocal_p2_map_1;
+__constant__ static GMatf2 g_gpu_trifocal_p2_map_2;
+
+
 static GMatf2 d_flows;
 static GMatf d_depth;
 static GMatf d_rigidnesses;
 static GMatf d_rigidnesses_sum;
 static GMatf2 d_p2_map;
 static GMatf3 d_p3_map;
+
+static GMatf2 g_ref_trifocal_flows_2;
+static GMatf2 g_ref_trifocal_p2_map_0;
+static GMatf2 g_ref_trifocal_p2_map_1;
+static GMatf2 g_ref_trifocal_p2_map_2;
 
 __device__ __inline__ static void proj_p2_to_p3(float px, float py, float depth, float& ox, float& oy, float& oz) {
 	ox = (_K4_inv[0] * px + _K4_inv[1]) * depth;
@@ -80,14 +89,17 @@ compute_p3p_map
 	const int max_trace_on_flow
 )
 {
-
-	int x = blockDim.x*blockIdx.x + threadIdx.x;
-	int y = blockDim.y*blockIdx.y + threadIdx.y;
+	int x = blockDim.x * blockIdx.x + threadIdx.x;
+	int y = blockDim.y * blockIdx.y + threadIdx.y;
 	
 	if (x < _w && y < _h)
 	{
 		_d_p2_map.at(x, y) = make_float2(CUDART_NAN_F, CUDART_NAN_F);
 		_d_p3_map.at(x, y) = make_float3(CUDART_NAN_F, CUDART_NAN_F, CUDART_NAN_F);
+
+		g_gpu_trifocal_p2_map_0.at(x, y) = make_float2(CUDART_NAN_F, CUDART_NAN_F);
+		g_gpu_trifocal_p2_map_1.at(x, y) = make_float2(CUDART_NAN_F, CUDART_NAN_F);
+		g_gpu_trifocal_p2_map_2.at(x, y) = make_float2(CUDART_NAN_F, CUDART_NAN_F);
 
 		float depth = _d_depth.at(x, y);
 		if (depth < sample_min_depth || (sample_max_depth > 0 && depth > sample_max_depth))
@@ -125,15 +137,19 @@ compute_p3p_map
 		float ox, oy, oz;
 		proj_p2_to_p3(x, y, depth, ox, oy, oz);
 
-		for (int i = 0; i <= active_idx; i++) {
+		for (int i = 0; i <= active_idx; i++)
+		{
 			// tracing on flow
-			if (i >= active_idx - n_trace_on_flow + 1) {
+			if (i >= active_idx - n_trace_on_flow + 1)
+			{
 				// convert p3 to p2 and start tracing on flow
-				if (i == active_idx - n_trace_on_flow + 1) {
+				if (i == active_idx - n_trace_on_flow + 1)
+				{
 					proj_p3_to_p2(ox, oy, oz, px, py);
 				}
 
-				if (px > 0 && px < _w && py > 0 && py < _h) {
+				if (px > 0 && px < _w && py > 0 && py < _h)
+				{
 					float2 d2 = _d_flows.at_tex(px, py, i);
 					px += d2.x;
 					py += d2.y;
@@ -144,7 +160,8 @@ compute_p3p_map
 				}
 			}
 			// trans p3 to next frame
-			if (i < active_idx) {
+			if (i < active_idx)
+			{
 				trans_p3_across_frame(ox, oy, oz, i);
 			}
 		}
@@ -155,6 +172,16 @@ compute_p3p_map
 		{
 			_d_p2_map.at(x, y) = make_float2(px, py);
 			_d_p3_map.at(x, y) = make_float3(ox, oy, oz);
+
+			float2 p0 = make_float2(x, y);
+			float2 d01 = _d_flows.at(x, y, active_idx);
+			float2 p1 = make_float2(p0.x + d01.x, p0.y + d01.y);
+			float2 d02 = g_gpu_trifocal_flows_2.at(x, y, active_idx);
+			float2 p2 = make_float2(p0.x + d02.x, p0.y + d02.y);
+
+			g_gpu_trifocal_p2_map_0.at(x, y) = p0;
+			g_gpu_trifocal_p2_map_1.at(x, y) = p1;
+			g_gpu_trifocal_p2_map_2.at(x, y) = p2;
 		}
 	}
 }
@@ -178,10 +205,13 @@ collect_p3p_instances
 	float rigidness_sum_thresh,
 	float sample_min_depth,
 	float sample_max_depth,
-	int max_trace_on_flow
+	int max_trace_on_flow,
+	float const* h_flows_2[],
+	float* h_o_trifocal_p2_map_0,
+	float* h_o_trifocal_p2_map_1,
+	float* h_o_trifocal_p2_map_2
 )
 {
-
 	// for pixel-wise op
 	const dim3 block_size(BLOCK_WIDTH, BLOCK_WIDTH);
 	const dim3 grid_size(DIV_CEIL(w, BLOCK_WIDTH), DIV_CEIL(h, BLOCK_WIDTH));
@@ -229,6 +259,19 @@ collect_p3p_instances
 			d_flows.copy_from_host((float2*)h_flows[f], make_cudaPos(0, 0, f), w, h, 1);
 		gpuErrchk;
 	}
+	if (g_ref_trifocal_flows_2.create(w, h, N, true))
+	{
+		g_ref_trifocal_flows_2.bind_tex();
+		cudaMemcpyToSymbol(g_gpu_trifocal_flows_2, &g_ref_trifocal_flows_2, sizeof(GMatf2));
+	}
+	if (h_flows_2)
+	{
+		for (int f = 0; f < N; ++f)
+		{
+			g_ref_trifocal_flows_2.copy_from_host((float2*)h_flows_2[f], make_cudaPos(0, 0, f), w, h, 1);
+		}
+		gpuErrchk;
+	}
 
 	if (d_rigidnesses_sum.create(w, h, 1))
 		cudaMemcpyToSymbol(_d_rigidnesses_sum, &d_rigidnesses_sum, sizeof(GMatf));
@@ -261,6 +304,22 @@ collect_p3p_instances
 		cudaMemcpyToSymbol(_d_p3_map, &d_p3_map, sizeof(GMatf3));
 	gpuErrchk;
 
+	if (g_ref_trifocal_p2_map_0.create(w, h, 1))
+	{
+		cudaMemcpyToSymbol(g_gpu_trifocal_p2_map_0, &g_ref_trifocal_p2_map_0, sizeof(GMatf2));
+	}
+	gpuErrchk;
+	if (g_ref_trifocal_p2_map_1.create(w, h, 1))
+	{
+		cudaMemcpyToSymbol(g_gpu_trifocal_p2_map_1, &g_ref_trifocal_p2_map_1, sizeof(GMatf2));
+	}
+	gpuErrchk;
+	if (g_ref_trifocal_p2_map_2.create(w, h, 1))
+	{
+		cudaMemcpyToSymbol(g_gpu_trifocal_p2_map_2, &g_ref_trifocal_p2_map_2, sizeof(GMatf2));
+	}
+	gpuErrchk;
+
 
 	compute_p3p_map << <grid_size, block_size >> > (active_idx, rigidness_thresh, rigidness_sum_thresh, sample_min_depth, sample_max_depth, max_trace_on_flow);
 	gpuErrchk;
@@ -269,7 +328,13 @@ collect_p3p_instances
 		d_p2_map.copy_to_host((float2*)h_o_p2_map, make_cudaPos(0, 0, 0), w, h, 1);
 	if (h_o_p3_map)
 		d_p3_map.copy_to_host((float3*)h_o_p3_map, make_cudaPos(0, 0, 0), w, h, 1);
+
+	if (h_o_trifocal_p2_map_0) { g_ref_trifocal_p2_map_0.copy_to_host((float2*)h_o_trifocal_p2_map_0, make_cudaPos(0, 0, 0), w, h, 1); }
+	if (h_o_trifocal_p2_map_1) { g_ref_trifocal_p2_map_1.copy_to_host((float2*)h_o_trifocal_p2_map_1, make_cudaPos(0, 0, 0), w, h, 1); }
+	if (h_o_trifocal_p2_map_2) { g_ref_trifocal_p2_map_2.copy_to_host((float2*)h_o_trifocal_p2_map_2, make_cudaPos(0, 0, 0), w, h, 1); }
+
 	gpuErrchk;
+	
 
 	return cudaSuccess;
 }
