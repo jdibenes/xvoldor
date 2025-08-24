@@ -410,19 +410,55 @@ void R_t_from_TFT(T const* TFT, T const* points_2D, int count_points, T* Rt01, T
 
 
 
+template <typename T>
+T compute_scale(T const* points_2D, T const* points_3D, int count, T* RT01, T*)
+{
+    float* scales = new float[count];
+
+    for (int i = 0; i < count; ++i)
+    {
+        T X1 = points_3D[(3 * i) + 0];
+        T Y1 = points_3D[(3 * i) + 1];
+        T Z1 = points_3D[(3 * i) + 2];
+        //T x2 = points_2D[(6 * i) + 2];
+        //T y2 = points_2D[(6 * i) + 3];
+        T x2 = points_2D[(2 * i) + 0];
+        T y2 = points_2D[(2 * i) + 1];
+        T R_x2 = RT01[0] * x2 + RT01[1] * y2 + RT01[2];
+        T R_y2 = RT01[3] * x2 + RT01[4] * y2 + RT01[5];
+        T R_w2 = RT01[6] * x2 + RT01[7] * y2 + RT01[8];
+        T ntx = -RT01[9];
+        T nty = -RT01[10];
+        T ntz = -RT01[11];
+        T R_ntx = RT01[0] * ntx + RT01[1] * nty + RT01[2] * ntz;
+        T R_nty = RT01[3] * ntx + RT01[4] * nty + RT01[5] * ntz;
+        T R_ntz = RT01[6] * ntx + RT01[7] * nty + RT01[8] * ntz;
+        T tR2_x = R_nty * R_w2 - R_ntz * R_y2;
+        T tR2_y = R_ntz * R_x2 - R_ntx * R_w2;
+        T tR2_z = R_ntx * R_y2 - R_nty * R_x2;
+        T PR2_x = Y1 * R_w2 - Z1 * R_y2;
+        T PR2_y = Z1 * R_x2 - X1 * R_w2;
+        T PR2_z = X1 * R_y2 - Y1 * R_x2;
+        T num2 = PR2_x * PR2_x + PR2_y * PR2_y + PR2_z * PR2_z;
+        T den2 = tR2_x * tR2_x + tR2_y * tR2_y + tR2_z * tR2_z; // TODO: if zero??
+        T rho = sqrt(num2 / den2);
+        scales[i] = rho;
+    }
+
+    std::sort(scales, scales + count);
+    return scales[count / 2]; // TODO: median?
+}
 
 
 
 
 
 
-
-
-
-void compute_TFT(float const* points_2D, int count, float const* fx, float const* fy, float const* cx, float const* cy, float* const points_3D, float* out_TFT, float* RT01, float* RT02)
+void compute_TFT(float const* points_2D, int count, float const* fx, float const* fy, float const* cx, float const* cy, float* const base_2D, float* const points_3D, float* out_TFT, float* RT01, float* RT02)
 {
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> points_nc(6, count);
     float* points_nc_base = points_nc.data();
+    float* base_nc = new float[2 * count]; // delete
 
     for (int i = 0; i < count; ++i)
     {
@@ -431,6 +467,8 @@ void compute_TFT(float const* points_2D, int count, float const* fx, float const
             points_nc_base[(i * 6) + (j * 2) + 0] = (points_2D[(i * 6) + (j * 2) + 0] - cx[j]) / fx[j];
             points_nc_base[(i * 6) + (j * 2) + 1] = (points_2D[(i * 6) + (j * 2) + 1] - cy[j]) / fy[j];
         }
+        base_nc[(2 * i) + 0] = (base_2D[(2 * i) + 0] - cx[1]) / fx[1];
+        base_nc[(2 * i) + 1] = (base_2D[(2 * i) + 1] - cy[1]) / fy[1];
     }
 
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::AutoAlign | Eigen::RowMajor> A(4 * count, 27);
@@ -441,11 +479,20 @@ void compute_TFT(float const* points_2D, int count, float const* fx, float const
     build_A(points_nc_base, count, A.data());
     linear_TFT(A.data(), 4 * count, TFT.data());
     R_t_from_TFT(TFT.data(), points_nc_base, count, P2.data(), P3.data());
-
+    float scale = compute_scale(base_nc, points_3D, count, P2.data(), P3.data());
 
     memcpy(out_TFT, TFT.data(), 27 * sizeof(float));
     memcpy(RT01, P2.data(), 3 * 4 * sizeof(float));
     memcpy(RT02, P3.data(), 3 * 4 * sizeof(float));
+
+    RT01[9] *= scale;
+    RT01[10] *= scale;
+    RT01[11] *= scale;
+    RT02[9] *= scale;
+    RT02[10] *= scale;
+    RT02[11] *= scale;
+
+    delete[]base_nc;
 }
 
 void print_TFT(float const* TFT)

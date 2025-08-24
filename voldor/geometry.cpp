@@ -272,6 +272,7 @@ solve_p3p_pool
 
 	float* points_2D = new float[6 * 7]; // delete
 	float* points_3D = new float[3 * 7]; // delete
+	float* base_2D = new float[2 * 7]; // delete
 	float fx[3] = { cfg.fx, cfg.fx, cfg.fx };
 	float fy[3] = { cfg.fy, cfg.fy, cfg.fy };
 	float cx[3] = { cfg.cx, cfg.cx, cfg.cx };
@@ -289,22 +290,24 @@ solve_p3p_pool
 			memcpy(points_2D + (6 * p) + 2, &tm1[idx], sizeof(cv::Point2f));
 			memcpy(points_2D + (6 * p) + 4, &tm2[idx], sizeof(cv::Point2f));
 			memcpy(points_3D + (3 * p) + 0, &pts3[idx], sizeof(cv::Point3f));
+			memcpy(base_2D + (2 * p), &pts2[idx], sizeof(cv::Point2f));
 		}
 
-		compute_TFT(points_2D, 7, fx, fy, cx, cy, points_3D, tft, rt0, rt1);
+		compute_TFT(points_2D, 7, fx, fy, cx, cy, base_2D, points_3D, tft, rt0, rt1);
 
 		if (i == 0) 
 		{ 
-			std::cout << "first TFT" << std::endl;
-			print_TFT(tft);
-			std::cout << "first rot/t" << std::endl;
-			cv::Mat R(3, 3, CV_32FC1, rt0);
+			//std::cout << "first TFT" << std::endl;
+			//print_TFT(tft);
+			std::cout << "index " << i << " rot/t" << std::endl;
+			cv::Mat R(3, 3, CV_32FC1, rt0); // needs transpose
 			cv::Mat r(3, 1, CV_32FC1);
 			cv::Mat t(3, 1, CV_32FC1, rt0 + 9);
 			cv::Rodrigues(R, r);
 			std::cout << r << std::endl;
 			std::cout << t << std::endl;
 		}
+
 
 
 
@@ -317,6 +320,7 @@ solve_p3p_pool
 	
 	delete[] points_2D;
 	delete[] points_3D;
+	delete[] base_2D;
 
 	return poses_pool_used;
 }
@@ -428,7 +432,7 @@ optimize_camera_pose
 	// scale and do meanshift
 	time_stamp = std::chrono::high_resolution_clock::now();
 
-	poses_pool.colRange(0, 3) *= cfg.meanshift_rvec_scale;
+	poses_pool.colRange(0, 3) *= cfg.meanshift_rvec_scale; // depends on translation scale?
 	pose_opm.colRange(0, 3) *= cfg.meanshift_rvec_scale;
 	meanshift_gpu
 	(
