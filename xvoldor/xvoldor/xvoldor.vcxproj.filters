@@ -54,6 +54,9 @@
     <ClInclude Include="..\..\voldor\kitti.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\trifocal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
@@ -75,6 +78,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\kitti.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\trifocal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -29,6 +29,7 @@
     <ClInclude Include="..\..\voldor\geometry.h" />
     <ClInclude Include="..\..\voldor\kitti.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
+    <ClInclude Include="..\..\voldor\trifocal.h" />
     <ClInclude Include="..\..\voldor\utils.h" />
     <ClInclude Include="..\..\voldor\voldor.h" />
   </ItemGroup>
@@ -37,6 +38,7 @@
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp" />
     <ClCompile Include="..\..\voldor\py_export.cpp" />
+    <ClCompile Include="..\..\voldor\trifocal.cpp" />
     <ClCompile Include="..\..\voldor\utils.cpp" />
     <ClCompile Include="..\..\voldor\voldor.cpp" />
     <ClCompile Include="x_utils.cpp" />
