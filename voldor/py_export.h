@@ -8,4 +8,7 @@ extern int py_voldor_wrapper(
 	const int N, const int N_dp, const int w, const int h,
 	const char* config,
 	// outputs
-	int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf);
+	int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf,
+	// extension
+	// inputs
+	const float* flows_2);

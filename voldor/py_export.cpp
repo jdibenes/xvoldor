@@ -25,9 +25,12 @@ py_voldor_wrapper
 	// outputs
 	int& n_registered,
 	float* poses_pt,
-	float* poses_covar_pt, 
-	float* depth_pt, 
-	float* depth_conf_pt
+	float* poses_covar_pt,
+	float* depth_pt,
+	float* depth_conf_pt,
+	// Extended
+	// inputs
+	const float* flows_2_pt
 )
 {
 
@@ -50,9 +53,11 @@ py_voldor_wrapper
 	std::vector<cv::Mat> depth_priors;
 	std::vector<cv::Vec6f> depth_prior_poses;
 	std::vector<cv::Mat> depth_priors_pconfs;
+	std::vector<cv::Mat> flows_2;
 
 	for (int i = 0; i < N; i++) {
-		flows.push_back(cv::Mat(cv::Size(w, h), CV_32FC2, (void*)(flows_pt + i * w*h * 2)));
+		flows.push_back(cv::Mat(cv::Size(w, h), CV_32FC2, (void*)(flows_pt + i * w * h * 2)));
+		flows_2.push_back(cv::Mat(cv::Size(w, h), CV_32FC2, (void*)(flows_2_pt + i * w * h * 2)));
 	}
 
 	if (disparity_pt)
@@ -69,7 +74,7 @@ py_voldor_wrapper
 
 
 	VOLDOR voldor(cfg);
-	voldor.init(flows, disparity, disparity_pconf, depth_priors, depth_prior_poses, depth_priors_pconfs);
+	voldor.init(flows, disparity, disparity_pconf, depth_priors, depth_prior_poses, depth_priors_pconfs, flows_2);
 	voldor.solve();
 
 	n_registered = voldor.n_flows;
