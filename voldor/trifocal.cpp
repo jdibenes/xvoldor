@@ -338,46 +338,37 @@ void R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eige
     c2.col(3) = (num / den) * c2.col(3);
 }
 
-
-
-
-
-
 // OK
-template <typename T, int max_points = 16>
-T compute_scale(T const* points_2D, T const* points_3D, int count, T* RT01)
+float compute_scale(float const* points_2D, float const* points_3D, int count, float* RT01)
 {
-    T scales[max_points];
-    
-    // TODO: count > max_points
-    int N = count <= max_points ? count : max_points;
+    std::unique_ptr<float[]> scales = std::make_unique<float[]>(count);
     int valid = 0;
 
-    for (int i = 0; i < N; ++i)
+    for (int i = 0; i < count; ++i)
     {
-        T X1 = points_3D[(3 * i) + 0];
-        T Y1 = points_3D[(3 * i) + 1];
-        T Z1 = points_3D[(3 * i) + 2];
-        T x2 = points_2D[(2 * i) + 0];
-        T y2 = points_2D[(2 * i) + 1];
-        T R_x2 = RT01[0] * x2 + RT01[1] * y2 + RT01[2];
-        T R_y2 = RT01[3] * x2 + RT01[4] * y2 + RT01[5];
-        T R_w2 = RT01[6] * x2 + RT01[7] * y2 + RT01[8];
-        T ntx = -RT01[9];
-        T nty = -RT01[10];
-        T ntz = -RT01[11];
-        T R_ntx = RT01[0] * ntx + RT01[1] * nty + RT01[2] * ntz;
-        T R_nty = RT01[3] * ntx + RT01[4] * nty + RT01[5] * ntz;
-        T R_ntz = RT01[6] * ntx + RT01[7] * nty + RT01[8] * ntz;
-        T tR2_x = R_nty * R_w2 - R_ntz * R_y2;
-        T tR2_y = R_ntz * R_x2 - R_ntx * R_w2;
-        T tR2_z = R_ntx * R_y2 - R_nty * R_x2;
-        T PR2_x = Y1 * R_w2 - Z1 * R_y2;
-        T PR2_y = Z1 * R_x2 - X1 * R_w2;
-        T PR2_z = X1 * R_y2 - Y1 * R_x2;
-        T num2 = PR2_x * PR2_x + PR2_y * PR2_y + PR2_z * PR2_z;
-        T den2 = tR2_x * tR2_x + tR2_y * tR2_y + tR2_z * tR2_z;
-        T rho = std::sqrt(num2 / den2);
+        float X1 = points_3D[(3 * i) + 0];
+        float Y1 = points_3D[(3 * i) + 1];
+        float Z1 = points_3D[(3 * i) + 2];
+        float x2 = points_2D[(2 * i) + 0];
+        float y2 = points_2D[(2 * i) + 1];
+        float R_x2 = RT01[0] * x2 + RT01[1] * y2 + RT01[2];
+        float R_y2 = RT01[3] * x2 + RT01[4] * y2 + RT01[5];
+        float R_w2 = RT01[6] * x2 + RT01[7] * y2 + RT01[8];
+        float ntx = -RT01[9];
+        float nty = -RT01[10];
+        float ntz = -RT01[11];
+        float R_ntx = RT01[0] * ntx + RT01[1] * nty + RT01[2] * ntz;
+        float R_nty = RT01[3] * ntx + RT01[4] * nty + RT01[5] * ntz;
+        float R_ntz = RT01[6] * ntx + RT01[7] * nty + RT01[8] * ntz;
+        float tR2_x = R_nty * R_w2 - R_ntz * R_y2;
+        float tR2_y = R_ntz * R_x2 - R_ntx * R_w2;
+        float tR2_z = R_ntx * R_y2 - R_nty * R_x2;
+        float PR2_x = Y1 * R_w2 - Z1 * R_y2;
+        float PR2_y = Z1 * R_x2 - X1 * R_w2;
+        float PR2_z = X1 * R_y2 - Y1 * R_x2;
+        float num2 = PR2_x * PR2_x + PR2_y * PR2_y + PR2_z * PR2_z;
+        float den2 = tR2_x * tR2_x + tR2_y * tR2_y + tR2_z * tR2_z;
+        float rho = std::sqrt(num2 / den2);
 
         if (!std::isfinite(rho)) { continue; }
 
@@ -387,9 +378,11 @@ T compute_scale(T const* points_2D, T const* points_3D, int count, T* RT01)
     if (valid <= 0) { return 0; }
 
     // TODO: mean or median or ?
-    std::sort(scales, scales + valid);
+    std::sort(scales.get(), scales.get() + valid);
     return scales[valid / 2];
 }
+
+
 
 
 
@@ -444,7 +437,7 @@ compute_TFT
     linear_TFT(A, TFT); // OK
     R_t_from_TFT(TFT, points_nc, count, P2, P3); // OK
     float scale = compute_scale(map_nc, map_3D, count, P2.data());
-    //scale = 1.0;
+    //float scale = 1.0;
 
     cv::Mat R01(3, 3, CV_32FC1, P2.data()); // needs transpose
     cv::Mat R02(3, 3, CV_32FC1, P3.data()); // needs transpose
