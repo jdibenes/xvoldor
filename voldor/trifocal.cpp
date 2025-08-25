@@ -4,21 +4,21 @@
 #include <Eigen/Eigen>
 #include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
 
+//-----------------------------------------------------------------------------
+// Functions
+//-----------------------------------------------------------------------------
 
-template <typename T>
-using MatrixA = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::AutoAlign | Eigen::RowMajor>;
-
-template <typename T>
-void build_A(T const* points_2D, int count, T* A)
+// OK
+void build_A(float const* points_2D, int count, float* A)
 {
     for (int i = 0; i < count; ++i)
     {
-        T x1 = points_2D[(i * 6) + 0];
-        T y1 = points_2D[(i * 6) + 1];
-        T x2 = points_2D[(i * 6) + 2];
-        T y2 = points_2D[(i * 6) + 3];
-        T x3 = points_2D[(i * 6) + 4];
-        T y3 = points_2D[(i * 6) + 5];
+        float x1 = points_2D[(i * 6) + 0];
+        float y1 = points_2D[(i * 6) + 1];
+        float x2 = points_2D[(i * 6) + 2];
+        float y2 = points_2D[(i * 6) + 3];
+        float x3 = points_2D[(i * 6) + 4];
+        float y3 = points_2D[(i * 6) + 5];
 
         A[(((4 * i) + 0) * 27) +  0] = x1;
         A[(((4 * i) + 0) * 27) +  1] = 0;
@@ -134,7 +134,6 @@ void build_A(T const* points_2D, int count, T* A)
     }
 }
 
-
 // OK
 void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eigen::Ref<Eigen::Matrix<float, 3, 2>> e)
 {
@@ -163,9 +162,9 @@ void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT,
 }
 
 // OK
-void linear_TFT(Eigen::Ref<const MatrixA<float>> const& A, Eigen::Ref<Eigen::Matrix<float, 27, 1>> result, float threshold = 0)
+void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& A, Eigen::Ref<Eigen::Matrix<float, 27, 1>> result, float threshold = 0)
 {
-    Eigen::Matrix<float, 27, 1> t = A.bdcSvd(Eigen::ComputeFullV).matrixV().col(26);
+    Eigen::Matrix<float, 27, 1> t = -(A.bdcSvd(Eigen::ComputeFullU).matrixU().col(26));
 
     Eigen::Matrix<float, 3, 2> e;
 
@@ -182,7 +181,7 @@ void linear_TFT(Eigen::Ref<const MatrixA<float>> const& A, Eigen::Ref<Eigen::Mat
     if (threshold > 0) { svd_E.setThreshold(threshold); }
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Up = svd_E.matrixU()(Eigen::all, Eigen::seq(0, svd_E.rank() - 1));
 
-    result = Up * ((A * Up).bdcSvd(Eigen::ComputeFullV).matrixV()(Eigen::all, Eigen::last));
+    result = Up * ((A.transpose() * Up).bdcSvd(Eigen::ComputeFullV).matrixV()(Eigen::all, Eigen::last));
 }
 
 // OK
@@ -435,7 +434,8 @@ compute_TFT
     }
 
     //Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::AutoAlign | Eigen::RowMajor> A(4 * count, 27);
-    MatrixA<float> A(4 * count, 27);
+    //MatrixA<float> A(4 * count, 27);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> A(27, 4 * count);
     Eigen::Matrix<float, 27, 1> TFT;
     Eigen::Matrix<float, 3, 4> P2;
     Eigen::Matrix<float, 3, 4> P3;
