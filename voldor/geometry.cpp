@@ -278,8 +278,10 @@ solve_p3p_pool
 	float cx[3] = { cfg.cx, cfg.cx, cfg.cx };
 	float cy[3] = { cfg.cy, cfg.cy, cfg.cy };
 	float tft[27];
-	float rt0[3 * 4];
-	float rt1[3 * 4];
+	float r01[3];
+	float r02[3];
+	float t01[3];
+	float t02[3];
 
 	for (int i = 0; i < 10; ++i)//cfg.n_poses_to_sample; i++) 
 	{
@@ -293,19 +295,28 @@ solve_p3p_pool
 			memcpy(base_2D + (2 * p), &pts2[idx], sizeof(cv::Point2f));
 		}
 
-		compute_TFT(points_2D, 7, fx, fy, cx, cy, base_2D, points_3D, tft, rt0, rt1);
+		auto time_stamp = std::chrono::high_resolution_clock::now();
+		compute_TFT(points_2D, 7, fx, fy, cx, cy, base_2D, points_3D, tft, r01, t01, r02, t02);
+		std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 
 		if (i == 0) 
 		{ 
 			//std::cout << "first TFT" << std::endl;
 			//print_TFT(tft);
 			std::cout << "index " << i << " rot/t" << std::endl;
-			cv::Mat R(3, 3, CV_32FC1, rt0); // needs transpose
-			cv::Mat r(3, 1, CV_32FC1);
-			cv::Mat t(3, 1, CV_32FC1, rt0 + 9);
-			cv::Rodrigues(R, r);
+			cv::Mat r(3, 1, CV_32F, r01);
+			cv::Mat t(3, 1, CV_32F, t01);
+			cv::Mat r2(3, 1, CV_32F, r02);
+			cv::Mat t2(3, 1, CV_32F, t02);
+			//cv::Mat R(3, 3, CV_32FC1, rt0); // needs transpose
+			//cv::Mat r(3, 1, CV_32FC1);
+			//cv::Mat t(3, 1, CV_32FC1, rt0 + 9);
+			//cv::Rodrigues(R, r);
 			std::cout << r << std::endl;
 			std::cout << t << std::endl;
+			std::cout << "/2/" << std::endl;
+			std::cout << r2 << std::endl;
+			std::cout << t2 << std::endl;
 		}
 
 
