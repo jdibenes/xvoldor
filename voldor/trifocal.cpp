@@ -147,11 +147,13 @@ void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT,
     Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t3 = t3.jacobiSvd(Eigen::ComputeFullV | Eigen::ComputeFullU);
 
     Eigen::Matrix<float, 3, 3> vx;
+
     vx << ( svd_t1.matrixV().col(2)),
           ( svd_t2.matrixV().col(2)),
           ( svd_t3.matrixV().col(2));
 
     Eigen::Matrix<float, 3, 3> ux;
+
     ux << (-svd_t1.matrixU().col(2)),
           (-svd_t2.matrixU().col(2)),
           (-svd_t3.matrixU().col(2));
@@ -166,11 +168,14 @@ void linear_TFT(Eigen::Ref<const MatrixA<float>> const& A, Eigen::Ref<Eigen::Mat
     Eigen::Matrix<float, 27, 1> t = A.bdcSvd(Eigen::ComputeFullV).matrixV().col(26);
 
     Eigen::Matrix<float, 3, 2> e;
+
     epipoles_from_TFT(t, e); // OK
 
     Eigen::Matrix<float, 3, 3> I3 = Eigen::Matrix<float, 3, 3>::Identity();
     Eigen::Matrix<float, 9, 9> I9 = Eigen::Matrix<float, 9, 9>::Identity();
+
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> E(27, 18);
+
     E << Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3)), Eigen::kroneckerProduct(I9, -e.col(0));
 
     Eigen::BDCSVD<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> svd_E = E.bdcSvd(Eigen::ComputeFullU);
@@ -201,10 +206,12 @@ void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras
     {
         L(0, 2) =  points_2D((0 * 2) + 1, n);
         L(1, 2) = -points_2D((0 * 2) + 0, n);
+
         ls_matrix(Eigen::seq((0 * 2) + 0, (0 * 2) + 1), Eigen::all) = L * cameras(Eigen::all, Eigen::seq((0 * 4) + 0, (0 * 4) + 3));
 
         L(0, 2) =  points_2D((1 * 2) + 1, n);
         L(1, 2) = -points_2D((1 * 2) + 0, n);
+
         ls_matrix(Eigen::seq((1 * 2) + 0, (1 * 2) + 1), Eigen::all) = L * cameras(Eigen::all, Eigen::seq((1 * 4) + 0, (1 * 4) + 3));
 
         points_H3D.col(n) = ls_matrix.bdcSvd(Eigen::ComputeFullV).matrixV().col(3);
@@ -226,6 +233,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
 
     Eigen::Matrix<float, 3, 3> R1 = U * W * Vt;
     Eigen::Matrix<float, 3, 3> R2 = U * W.transpose() * Vt;
+
     if (R1.determinant() < 0) { R1 = -R1; }
     if (R2.determinant() < 0) { R2 = -R2; }
 
@@ -262,17 +270,21 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
     }
 }
 
-
+// OK
 void R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c1, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c2)
 {
     Eigen::Matrix<float, 3, 2> e;
+
     epipoles_from_TFT(TFT, e); // OK
 
     if (e(2, 0) < 0) { e.col(0) = -e.col(0); }
     if (e(2, 1) < 0) { e.col(1) = -e.col(1); }
 
+    e.col(1) = -e.col(1);
+
     Eigen::Matrix<float, 3, 3> epi21_x;
     Eigen::Matrix<float, 3, 3> epi31_x;
+
     cross_matrix(e.col(0), epi21_x); // OK
     cross_matrix(e.col(1), epi31_x); // OK
 
@@ -282,30 +294,12 @@ void R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eige
 
     Eigen::Matrix<float, 3, 3> D21;
     Eigen::Matrix<float, 3, 3> D31;
+
     D21 << (T1             * e.col(1)), (T2             * e.col(1)), (T3             * e.col(1));
     D31 << (T1.transpose() * e.col(0)), (T2.transpose() * e.col(0)), (T3.transpose() * e.col(0));
 
     Eigen::Matrix<float, 3, 3> E21 = epi21_x * D21;
     Eigen::Matrix<float, 3, 3> E31 = epi31_x * D31;
-
-
-
-
-
-
-    //E21 << (epi21_x * (T1 *             e.col(1))), (epi21_x * (T2 *             e.col(1))), (epi21_x * (T3 *             e.col(1)));
-    //E31 << (epi31_x * (T1.transpose() * e.col(0))), (epi31_x * (T2.transpose() * e.col(0))), (epi31_x * (T3.transpose() * e.col(0)));
-    E31 = -E31;
-
-
-
-
-
-
-
-
-
-
 
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p21(4, count_points);
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p31(4, count_points);
@@ -313,38 +307,24 @@ void R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eige
     p21 << points_2D(Eigen::seq(0, 1), Eigen::all), points_2D(Eigen::seq(2, 3), Eigen::all);
     p31 << points_2D(Eigen::seq(0, 1), Eigen::all), points_2D(Eigen::seq(4, 5), Eigen::all);
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p3D(4, count_points);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p3DH(4, count_points);
 
-    R_t_from_E(E31, p31, count_points, c2, p3D); // OK
-    R_t_from_E(E21, p21, count_points, c1, p3D); // OK
-    
+    R_t_from_E(E31, p31, count_points, c2, p3DH); // OK
+    R_t_from_E(E21, p21, count_points, c1, p3DH); // OK
 
-
-
-
-
-
-
-
-    Eigen::Matrix<float, 3, 4> c0 = Eigen::Matrix<float, 3, 4>::Identity();
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> cameras(3, 4 * 2);
-    cameras << c0, c1;
-
-
-    Eigen::Matrix<float, 3, Eigen::Dynamic> X(3, count_points);
     Eigen::Matrix<float, 3, Eigen::Dynamic> X3(3, count_points);
-    X = p3D.colwise().hnormalized();
-    X3 = c2(Eigen::all, Eigen::seq(0, 2)) * X;
-
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3(3, count_points);
-    p3 << points_2D(Eigen::seq(4, 5), Eigen::all).colwise().homogeneous();
+
+    X3 = c2(Eigen::all, Eigen::seq(0, 2)) * p3DH.colwise().hnormalized();
+    p3 = points_2D(Eigen::seq(4, 5), Eigen::all).colwise().homogeneous();
 
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3_X3(3, count_points);
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3_t3(3, count_points);
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> X3dt3(1, count_points);
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p3dt3(1, count_points);
-    float numerator = 0;
-    float denominator = 0;
+
+    float num = 0;
+    float den = 0;
 
     for (int i = 0; i < count_points; ++i)
     {
@@ -352,14 +332,12 @@ void R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eige
         p3_t3.col(i) = p3.col(i).cross(c2.col(3));
         X3dt3(0, i) = p3_X3.col(i).dot(p3_t3.col(i));
         p3dt3(0, i) = p3_t3.col(i).dot(p3_t3.col(i));
-        numerator -= X3dt3(0, i);
-        denominator += p3dt3(0, i);
+        num -= X3dt3(0, i);
+        den += p3dt3(0, i);
     }
 
-    c2.col(3) = (numerator / denominator) * c2.col(3);
+    c2.col(3) = (num / den) * c2.col(3);
 }
-
-
 
 
 
@@ -464,7 +442,7 @@ compute_TFT
 
     build_A(points_nc_base, count, A.data());
     linear_TFT(A, TFT); // OK
-    R_t_from_TFT(TFT, points_nc, count, P2, P3);
+    R_t_from_TFT(TFT, points_nc, count, P2, P3); // OK
     float scale = compute_scale(map_nc, map_3D, count, P2.data());
     //scale = 1.0;
 
