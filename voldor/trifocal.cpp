@@ -270,7 +270,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
 }
 
 // OK
-void R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c1, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c2)
+float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c1, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c2)
 {
     Eigen::Matrix<float, 3, 2> e;
 
@@ -335,7 +335,11 @@ void R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eige
         den += p3dt3(0, i);
     }
 
-    c2.col(3) = (num / den) * c2.col(3);
+    float scale = num / den;
+
+    c2.col(3) = scale * c2.col(3);
+
+    return scale;
 }
 
 // OK
@@ -435,7 +439,7 @@ compute_TFT
 
     build_A(points_nc_base, count, A.data());
     linear_TFT(A, TFT); // OK
-    R_t_from_TFT(TFT, points_nc, count, P2, P3); // OK
+    float local_scale = R_t_from_TFT(TFT, points_nc, count, P2, P3); // OK
     float scale = compute_scale(map_nc, map_3D, count, P2.data());
     //float scale = 1.0;
 
