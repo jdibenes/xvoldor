@@ -1,4 +1,11 @@
 
+//
+// TODO: restore NDEBUG 
+//
+
+
+#define EIGEN_NO_AUTOMATIC_RESIZING
+
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <Eigen/Eigen>
@@ -143,9 +150,9 @@ void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT,
     Eigen::Matrix<float, 3, 3> t2 = TFT(Eigen::seqN( 9, 9)).reshaped(3, 3);
     Eigen::Matrix<float, 3, 3> t3 = TFT(Eigen::seqN(18, 9)).reshaped(3, 3);
 
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t1 = t1.jacobiSvd(Eigen::ComputeThinV | Eigen::ComputeThinU);
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t2 = t2.jacobiSvd(Eigen::ComputeThinV | Eigen::ComputeThinU);
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t3 = t3.jacobiSvd(Eigen::ComputeThinV | Eigen::ComputeThinU);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t1 = t1.jacobiSvd(Eigen::ComputeFullV | Eigen::ComputeFullU);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t2 = t2.jacobiSvd(Eigen::ComputeFullV | Eigen::ComputeFullU);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t3 = t3.jacobiSvd(Eigen::ComputeFullV | Eigen::ComputeFullU);
 
     Eigen::Matrix<float, 3, 3> vx;
     Eigen::Matrix<float, 3, 3> ux;
@@ -158,8 +165,8 @@ void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT,
           (-svd_t2.matrixU().col(2)),
           (-svd_t3.matrixU().col(2));
 
-    e << (-ux.jacobiSvd(Eigen::ComputeThinU).matrixU().col(2)),
-         (-vx.jacobiSvd(Eigen::ComputeThinU).matrixU().col(2));
+    e << (-ux.jacobiSvd(Eigen::ComputeFullU).matrixU().col(2)),
+         (-vx.jacobiSvd(Eigen::ComputeFullU).matrixU().col(2));
 }
 
 // OK
@@ -195,7 +202,7 @@ void cross_matrix(Eigen::Ref<const Eigen::Matrix<float, 3, 1>> const& v, Eigen::
 }
 
 // OK
-void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> points_H3D)
+void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras, Eigen::Ref<const Eigen::Matrix<float, 4, 7>> const& points_2D, Eigen::Ref<Eigen::Matrix<float, 4, 7>> points_H3D)
 {
     Eigen::Matrix<float, 2 * 2, 4> ls_matrix;
     Eigen::Matrix<float, 2, 3> L
@@ -204,7 +211,7 @@ void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras
         {1.0f,  0.0f, 0.0f},
     };
 
-    for (int n = 0; n < count_points; ++n)
+    for (int n = 0; n < 7; ++n)
     {
         for (int i = 0; i < 2; ++i)
         {
@@ -213,12 +220,12 @@ void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras
 
             ls_matrix(Eigen::seqN((i * 2) + 0, 2), Eigen::all) = L * cameras(Eigen::all, Eigen::seqN((i * 4) + 0, 4));
         }
-        points_H3D.col(n) = ls_matrix.bdcSvd(Eigen::ComputeThinV).matrixV().col(3);
+        points_H3D.col(n) = ls_matrix.bdcSvd(Eigen::ComputeFullV).matrixV().col(3);
     }
 }
 
 // OK
-void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> P, Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> points_H3D)
+void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Ref<const Eigen::Matrix<float, 4, 7>> const& points_2D, Eigen::Ref<Eigen::Matrix<float, 3, 4>> P, Eigen::Ref<Eigen::Matrix<float, 4, 7>> points_H3D)
 {
     Eigen::Matrix<float, 3, 3> W
     {
@@ -227,7 +234,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
         {0.0f,  0.0f, 1.0f},
     };
 
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> E_svd = E.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> E_svd = E.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
     Eigen::Matrix<float, 3, 3> U  = E_svd.matrixU();
     Eigen::Matrix<float, 3, 3> Vt = E_svd.matrixV().transpose();
 
@@ -243,7 +250,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
     Eigen::Matrix<float, 3, 4> P0 = Eigen::Matrix<float, 3, 4>::Identity();
     Eigen::Matrix<float, 3, 4> P1;
     Eigen::Matrix<float, 3, 4 * 2> PX;
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> XYZW(4, count_points);
+    Eigen::Matrix<float, 4, 7> XYZW;
 
     int64_t max_count = -1;
 
@@ -259,7 +266,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
 
         PX << P0, P1;
 
-        triangulate(PX, points_2D, count_points, XYZW); // OK
+        triangulate(PX, points_2D, XYZW); // OK
 
         int64_t count = (XYZW.colwise().hnormalized().row(2).array() > 0).count() + ((P1 * XYZW).row(2).array() > 0).count();
         if (count < max_count) { continue; }
@@ -271,7 +278,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
 }
 
 // OK
-float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c1, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c2)
+float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eigen::Ref<const Eigen::Matrix<float, 6, 7>> const& points_2D, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c1, Eigen::Ref<Eigen::Matrix<float, 3, 4>> c2)
 {
     Eigen::Matrix<float, 3, 2> e;
 
@@ -301,32 +308,32 @@ float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eig
     Eigen::Matrix<float, 3, 3> E21 = epi21_x * D21;
     Eigen::Matrix<float, 3, 3> E31 = epi31_x * D31;
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p21(4, count_points);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p31(4, count_points);
+    Eigen::Matrix<float, 4, 7> p21;
+    Eigen::Matrix<float, 4, 7> p31;
 
     p21 << points_2D(Eigen::seqN(0, 2), Eigen::all), points_2D(Eigen::seqN(2, 2), Eigen::all);
     p31 << points_2D(Eigen::seqN(0, 2), Eigen::all), points_2D(Eigen::seqN(4, 2), Eigen::all);
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p3DH(4, count_points);
+    Eigen::Matrix<float, 4, 7> p3DH(4, 7);
 
-    R_t_from_E(E31, p31, count_points, c2, p3DH); // OK
-    R_t_from_E(E21, p21, count_points, c1, p3DH); // OK
+    R_t_from_E(E31, p31, c2, p3DH); // OK
+    R_t_from_E(E21, p21, c1, p3DH); // OK
 
-    Eigen::Matrix<float, 3, Eigen::Dynamic> X3(3, count_points);
-    Eigen::Matrix<float, 3, Eigen::Dynamic> p3(3, count_points);
+    Eigen::Matrix<float, 3, 7> X3;
+    Eigen::Matrix<float, 3, 7> p3;
 
     X3 = c2(Eigen::all, Eigen::seqN(0, 3)) * p3DH.colwise().hnormalized();
     p3 = points_2D(Eigen::seqN(4, 2), Eigen::all).colwise().homogeneous();
 
-    Eigen::Matrix<float, 3, Eigen::Dynamic> p3_X3(3, count_points);
-    Eigen::Matrix<float, 3, Eigen::Dynamic> p3_t3(3, count_points);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> X3dt3(1, count_points);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p3dt3(1, count_points);
+    Eigen::Matrix<float, 3, 7> p3_X3;
+    Eigen::Matrix<float, 3, 7> p3_t3;
+    Eigen::Matrix<float, 1, 7> X3dt3;
+    Eigen::Matrix<float, 1, 7> p3dt3;
 
     float num = 0;
     float den = 0;
 
-    for (int i = 0; i < count_points; ++i)
+    for (int i = 0; i < 7; ++i)
     {
         p3_X3.col(i) = p3.col(i).cross(X3.col(i));
         p3_t3.col(i) = p3.col(i).cross(c2.col(3));
@@ -449,7 +456,7 @@ trifocal_R_t
 
     build_A(points_nc_base, count, A); // OK
     linear_TFT(A, TFT); // OK
-    float local_scale = R_t_from_TFT(TFT, points_nc, count, P2, P3); // OK
+    float local_scale = R_t_from_TFT(TFT, points_nc, P2, P3); // OK
     float scale = compute_scale(map_nc, map_3D, count, P2.data());
 
 
