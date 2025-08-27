@@ -9,8 +9,10 @@
 //-----------------------------------------------------------------------------
 
 // OK
-void build_A(float const* points_2D, int count, float* A)
+void build_A(float const* points_2D, int count, Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> result)
 {
+    float* A = result.data();
+
     for (int i = 0; i < count; ++i)
     {
         float x1 = points_2D[(i * 6) + 0];
@@ -146,12 +148,11 @@ void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT,
     Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t3 = t3.jacobiSvd(Eigen::ComputeThinV | Eigen::ComputeThinU);
 
     Eigen::Matrix<float, 3, 3> vx;
+    Eigen::Matrix<float, 3, 3> ux;
 
     vx << ( svd_t1.matrixV().col(2)),
           ( svd_t2.matrixV().col(2)),
           ( svd_t3.matrixV().col(2));
-
-    Eigen::Matrix<float, 3, 3> ux;
 
     ux << (-svd_t1.matrixU().col(2)),
           (-svd_t2.matrixU().col(2)),
@@ -175,7 +176,8 @@ void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dyn
 
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> E(27, 18);
 
-    E << Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3)), Eigen::kroneckerProduct(I9, -e.col(0));
+    E << Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3)),
+         Eigen::kroneckerProduct(I9,                        -e.col(0)); // TODO?
 
     Eigen::BDCSVD<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> svd_E = E.bdcSvd(Eigen::ComputeThinU);
     if (threshold > 0) { svd_E.setThreshold(threshold); }
@@ -196,7 +198,8 @@ void cross_matrix(Eigen::Ref<const Eigen::Matrix<float, 3, 1>> const& v, Eigen::
 void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> points_H3D)
 {
     Eigen::Matrix<float, 2 * 2, 4> ls_matrix;
-    Eigen::Matrix<float, 2, 3> L{
+    Eigen::Matrix<float, 2, 3> L
+    {
         {0.0f, -1.0f, 0.0f},
         {1.0f,  0.0f, 0.0f},
     };
@@ -220,7 +223,8 @@ void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras
 // OK
 void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> P, Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> points_H3D)
 {
-    Eigen::Matrix<float, 3, 3> W{
+    Eigen::Matrix<float, 3, 3> W
+    {
         {0.0f, -1.0f, 0.0f},
         {1.0f,  0.0f, 0.0f},
         {0.0f,  0.0f, 1.0f},
@@ -342,6 +346,12 @@ float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eig
     return scale;
 }
 
+
+
+
+
+
+
 // OK
 float compute_scale(float const* points_2D, float const* points_3D, int count, float* RT01)
 {
@@ -398,7 +408,7 @@ float compute_scale(float const* points_2D, float const* points_3D, int count, f
 
 
 void
-compute_TFT
+trifocal_R_t
 (
     float const* points_2D,
     int count,
@@ -440,7 +450,7 @@ compute_TFT
     Eigen::Matrix<float, 3, 4> P2;
     Eigen::Matrix<float, 3, 4> P3;
 
-    build_A(points_nc_base, count, A.data());
+    build_A(points_nc_base, count, A); // OK
     linear_TFT(A, TFT); // OK
     float local_scale = R_t_from_TFT(TFT, points_nc, count, P2, P3); // OK
     float scale = compute_scale(map_nc, map_3D, count, P2.data());

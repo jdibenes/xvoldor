@@ -2,7 +2,7 @@
 #pragma once
 
 void
-compute_TFT
+trifocal_R_t
 (
     float const* points_2D,
     int count,
