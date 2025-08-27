@@ -177,11 +177,11 @@ void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dyn
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> E(27, 18);
 
     E << Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3)),
-         Eigen::kroneckerProduct(I9,                        -e.col(0)); // TODO?
+         Eigen::kroneckerProduct(I9,                        -e.col(0));
 
     Eigen::BDCSVD<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> svd_E = E.bdcSvd(Eigen::ComputeThinU);
     if (threshold > 0) { svd_E.setThreshold(threshold); }
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Up = svd_E.matrixU()(Eigen::all, Eigen::seq(0, svd_E.rank() - 1));
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Up = svd_E.matrixU()(Eigen::all, Eigen::seqN(0, svd_E.rank()));
 
     result = Up * ((A.transpose() * Up).bdcSvd(Eigen::ComputeThinV).matrixV()(Eigen::all, Eigen::last));
 }
@@ -206,16 +206,13 @@ void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras
 
     for (int n = 0; n < count_points; ++n)
     {
-        L(0, 2) =  points_2D((0 * 2) + 1, n);
-        L(1, 2) = -points_2D((0 * 2) + 0, n);
+        for (int i = 0; i < 2; ++i)
+        {
+            L(0, 2) =  points_2D((i * 2) + 1, n);
+            L(1, 2) = -points_2D((i * 2) + 0, n);
 
-        ls_matrix(Eigen::seq((0 * 2) + 0, (0 * 2) + 1), Eigen::all) = L * cameras(Eigen::all, Eigen::seq((0 * 4) + 0, (0 * 4) + 3));
-
-        L(0, 2) =  points_2D((1 * 2) + 1, n);
-        L(1, 2) = -points_2D((1 * 2) + 0, n);
-
-        ls_matrix(Eigen::seq((1 * 2) + 0, (1 * 2) + 1), Eigen::all) = L * cameras(Eigen::all, Eigen::seq((1 * 4) + 0, (1 * 4) + 3));
-
+            ls_matrix(Eigen::seqN((i * 2) + 0, 2), Eigen::all) = L * cameras(Eigen::all, Eigen::seqN((i * 4) + 0, 4));
+        }
         points_H3D.col(n) = ls_matrix.bdcSvd(Eigen::ComputeThinV).matrixV().col(3);
     }
 }
@@ -234,7 +231,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
     Eigen::Matrix<float, 3, 3> U  = E_svd.matrixU();
     Eigen::Matrix<float, 3, 3> Vt = E_svd.matrixV().transpose();
 
-    Eigen::Matrix<float, 3, 3> R1 = U * W * Vt;
+    Eigen::Matrix<float, 3, 3> R1 = U * W             * Vt;
     Eigen::Matrix<float, 3, 3> R2 = U * W.transpose() * Vt;
 
     if (R1.determinant() < 0) { R1 = -R1; }
@@ -307,8 +304,8 @@ float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eig
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p21(4, count_points);
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p31(4, count_points);
 
-    p21 << points_2D(Eigen::seq(0, 1), Eigen::all), points_2D(Eigen::seq(2, 3), Eigen::all);
-    p31 << points_2D(Eigen::seq(0, 1), Eigen::all), points_2D(Eigen::seq(4, 5), Eigen::all);
+    p21 << points_2D(Eigen::seqN(0, 2), Eigen::all), points_2D(Eigen::seqN(2, 2), Eigen::all);
+    p31 << points_2D(Eigen::seqN(0, 2), Eigen::all), points_2D(Eigen::seqN(4, 2), Eigen::all);
 
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> p3DH(4, count_points);
 
@@ -318,8 +315,8 @@ float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT, Eig
     Eigen::Matrix<float, 3, Eigen::Dynamic> X3(3, count_points);
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3(3, count_points);
 
-    X3 = c2(Eigen::all, Eigen::seq(0, 2)) * p3DH.colwise().hnormalized();
-    p3 = points_2D(Eigen::seq(4, 5), Eigen::all).colwise().homogeneous();
+    X3 = c2(Eigen::all, Eigen::seqN(0, 3)) * p3DH.colwise().hnormalized();
+    p3 = points_2D(Eigen::seqN(4, 2), Eigen::all).colwise().homogeneous();
 
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3_X3(3, count_points);
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3_t3(3, count_points);
@@ -500,3 +497,72 @@ void print_TFT(float const* TFT)
     }
     std::cout << "]" << std::endl;
 }
+
+
+/*
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> E = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>::Zero(27, 18);
+
+    float* pE = E.data();
+
+    float e_01 =  e(0, 1);
+    float e_11 =  e(1, 1);
+    float e_21 =  e(2, 1);
+    float e_00 = -e(0, 0);
+    float e_10 = -e(1, 0);
+    float e_20 = -e(2, 0);
+
+    pE[  0 +   0 +  0 + 0] = e_01;
+    pE[  0 +   0 + 27 + 1] = e_01;
+    pE[  0 +   0 + 54 + 2] = e_01;
+    pE[  0 +   3 +  0 + 0] = e_11;
+    pE[  0 +   3 + 27 + 1] = e_11;
+    pE[  0 +   3 + 54 + 2] = e_11;
+    pE[  0 +   6 +  0 + 0] = e_21;
+    pE[  0 +   6 + 27 + 1] = e_21;
+    pE[  0 +   6 + 54 + 2] = e_21;
+    pE[ 81 +   9 +  0 + 0] = e_01;
+    pE[ 81 +   9 + 27 + 1] = e_01;
+    pE[ 81 +   9 + 54 + 2] = e_01;
+    pE[ 81 +  12 +  0 + 0] = e_11;
+    pE[ 81 +  12 + 27 + 1] = e_11;
+    pE[ 81 +  12 + 54 + 2] = e_11;
+    pE[ 81 +  15 +  0 + 0] = e_21;
+    pE[ 81 +  15 + 27 + 1] = e_21;
+    pE[ 81 +  15 + 54 + 2] = e_21;
+    pE[162 +  18 +  0 + 0] = e_01;
+    pE[162 +  18 + 27 + 1] = e_01;
+    pE[162 +  18 + 54 + 2] = e_01;
+    pE[162 +  21 +  0 + 0] = e_11;
+    pE[162 +  21 + 27 + 1] = e_11;
+    pE[162 +  21 + 54 + 2] = e_11;
+    pE[162 +  24 +  0 + 0] = e_21;
+    pE[162 +  24 + 27 + 1] = e_21;
+    pE[162 +  24 + 54 + 2] = e_21;
+    pE[243 +   0 +  0 + 0] = e_00;
+    pE[243 +   0 +  0 + 1] = e_10;
+    pE[243 +   0 +  0 + 2] = e_20;
+    pE[243 +  27 +  3 + 0] = e_00;
+    pE[243 +  27 +  3 + 1] = e_10;
+    pE[243 +  27 +  3 + 2] = e_20;
+    pE[243 +  54 +  6 + 0] = e_00;
+    pE[243 +  54 +  6 + 1] = e_10;
+    pE[243 +  54 +  6 + 2] = e_20;
+    pE[243 +  81 +  9 + 0] = e_00;
+    pE[243 +  81 +  9 + 1] = e_10;
+    pE[243 +  81 +  9 + 2] = e_20;
+    pE[243 + 108 + 12 + 0] = e_00;
+    pE[243 + 108 + 12 + 1] = e_10;
+    pE[243 + 108 + 12 + 2] = e_20;
+    pE[243 + 135 + 15 + 0] = e_00;
+    pE[243 + 135 + 15 + 1] = e_10;
+    pE[243 + 135 + 15 + 2] = e_20;
+    pE[243 + 162 + 18 + 0] = e_00;
+    pE[243 + 162 + 18 + 1] = e_10;
+    pE[243 + 162 + 18 + 2] = e_20;
+    pE[243 + 189 + 21 + 0] = e_00;
+    pE[243 + 189 + 21 + 1] = e_10;
+    pE[243 + 189 + 21 + 2] = e_20;
+    pE[243 + 216 + 24 + 0] = e_00;
+    pE[243 + 216 + 24 + 1] = e_10;
+    pE[243 + 216 + 24 + 2] = e_20;
+    */
