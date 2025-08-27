@@ -141,9 +141,9 @@ void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT,
     Eigen::Matrix<float, 3, 3> t2 = TFT(Eigen::seqN( 9, 9)).reshaped(3, 3);
     Eigen::Matrix<float, 3, 3> t3 = TFT(Eigen::seqN(18, 9)).reshaped(3, 3);
 
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t1 = t1.jacobiSvd(Eigen::ComputeFullV | Eigen::ComputeFullU);
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t2 = t2.jacobiSvd(Eigen::ComputeFullV | Eigen::ComputeFullU);
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t3 = t3.jacobiSvd(Eigen::ComputeFullV | Eigen::ComputeFullU);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t1 = t1.jacobiSvd(Eigen::ComputeThinV | Eigen::ComputeThinU);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t2 = t2.jacobiSvd(Eigen::ComputeThinV | Eigen::ComputeThinU);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> svd_t3 = t3.jacobiSvd(Eigen::ComputeThinV | Eigen::ComputeThinU);
 
     Eigen::Matrix<float, 3, 3> vx;
 
@@ -157,14 +157,14 @@ void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& TFT,
           (-svd_t2.matrixU().col(2)),
           (-svd_t3.matrixU().col(2));
 
-    e << (-ux.jacobiSvd(Eigen::ComputeFullU).matrixU().col(2)),
-         (-vx.jacobiSvd(Eigen::ComputeFullU).matrixU().col(2));
+    e << (-ux.jacobiSvd(Eigen::ComputeThinU).matrixU().col(2)),
+         (-vx.jacobiSvd(Eigen::ComputeThinU).matrixU().col(2));
 }
 
 // OK
 void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& A, Eigen::Ref<Eigen::Matrix<float, 27, 1>> result, float threshold = 0)
 {
-    Eigen::Matrix<float, 27, 1> t = -(A.bdcSvd(Eigen::ComputeFullU).matrixU().col(26));
+    Eigen::Matrix<float, 27, 1> t = -(A.bdcSvd(Eigen::ComputeThinU).matrixU().col(26));
 
     Eigen::Matrix<float, 3, 2> e;
 
@@ -177,11 +177,11 @@ void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dyn
 
     E << Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3)), Eigen::kroneckerProduct(I9, -e.col(0));
 
-    Eigen::BDCSVD<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> svd_E = E.bdcSvd(Eigen::ComputeFullU);
+    Eigen::BDCSVD<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> svd_E = E.bdcSvd(Eigen::ComputeThinU);
     if (threshold > 0) { svd_E.setThreshold(threshold); }
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Up = svd_E.matrixU()(Eigen::all, Eigen::seq(0, svd_E.rank() - 1));
 
-    result = Up * ((A.transpose() * Up).bdcSvd(Eigen::ComputeFullV).matrixV()(Eigen::all, Eigen::last));
+    result = Up * ((A.transpose() * Up).bdcSvd(Eigen::ComputeThinV).matrixV()(Eigen::all, Eigen::last));
 }
 
 // OK
@@ -213,12 +213,12 @@ void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras
 
         ls_matrix(Eigen::seq((1 * 2) + 0, (1 * 2) + 1), Eigen::all) = L * cameras(Eigen::all, Eigen::seq((1 * 4) + 0, (1 * 4) + 3));
 
-        points_H3D.col(n) = ls_matrix.bdcSvd(Eigen::ComputeFullV).matrixV().col(3);
+        points_H3D.col(n) = ls_matrix.bdcSvd(Eigen::ComputeThinV).matrixV().col(3);
     }
 }
 
 // OK
-void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> P, Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> points_3D)
+void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& points_2D, int count_points, Eigen::Ref<Eigen::Matrix<float, 3, 4>> P, Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> points_H3D)
 {
     Eigen::Matrix<float, 3, 3> W{
         {0.0f, -1.0f, 0.0f},
@@ -226,7 +226,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
         {0.0f,  0.0f, 1.0f},
     };
 
-    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> E_svd = E.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::JacobiSVD<Eigen::Matrix<float, 3, 3>> E_svd = E.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::Matrix<float, 3, 3> U  = E_svd.matrixU();
     Eigen::Matrix<float, 3, 3> Vt = E_svd.matrixV().transpose();
 
@@ -265,7 +265,7 @@ void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, Eigen::Re
         max_count = count;
 
         P = P1;
-        points_3D = XYZW;
+        points_H3D = XYZW;
     }
 }
 
@@ -430,8 +430,11 @@ compute_TFT
         map_nc[(2 * i) + 1] = (map_2D[(2 * i) + 1] - cy[1]) / fy[1];
     }
 
-    //Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::AutoAlign | Eigen::RowMajor> A(4 * count, 27);
-    //MatrixA<float> A(4 * count, 27);
+
+
+
+
+
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> A(27, 4 * count);
     Eigen::Matrix<float, 27, 1> TFT;
     Eigen::Matrix<float, 3, 4> P2;
@@ -441,6 +444,12 @@ compute_TFT
     linear_TFT(A, TFT); // OK
     float local_scale = R_t_from_TFT(TFT, points_nc, count, P2, P3); // OK
     float scale = compute_scale(map_nc, map_3D, count, P2.data());
+
+
+
+
+
+
     //float scale = 1.0;
 
     cv::Mat R01(3, 3, CV_32FC1, P2.data()); // needs transpose
@@ -481,27 +490,3 @@ void print_TFT(float const* TFT)
     }
     std::cout << "]" << std::endl;
 }
-
-
-
-
-//t *= scale;
-
-
-
-
-
-
-
-
-
-//
-//memcpy(RT01, P2.data(), 3 * 4 * sizeof(float));
-//memcpy(RT02, P3.data(), 3 * 4 * sizeof(float));
-
-//RT01[9] *= scale;
-//RT01[10] *= scale;
-//RT01[11] *= scale;
-//RT02[9] *= scale;
-//RT02[10] *= scale;
-//RT02[11] *= scale;
