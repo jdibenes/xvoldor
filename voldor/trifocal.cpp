@@ -191,9 +191,9 @@ void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dyn
 // OK
 void cross_matrix(Eigen::Ref<const Eigen::Matrix<float, 3, 1>> const& v, Eigen::Ref<Eigen::Matrix<float, 3, 3>> M)
 {
-    M <<     0,   (-v[2]), ( v[1]),
-         ( v[2]),     0,   (-v[0]),
-         (-v[1]), ( v[0]),     0;
+    M <<     0,   (-v(2)), ( v(1)),
+         ( v(2)),     0,   (-v(0)),
+         (-v(1)), ( v(0)),     0;
 }
 
 // OK
@@ -383,6 +383,7 @@ float compute_scale(float const* points_2D, float const* points_3D, Eigen::Ref<c
 
 
 
+
 void
 trifocal_R_t
 (
@@ -436,7 +437,7 @@ trifocal_R_t
 
 
 
-    //float scale = 1.0;
+
 
     cv::Mat R01(3, 3, CV_32FC1, P2.data()); // needs transpose
     cv::Mat R02(3, 3, CV_32FC1, P3.data()); // needs transpose
