@@ -54,6 +54,7 @@ if __name__ == '__main__':
     pose_base = './poses'
     voc_file = 'hl2_5_ORBvoc.bin' #'./ORBvoc.bin'
     path_flow = os.path.join(path_base, sequence, f'flow_{toolset}')
+    path_flow_2 = os.path.join(path_base, sequence, f'flow_2_{toolset}')
     path_disp = os.path.join(path_base, sequence, f'disp_{toolset}')
     #path_disp = os.path.join(path_base, sequence, f'disp')
     path_img = os.path.join(path_base, sequence, 'img')
@@ -66,6 +67,7 @@ if __name__ == '__main__':
     cy = f'--cy {cy_val}'
     bf = f'--bf {bf_val}'
     flow_dir = f'--flow_dir {path_flow}'
+    flow_2_dir = f'--flow_2_dir {path_flow_2}'
     img_dir = f'--img_dir {path_img}'
     #disp_dir = f'--disp_dir {path_disp}'
     disp_dir = ''
@@ -77,4 +79,4 @@ if __name__ == '__main__':
     abs_resize = f'--abs_resize {abs_resize_val}'
     save_pose = f'--save_pose {fname_pose}' if (set_save_pose) else ''
 
-    os.system(f'{cmd} {fx} {fy} {cx} {cy} {bf} {flow_dir} {img_dir} {disp_dir} {mode} {enable_mapping} {enable_loop_closure} {resize} {abs_resize} {save_pose}')
+    os.system(f'{cmd} {fx} {fy} {cx} {cy} {bf} {flow_dir} {flow_2_dir} {img_dir} {disp_dir} {mode} {enable_mapping} {enable_loop_closure} {resize} {abs_resize} {save_pose}')

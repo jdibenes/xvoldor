@@ -9,10 +9,12 @@ cdef extern from "../../voldor/py_export.h":
         const float fx, const float fy, const float cx, const float cy, const float basefocal,
         const int N, const int N_dp, const int w, const int h,
         const char* config,
-        int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf)
+        int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf,
+        const float* flows_2)
 
 def voldor(
     np.ndarray[float, ndim=4] flows not None,
+    np.ndarray[float, ndim=4] flows_2 not None,
     float fx, float fy, float cx, float cy, 
     float basefocal = 0,
     np.ndarray[float, ndim=2] disparity = None,
@@ -28,6 +30,7 @@ def voldor(
     cdef int N_dp = 0 if depth_priors is None else depth_priors.shape[0]
 
     flows = np.ascontiguousarray(flows)
+    flows_2 = np.ascontiguousarray(flows_2)
     if disparity is not None:
         disparity = np.ascontiguousarray(disparity)
     if depth_priors is not None:
@@ -61,7 +64,8 @@ def voldor(
                 &poses[0,0],
                 &poses_covar[0,0,0],
                 &depth[0,0],
-                &depth_conf[0,0])
+                &depth_conf[0,0],
+                &flows_2[0,0,0,0])
 
     return {'n_registered': n_registered,
             'poses': poses[:n_registered],

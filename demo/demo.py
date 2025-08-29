@@ -3,6 +3,7 @@ import argparse
 parser = argparse.ArgumentParser(description='VOLDOR-SLAM demo script')
 parser.add_argument('--mode', type=str, required=True, help='One from stereo/mono-scaled/mono. For stereo and mono-scaled, disparity input will be required.')
 parser.add_argument('--flow_dir', type=str, required=True)
+parser.add_argument('--flow_2_dir', type=str, required=True)
 parser.add_argument('--disp_dir', type=str)
 parser.add_argument('--img_dir', type=str)
 parser.add_argument('--fx', type=float, required=True)
@@ -23,7 +24,7 @@ if opt.abs_resize is None:
 
 import sys
 sys.path.append('../slam_py')
-sys.path.append('./lib_VS_test')
+sys.path.append('./lib_VS_flow2')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
@@ -48,6 +49,10 @@ if __name__ == '__main__':
     # start flow loader
     threading.Thread(target=slam.flow_loader, kwargs={'flow_path':opt.flow_dir, 'resize':opt.resize}).start()
     slam.flow_loader_sync(0, block_when_uninit=True)
+
+    # start flow 2 loader
+    threading.Thread(target=slam.flow_2_loader, kwargs={'flow_2_path':opt.flow_dir, 'resize':opt.resize}).start()
+    slam.flow_2_loader_sync(0, block_when_uninit=True)
 
     # start image loader
     if opt.img_dir is not None:
