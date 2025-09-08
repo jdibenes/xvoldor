@@ -1,9 +1,7 @@
 
 #define EIGEN_NO_AUTOMATIC_RESIZING
 
-#include <iostream>
 #include <thread>
-#include <random>
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
 #include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
@@ -169,7 +167,7 @@ static void epipoles_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> cons
 // OK
 static void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> const& A, Eigen::Ref<Eigen::Matrix<float, 27, 1>> result, float threshold = 0)
 {
-    Eigen::Matrix<float, 27, 1> t = -(A.bdcSvd(Eigen::ComputeThinU).matrixU().col(26));
+    Eigen::Matrix<float, 27, 1> t = -(A.jacobiSvd(Eigen::ComputeFullU).matrixU().col(26)); // Previously BDC SVD
 
     Eigen::Matrix<float, 3, 2> e;
 
@@ -183,11 +181,11 @@ static void linear_TFT(Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, Eig
     E << Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3)),
          Eigen::kroneckerProduct(I9,                        -e.col(0));
 
-    Eigen::BDCSVD<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> svd_E = E.bdcSvd(Eigen::ComputeThinU);
+    Eigen::JacobiSVD<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> svd_E = E.jacobiSvd(Eigen::ComputeFullU);  // BDC SVD gives NaN sometimes, Jacobi SVD doesn't
     if (threshold > 0) { svd_E.setThreshold(threshold); }
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Up = svd_E.matrixU()(Eigen::all, Eigen::seqN(0, svd_E.rank()));
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Up = svd_E.matrixU()(Eigen::all, Eigen::seqN(0, svd_E.rank())); // Rank seems to be always 15
 
-    result = Up * ((A.transpose() * Up).bdcSvd(Eigen::ComputeThinV).matrixV()(Eigen::all, Eigen::last));
+    result = Up * ((A.transpose() * Up).jacobiSvd(Eigen::ComputeFullV).matrixV()(Eigen::all, Eigen::last)); // Previously BDC SVD
 }
 
 // OK
@@ -224,7 +222,7 @@ static void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4>> const& P0, 
         ls_matrix(Eigen::seqN(0 * 2, 2), Eigen::all) = L0 * P0;
         ls_matrix(Eigen::seqN(1 * 2, 2), Eigen::all) = L1 * P1;
 
-        XYZW = ls_matrix.bdcSvd(Eigen::ComputeFullV).matrixV().col(3);
+        XYZW = ls_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().col(3); // Previously BDC SVD
 
         p3h.col(n) = XYZW / XYZW(3);
     }
@@ -332,7 +330,7 @@ static float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& T
         den += p3_t3.dot(p3_t3);
     }
 
-    float scale = num / den;
+    float scale = num / den; // TODO: Mean or Median?
 
     c2.col(3) = scale * c2.col(3);
 
@@ -370,12 +368,12 @@ static float compute_scale(float const* p2d, float const* p3d, Eigen::Ref<const 
 
     if (valid <= 0) { return 0; }
 
-    std::sort(scales, scales + valid);
+    std::sort(scales, scales + valid); // TODO: Mean or Median?
     return scales[valid / 2];
 }
 
 // OK
-void trifocal_R_t(float const* p2d_1, float const* p2d_2, float const* p2d_3, float const* sp2d, float const* sp3d, float* tft, float* r1, float* t1, float* r2, float* t2, float* s1, float* s2)
+static void trifocal_R_t(float const* p2d_1, float const* p2d_2, float const* p2d_3, float const* sp2d, float const* sp3d, float* tft, float* r1, float* t1, float* r2, float* t2, float* s1, float* s2)
 {
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> A(27, 4 * 7);
     Eigen::Matrix<float, 27, 1> TFT;
@@ -409,21 +407,23 @@ void trifocal_R_t(float const* p2d_1, float const* p2d_2, float const* p2d_3, fl
     if (s2) { *s2 = local_scale; }
 }
 
-
-
+// OK
+bool trifocal_R_t(float const* p2d_1, float const* p2d_2, float const* p2d_3, float const* sp2d, float const* sp3d, float* tft, float* rt1, float* rt2, float* s1, float* s2)
+{
+    trifocal_R_t(p2d_1, p2d_2, p2d_3, sp2d, sp3d, tft, rt1 + 0, rt1 + 3, rt2 + 0, rt2 + 3, s1, s2);
+    return std::isfinite(rt1[0] + rt1[1] + rt1[2] + rt1[3] + rt1[4] + rt1[5] + rt2[0] + rt2[1] + rt2[2] + rt2[3] + rt2[4] + rt2[5]);
+}
 
 struct trifocal_data_map
 {
     float const* p2d_1;
     float const* p2d_2;
     float const* p2d_3;
-    float const* sp2d;
-    float const* sp3d;
+    float const* p2d_s;
+    float const* p3d_s;
     float* tft;
-    float* r1;
-    float* t1; 
-    float* r2;
-    float* t2;
+    float* rt1;
+    float* rt2;
     float* s1;
     float* s2;
     int count;
@@ -432,55 +432,35 @@ struct trifocal_data_map
 struct trifocal_job_descriptor
 {
     trifocal_data_map const* map;
+    int const* rng;
     int id;
     int start;
     int end;
     int valid;
 };
 
-static std::vector<std::mt19937> g_rng_engines;
-
-void trifocal_rng_initialize(int count, int* seeds)
-{
-    for (int i = (int)g_rng_engines.size(); i < count; ++i)
-    {
-    //    g_rng_engines.push_back(std::mt19937(seeds[i]));
-    }
-}
-
-
-
-
-
+// OK
 void trifocal_R_t_group(trifocal_job_descriptor& tjd)
 {
+    bool enable_world_scale = (tjd.map->p2d_s) && (tjd.map->p3d_s);
+
     float p2d_1[2 * 7];
     float p2d_2[2 * 7];
     float p2d_3[2 * 7];
-    float sp2d[2 * 7];
-    float sp3d[3 * 7];
+    float p2d_s[2 * 7];
+    float p3d_s[3 * 7];
 
-    //std::random_device r;
-    //std::mt19937 g(r());
-    //std::mt19937 g(tjd.seed);
-    //std::uniform_int_distribution<> d(0, tjd.map->count - 1);
-    //std::cout << "SEED: " << tjd.seed << std::endl;
-
+    float const* base_p2d_s = enable_world_scale ? p2d_s : nullptr;
+    float const* base_p3d_s = enable_world_scale ? p3d_s : nullptr;
 
     tjd.valid = 0;
-    
+
     for (int i = tjd.start; i < tjd.end; ++i)
     {
         for (int p = 0; p < 7; ++p)
         {
-            int rv = rand();
-            int q = ((float)rv / (float)RAND_MAX) * tjd.map->count;
-            //int q = d(g_rng_engines[tjd.id]);
-            if (i == tjd.start && p == 0)
-            {
-                std::cout << "ID: " << tjd.id << " PICK: " << q << std::endl;
-            }
-
+            int q = tjd.rng[(7 * i) + p];
+            
             p2d_1[(2 * p) + 0] = tjd.map->p2d_1[(2 * q) + 0];
             p2d_1[(2 * p) + 1] = tjd.map->p2d_1[(2 * q) + 1];
             p2d_2[(2 * p) + 0] = tjd.map->p2d_2[(2 * q) + 0];
@@ -488,93 +468,88 @@ void trifocal_R_t_group(trifocal_job_descriptor& tjd)
             p2d_3[(2 * p) + 0] = tjd.map->p2d_3[(2 * q) + 0];
             p2d_3[(2 * p) + 1] = tjd.map->p2d_3[(2 * q) + 1];
 
-            if (tjd.map->sp2d)
-            {
-                sp2d[(2 * p) + 0] = tjd.map->sp2d[(2 * q) + 0];
-                sp2d[(2 * p) + 1] = tjd.map->sp2d[(2 * q) + 1];
-            }
+            if (!enable_world_scale) { continue; }
 
-            if (tjd.map->sp3d)
-            {
-                sp3d[(3 * p) + 0] = tjd.map->sp3d[(3 * q) + 0];
-                sp3d[(3 * p) + 1] = tjd.map->sp3d[(3 * q) + 1];
-                sp3d[(3 * p) + 2] = tjd.map->sp3d[(3 * q) + 2];
-            }
+            p2d_s[(2 * p) + 0] = tjd.map->p2d_s[(2 * q) + 0];
+            p2d_s[(2 * p) + 1] = tjd.map->p2d_s[(2 * q) + 1];
+            p3d_s[(3 * p) + 0] = tjd.map->p3d_s[(3 * q) + 0];
+            p3d_s[(3 * p) + 1] = tjd.map->p3d_s[(3 * q) + 1];
+            p3d_s[(3 * p) + 2] = tjd.map->p3d_s[(3 * q) + 2];
         }
 
         int offset = tjd.start + tjd.valid;
 
-        float* base_sp2d = tjd.map->sp2d ? sp2d : nullptr;
-        float* base_sp3d = tjd.map->sp3d ? sp3d : nullptr;
-        float* base_tft  = tjd.map->tft  ? tjd.map->tft + (27 * offset) : nullptr;
-        float* base_s1   = tjd.map->s1   ? tjd.map->s1  + ( 1 * offset) : nullptr;
-        float* base_s2   = tjd.map->s2   ? tjd.map->s2  + ( 1 * offset) : nullptr;
-        float* base_r1   = tjd.map->r1 + (3 * offset);
-        float* base_t1   = tjd.map->t1 + (3 * offset);
-        float* base_r2   = tjd.map->r2 + (3 * offset);
-        float* base_t2   = tjd.map->t2 + (3 * offset);
+        float* base_tft  = tjd.map->tft ? tjd.map->tft + (27 * offset) : nullptr;
+        float* base_s1   = tjd.map->s1  ? tjd.map->s1  + ( 1 * offset) : nullptr;
+        float* base_s2   = tjd.map->s2  ? tjd.map->s2  + ( 1 * offset) : nullptr;
+        float* base_rt1  = tjd.map->rt1 + (6 * offset);
+        float* base_rt2  = tjd.map->rt2 + (6 * offset);
         
-        trifocal_R_t(p2d_1, p2d_2, p2d_3, base_sp2d, base_sp3d, base_tft, base_r1, base_t1, base_r2, base_t2, base_s1, base_s2);
+        bool valid = trifocal_R_t(p2d_1, p2d_2, p2d_3, base_p2d_s, base_p3d_s, base_tft, base_rt1, base_rt2, base_s1, base_s2);
 
-        if (std::isfinite(base_r1[0] + base_r1[1] + base_r1[2] + base_t1[0] + base_t1[1] + base_t1[2] + base_r2[0] + base_r2[1] + base_r2[2] + base_t2[0] + base_t2[1] + base_t2[2] + (base_s1 ? base_s1[0] : 0.0f) + (base_s2 ? base_s2[0] : 0.0f))) { tjd.valid++; }
+        tjd.valid += valid; // TODO: Notify if not valid
     }
 }
 
 // OK
-int trifocal_R_t_batch(int jobs, int workers, float const* p2d_1, float const* p2d_2, float const* p2d_3, float const* sp2d, float const* sp3d, int count, float* tft, float* r1, float* t1, float* r2, float* t2, float* s1, float* s2)
+int trifocal_R_t_batch(int jobs, int workers, float const* p2d_1, float const* p2d_2, float const* p2d_3, float const* p2d_s, float const* p3d_s, int count, float* tft, float* rt1, float* rt2, float* s1, float* s2)
 {
-    trifocal_data_map map{ p2d_1, p2d_2, p2d_3, sp2d, sp3d, tft, r1, t1, r2, t2, s1, s2, count };
+    trifocal_data_map map{ p2d_1, p2d_2, p2d_3, p2d_s, p3d_s, tft, rt1, rt2, s1, s2, count };
 
     int batch = jobs / workers;
     int spill = jobs % workers;
     int start = 0;
+    int valid = 0;
+
+    std::unique_ptr<int[]> rng = std::make_unique<int[]>(7 * jobs);
 
     std::vector<trifocal_job_descriptor> registry;
     std::vector<std::thread> threads;
+
+    for (int i = 0; i < jobs; ++i)
+    {
+        for (int p = 0; p < 7; ++p)
+        {
+            rng[(7 * i) + p] = ((float)rand() / (float)RAND_MAX) * count;
+        }
+    }
 
     for (int i = 0; i < workers; ++i)
     {
         int end = start + batch;
         if (spill > 0)
-        { 
+        {
             end++;
             spill--;
         }
         if (start >= end) { break; }
-        registry.push_back({ &map, i, start, end, 0 });
+        registry.push_back({ &map, rng.get(), i, start, end, 0 });
         start = end;
     }
 
-    std::cout << "sets: " << registry.size() << std::endl;
+    for (auto& tjd : registry)
+    {
+        threads.push_back(std::thread(trifocal_R_t_group, std::ref(tjd)));
+    }
+
+    for (auto& wtp : threads)
+    {
+        wtp.join();
+    }
 
     for (auto& tjd : registry)
     {
-        //threads.push_back(std::thread(trifocal_R_t_group, std::ref(tjd)));
-        trifocal_R_t_group(tjd);
+        if (tjd.valid <= 0) { continue; }
+
+        memmove(rt1 + (6 * valid), rt1 + (6 * tjd.start), (6 * tjd.valid) * sizeof(float));
+        memmove(rt2 + (6 * valid), rt2 + (6 * tjd.start), (6 * tjd.valid) * sizeof(float));
+
+        if (tft) { memmove(tft + (27 * valid), tft + (27 * tjd.start), (27 * tjd.valid) * sizeof(float)); }
+        if (s1)  { memmove(s1  + ( 1 * valid), s1  + ( 1 * tjd.start), ( 1 * tjd.valid) * sizeof(float)); }
+        if (s2)  { memmove(s2  + ( 1 * valid), s2  + ( 1 * tjd.start), ( 1 * tjd.valid) * sizeof(float)); }
+
+        valid += tjd.valid;
     }
 
-    //for (auto& wtp : threads)
-    //{
-    //    wtp.join();
-    //}
-
-    int offset = 0;
-
-    for (auto& tjd : registry)
-    {
-        if (tjd.valid > 0)
-        {
-            memmove(r1 + (3 * offset), r1 + (3 * tjd.start), (3 * tjd.valid) * sizeof(float));
-            memmove(t1 + (3 * offset), t1 + (3 * tjd.start), (3 * tjd.valid) * sizeof(float));
-            memmove(r2 + (3 * offset), r2 + (3 * tjd.start), (3 * tjd.valid) * sizeof(float));
-            memmove(t2 + (3 * offset), t2 + (3 * tjd.start), (3 * tjd.valid) * sizeof(float));
-            if (tft) { memmove(tft + (27 * offset), tft + (27 * tjd.start), (27 * tjd.valid) * sizeof(float)); }
-            if (s1)  { memmove(s1  + ( 1 * offset), s1  + ( 1 * tjd.start), ( 1 * tjd.valid) * sizeof(float)); }
-            if (s2)  { memmove(s2  + ( 1 * offset), s2  + ( 1 * tjd.start), ( 1 * tjd.valid) * sizeof(float)); }
-
-            offset += tjd.valid;
-        }
-    }
-
-    return offset;
+    return valid;
 }
