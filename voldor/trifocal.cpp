@@ -4,8 +4,8 @@
 #include <iostream>
 #include <thread>
 #include <random>
-#include <opencv2/opencv.hpp>
 #include <Eigen/Eigen>
+#include <Eigen/Geometry>
 #include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
 
 //-----------------------------------------------------------------------------
@@ -199,28 +199,34 @@ static void cross_matrix(Eigen::Ref<const Eigen::Matrix<float, 3, 1>> const& v, 
 }
 
 // OK
-static void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4 * 2>> const& cameras, float const* p2d_1, float const* p2d_2, Eigen::Ref<Eigen::Matrix<float, 4, 7>> p3h)
+static void triangulate(Eigen::Ref<const Eigen::Matrix<float, 3, 4>> const& P0, Eigen::Ref<const Eigen::Matrix<float, 3, 4>> const& P1, float const* p2d_1, float const* p2d_2, Eigen::Ref<Eigen::Matrix<float, 4, 7>> p3h)
 {
-    Eigen::Matrix<float, 2 * 2, 4> ls_matrix;
-    Eigen::Matrix<float, 2, 3> L
+    Eigen::Matrix<float, 2, 3> L0
     {
         {0.0f, -1.0f, 0.0f},
         {1.0f,  0.0f, 0.0f},
     };
+    Eigen::Matrix<float, 2, 3> L1
+    {
+        {0.0f, -1.0f, 0.0f},
+        {1.0f,  0.0f, 0.0f},
+    };
+    Eigen::Matrix<float, 2 * 2, 4> ls_matrix;
+    Eigen::Matrix<float, 4, 1> XYZW;
 
     for (int n = 0; n < 7; ++n)
     {
-        L(0, 2) =  p2d_1[(n * 2) + 1];
-        L(1, 2) = -p2d_1[(n * 2) + 0];
+        L0(0, 2) =  p2d_1[(n * 2) + 1];
+        L0(1, 2) = -p2d_1[(n * 2) + 0];
+        L1(0, 2) =  p2d_2[(n * 2) + 1];
+        L1(1, 2) = -p2d_2[(n * 2) + 0];
 
-        ls_matrix(Eigen::seqN(0 * 2, 2), Eigen::all) = L * cameras(Eigen::all, Eigen::seqN(0 * 4, 4));
+        ls_matrix(Eigen::seqN(0 * 2, 2), Eigen::all) = L0 * P0;
+        ls_matrix(Eigen::seqN(1 * 2, 2), Eigen::all) = L1 * P1;
 
-        L(0, 2) =  p2d_2[(n * 2) + 1];
-        L(1, 2) = -p2d_2[(n * 2) + 0];
+        XYZW = ls_matrix.bdcSvd(Eigen::ComputeFullV).matrixV().col(3);
 
-        ls_matrix(Eigen::seqN(1 * 2, 2), Eigen::all) = L * cameras(Eigen::all, Eigen::seqN(1 * 4, 4));
-
-        p3h.col(n) = ls_matrix.bdcSvd(Eigen::ComputeFullV).matrixV().col(3);
+        p3h.col(n) = XYZW / XYZW(3);
     }
 }
 
@@ -249,7 +255,6 @@ static void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, fl
 
     Eigen::Matrix<float, 3, 4> P0 = Eigen::Matrix<float, 3, 4>::Identity();
     Eigen::Matrix<float, 3, 4> P1;
-    Eigen::Matrix<float, 3, 4 * 2> PX;
     Eigen::Matrix<float, 4, 7> XYZW;
 
     int64_t max_count = -1;
@@ -264,11 +269,9 @@ static void R_t_from_E(Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E, fl
         case 3: P1 << R2, nt; break;
         }
 
-        PX << P0, P1;
+        triangulate(P0, P1, p2d_1, p2d_2, XYZW); // OK
 
-        triangulate(PX, p2d_1, p2d_2, XYZW); // OK
-
-        int64_t count = (XYZW.colwise().hnormalized().row(2).array() > 0).count() + ((P1 * XYZW).row(2).array() > 0).count();
+        int64_t count = ((P0 * XYZW).row(2).array() > 0).count() + ((P1 * XYZW).row(2).array() > 0).count();
         if (count < max_count) { continue; }
         max_count = count;
 
@@ -283,11 +286,6 @@ static float R_t_from_TFT(Eigen::Ref<const Eigen::Matrix<float, 27, 1>> const& T
     Eigen::Matrix<float, 3, 2> e;
 
     epipoles_from_TFT(TFT, e); // OK
-
-    if (e(2, 0) < 0) { e.col(0) = -e.col(0); }
-    if (e(2, 1) < 0) { e.col(1) = -e.col(1); }
-
-    e.col(1) = -e.col(1);
 
     Eigen::Matrix<float, 3, 3> epi21_x;
     Eigen::Matrix<float, 3, 3> epi31_x;
@@ -391,28 +389,28 @@ void trifocal_R_t(float const* p2d_1, float const* p2d_2, float const* p2d_3, fl
 
     if (tft) { memcpy(tft, TFT.data(), 27 * sizeof(float)); }
 
-    cv::Mat R01(3, 3, CV_32FC1, P2.data()); // needs transpose
-    cv::Mat R02(3, 3, CV_32FC1, P3.data()); // needs transpose
-    cv::Mat r01(3, 1, CV_32FC1, r1);
-    cv::Mat r02(3, 1, CV_32FC1, r2);
+    Eigen::Matrix<float, 3, 3> R2 = P2(Eigen::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R3 = P3(Eigen::all, Eigen::seqN(0, 3));
 
-    cv::Rodrigues(R01, r01);
-    cv::Rodrigues(R02, r02);
+    Eigen::AngleAxis<float> R01(R2);
+    Eigen::AngleAxis<float> R02(R3);
 
-    r01 *= -1;
-    r02 *= -1;
+    Eigen::Matrix<float, 3, 1> r01 = R01.angle() * R01.axis();
+    Eigen::Matrix<float, 3, 1> r02 = R02.angle() * R02.axis();
+    Eigen::Matrix<float, 3, 1> t01 = world_scale * P2(Eigen::all, 3);
+    Eigen::Matrix<float, 3, 1> t02 = world_scale * P3(Eigen::all, 3);
 
-    cv::Mat u01(3, 1, CV_32FC1, P2.data() + 9);
-    cv::Mat u02(3, 1, CV_32FC1, P3.data() + 9);
-    cv::Mat t01(3, 1, CV_32FC1, t1);
-    cv::Mat t02(3, 1, CV_32FC1, t2);
-
-    t01 = world_scale * u01;
-    t02 = world_scale * u02;
+    memcpy(r1, r01.data(), 3 * sizeof(float));
+    memcpy(r2, r02.data(), 3 * sizeof(float));
+    memcpy(t1, t01.data(), 3 * sizeof(float));
+    memcpy(t2, t02.data(), 3 * sizeof(float));
 
     if (s1) { *s1 = world_scale; }
     if (s2) { *s2 = local_scale; }
 }
+
+
+
 
 struct trifocal_data_map
 {
