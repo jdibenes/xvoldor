@@ -285,3 +285,8 @@ ORBvoc.yml.gz
 slam_py/install/pyvoldor_full.cpp
 /demo/lib_VS_flow2
 /demo/poses_old
+/demo/lib_VS_flow2_error_triangulation
+/demo/lib_VS_flow2_fix_triangulation
+/demo/lib_VS_flow2_fix_triangulation_mt
+/demo/lib_VS_flow2_fix_triangulation_st
+/demo/lib_VS_flow2_fix_triangulation_mt_ressl
