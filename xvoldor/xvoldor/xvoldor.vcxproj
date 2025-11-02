@@ -34,6 +34,54 @@
     <ClInclude Include="..\..\voldor\voldor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\colmap_models.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\decompositions.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\essential.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\qep.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\re3q3.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\univariate.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\bundle.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\absolute_pose.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\homography.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\hybrid_pose.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\relative_pose.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\ransac.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\sampling.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\utils.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_5p1pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_6pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_upright_4pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gp3p.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gp4ps.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\homography_4pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p1p2ll.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p2p1ll.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p2p2pl.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3ll.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3p.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3p_ding.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p4pf.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p5lp_radial.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p6lp.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_5pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_6pt_focal.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_7pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_8pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_affine_4p.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_3pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_2pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_3pt.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\threeview_hc.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\threeview_nister.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\threeview_para.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp2p.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp3ps.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp4pl.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up1p1ll.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up1p2pl.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up2p.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up4pl.cc" />
     <ClCompile Include="..\..\voldor\geometry.cpp" />
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp" />
@@ -155,7 +203,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3414\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3414\build\include;C:\Users\jcds\Documents\GitHub\xvoldor\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
