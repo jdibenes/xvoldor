@@ -24,7 +24,7 @@ if opt.abs_resize is None:
 
 import sys
 sys.path.append('../slam_py')
-sys.path.append('./lib_VS_flow2')
+sys.path.append('./lib_VS_flow2_fix_triangulation_mt_ressl')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
