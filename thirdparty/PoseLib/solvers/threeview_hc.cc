@@ -2,6 +2,8 @@
 // Created by kocur on 26-Jun-24.
 //
 
+#define __restrict__ __restrict
+
 #include "threeview_hc.h"
 #include "PoseLib/robust/bundle.h"
 #include "PoseLib/misc/essential.h"
@@ -1868,10 +1870,10 @@ namespace homotopy
         const unsigned int NVE2 = nve*nve;
 
         //initialize variables
-        double Hxt[NVEPLUS1 * nve] __attribute__((aligned(16)));
-        double x0t0xtblock[2*NVEPLUS1] __attribute__((aligned(16)));
-        double dxdt[NVEPLUS1] __attribute__((aligned(16)));
-        double dxB[nve] __attribute__((aligned(16)));
+        double Hxt[NVEPLUS1 * nve] alignas(16);//__attribute__((aligned(16)));
+        double x0t0xtblock[2*NVEPLUS1] alignas(16);//__attribute__((aligned(16)));
+        double dxdt[NVEPLUS1] alignas(16);//__attribute__((aligned(16)));
+        double dxB[nve] alignas(16);//__attribute__((aligned(16)));
         double *x0t0 = x0t0xtblock;  // t = real running in [0,1]
         double *x0 = x0t0;
         double *t0 = (double *)(x0t0 + nve);
@@ -2738,7 +2740,7 @@ bool ThreeViewRelativePoseHCEstimator::load_NN(const std::string& nn_file)
 
         // std::cout << a << " " << b << "\n";
 
-        std::vector<float> __attribute__((aligned(16))) cw(a*b);
+        std::vector<float> alignas(16)/*__attribute__((aligned(16)))*/ cw(a * b);
         for(int j=0;j<a*b;++j)
         {
             float u;
@@ -2749,7 +2751,7 @@ bool ThreeViewRelativePoseHCEstimator::load_NN(const std::string& nn_file)
 
         fnn >> a;
         fnn >> b;
-        std::vector<float> __attribute__((aligned(16))) cb(a);
+        std::vector<float> alignas(16)/*__attribute__((aligned(16)))*/ cb(a);
         for(int j=0;j<a;++j)
         {
             float u;
@@ -2763,7 +2765,7 @@ bool ThreeViewRelativePoseHCEstimator::load_NN(const std::string& nn_file)
 
         fnn >> a;
         fnn >> b;
-        std::vector<float> __attribute__((aligned(16))) cp(a);
+        std::vector<float> alignas(16)/*__attribute__((aligned(16)))*/ cp(a);
         for(int j=0;j<a;++j)
         {
             float u;
