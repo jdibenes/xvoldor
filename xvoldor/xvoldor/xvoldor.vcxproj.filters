@@ -75,6 +75,9 @@
     <ClInclude Include="..\..\voldor\trifocal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\trifocal_poselib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
@@ -128,7 +131,7 @@
     <ClCompile Include="..\..\thirdparty\PoseLib\robust\sampling.cc">
       <Filter>thirdparty\PoseLib\robust</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\thirdparty\PoseLib\robust\utils.cc">
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\pl_utils.cc">
       <Filter>thirdparty\PoseLib\robust</Filter>
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\absolute_pose.cc">
@@ -244,6 +247,9 @@
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\PoseLib\robust.cc">
       <Filter>thirdparty\PoseLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\trifocal_poselib.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
