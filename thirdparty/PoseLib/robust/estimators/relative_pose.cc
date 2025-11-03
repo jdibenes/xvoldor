@@ -43,7 +43,7 @@
 
 #include <iostream>
 #include <random>
-#include <torch/script.h>
+//#include <torch/script.h>
 
 namespace poselib {
 
@@ -303,7 +303,7 @@ void RelativePoseEstimator::refine_model(CameraPose *pose) const {
 
     refine_relpose(x1_inlier, x2_inlier, pose, bundle_opt);
 }
-
+/*
 Eigen::Vector3d ThreeViewRelativePoseEstimator::get_network_point(){
     std::vector<Eigen::Vector3f> P(5);
     std::vector<Eigen::Vector3f> Q(5);
@@ -401,7 +401,7 @@ void ThreeViewRelativePoseEstimator::generate_nn_init_delta_models(std::vector<T
         estimate_models(models);
     }
 }
-
+*/
 void ThreeViewRelativePoseEstimator::non_minimal_refinement(std::vector<CameraPose> *models) const{
     CameraPoseVector new_models;
     new_models.reserve(models->size());
@@ -520,7 +520,7 @@ void ThreeViewRelativePoseEstimator::generate_models(std::vector<ThreeViewCamera
     if (sample_sz == 4){
         x1n[4] = ((x1[sample[0]] + x1[sample[1]] + x1[sample[2]]) / 3.0).homogeneous().normalized();
         if (opt.init_net){
-            generate_nn_init_delta_models(models);
+            //generate_nn_init_delta_models(models);
             return;
         }
 
@@ -536,7 +536,7 @@ void ThreeViewRelativePoseEstimator::generate_models(std::vector<ThreeViewCamera
         }
 
         if (opt.use_net){
-            x2n[4] = get_network_point();
+            //x2n[4] = get_network_point();
         } else {
             x2n[4] = ((x2[sample[0]] + x2[sample[1]] + x2[sample[2]]) / 3.0).homogeneous().normalized();
         }
@@ -968,7 +968,7 @@ void ThreeViewRelativePoseEstimator::refine_model(ThreeViewCameraPose *pose) con
 //    std::cout << "Score after: " << score_after <<std::endl;
 //    std::cout << "Inliers after: " << inliers_after <<std::endl;
 }
-
+/*
 void ThreeViewSharedFocalRelativePoseEstimator::generate_nn_init_delta_models(std::vector<ImageTriplet> *models){
     std::vector<Eigen::Vector3f> P(5), PP(5);
     std::vector<Eigen::Vector3f> Q(5), QP(5);
@@ -1101,7 +1101,7 @@ Eigen::Vector3d ThreeViewSharedFocalRelativePoseEstimator::get_network_point(int
     Eigen::Vector3f rp = RQ1.transpose() * pred1;
     return rp.normalized().cast<double>();
 }
-
+*/
 void ThreeViewSharedFocalRelativePoseEstimator::generate_models(std::vector<ImageTriplet> *models) {
     sampler.generate_sample(&sample);
     for (size_t k = 0; k < sample_sz; ++k) {
@@ -1117,7 +1117,7 @@ void ThreeViewSharedFocalRelativePoseEstimator::generate_models(std::vector<Imag
     if (opt.init_net){
         x1n[5] = ((x1[sample[0]] + x1[sample[1]] + x1[sample[2]]) / 3.0).homogeneous().normalized();
         x1n[4] = ((x1[sample[3]] + x1[sample[1]] + x1[sample[2]]) / 3.0).homogeneous().normalized();
-        generate_nn_init_delta_models(models);
+        //generate_nn_init_delta_models(models);
         return;
     }
 
@@ -1146,7 +1146,7 @@ void ThreeViewSharedFocalRelativePoseEstimator::generate_models(std::vector<Imag
     if (sample_sz < 6){
         x1n[5] = ((x1[sample[0]] + x1[sample[1]] + x1[sample[2]]) / 3.0).homogeneous().normalized();
         if (opt.use_net){
-            x2n[5] = get_network_point(0);
+            //x2n[5] = get_network_point(0);
         } else {
             x2n[5] = ((x2[sample[0]] + x2[sample[1]] + x2[sample[2]]) / 3.0).homogeneous().normalized();
 
@@ -1156,7 +1156,7 @@ void ThreeViewSharedFocalRelativePoseEstimator::generate_models(std::vector<Imag
     if (sample_sz < 5){
         x1n[4] = ((x1[sample[3]] + x1[sample[1]] + x1[sample[2]]) / 3.0).homogeneous().normalized();
         if (opt.use_net) {
-            x2n[4] = get_network_point(3);
+            //x2n[4] = get_network_point(3);
         } else {
             x2n[4] = ((x2[sample[3]] + x2[sample[1]] + x2[sample[2]]) / 3.0).homogeneous().normalized();
         }

@@ -29,8 +29,8 @@
 #ifndef POSELIB_ROBUST_ESTIMATORS_RELATIVE_POSE_H
 #define POSELIB_ROBUST_ESTIMATORS_RELATIVE_POSE_H
 
-#include <torch/csrc/jit/api/module.h>
-#include <torch/csrc/jit/serialization/import.h>
+//#include <torch/csrc/jit/api/module.h>
+//#include <torch/csrc/jit/serialization/import.h>
 #include "PoseLib/camera_pose.h"
 #include "PoseLib/robust/sampling.h"
 #include "PoseLib/robust/utils.h"
@@ -89,7 +89,7 @@ class ThreeViewRelativePoseEstimator {
         x3s.resize(sample_sz_13);
         sample.resize(sample_sz);
         if (opt.use_net || opt.init_net){
-            module = torch::jit::load("res/epoch28_sampson.pt");
+            //module = torch::jit::load("res/epoch28_sampson.pt");
         }
 
         if (opt.use_nister > 0){
@@ -111,7 +111,7 @@ class ThreeViewRelativePoseEstimator {
     const std::vector<Point2D> &x1;
     const std::vector<Point2D> &x2;
     const std::vector<Point2D> &x3;
-    torch::jit::script::Module module;
+    //torch::jit::script::Module module;
 
     RandomSampler sampler;
     // pre-allocated vectors for sampling
@@ -129,8 +129,8 @@ class ThreeViewRelativePoseEstimator {
                   std::vector<Eigen::Vector2f> &P1, std::vector<Eigen::Vector2f> &Q1, std::vector<Eigen::Vector2f> &T1,
                   Eigen::Matrix3f &CP1, Eigen::Matrix3f &CQ1, Eigen::Matrix3f &CT1) const;
 
-    Eigen::Vector3d get_network_point();
-    void generate_nn_init_delta_models(std::vector<ThreeViewCameraPose> *models);
+    //Eigen::Vector3d get_network_point();
+    //void generate_nn_init_delta_models(std::vector<ThreeViewCameraPose> *models);
     void non_minimal_refinement(std::vector<CameraPose> *models) const;
     void lm_refinement(std::vector<CameraPose> *models) const;
 };
@@ -150,7 +150,7 @@ class ThreeViewSharedFocalRelativePoseEstimator {
         x3s.resize(sample_sz_13);
         sample.resize(sample_sz);
         if (opt.use_net || opt.init_net){
-            module = torch::jit::load("res/epoch28_sampson.pt");
+            //module = torch::jit::load("res/epoch28_sampson.pt");
         }
     }
 
@@ -167,7 +167,7 @@ class ThreeViewSharedFocalRelativePoseEstimator {
     const std::vector<Point2D> &x1;
     const std::vector<Point2D> &x2;
     const std::vector<Point2D> &x3;
-    torch::jit::script::Module module;
+    //torch::jit::script::Module module;
 
     RandomSampler sampler;
     // pre-allocated vectors for sampling
@@ -181,12 +181,12 @@ class ThreeViewSharedFocalRelativePoseEstimator {
 
     void inner_refine(ImageTriplet *image_triplet) const;
 
-    Eigen::Vector3d get_network_point(int idx_t);
+    //Eigen::Vector3d get_network_point(int idx_t);
 
     int normalize(std::vector<Eigen::Vector3f> &P, std::vector<Eigen::Vector3f> &Q, std::vector<Eigen::Vector3f> &T,
                   std::vector<Eigen::Vector2f> &P1, std::vector<Eigen::Vector2f> &Q1, std::vector<Eigen::Vector2f> &T1,
                   Eigen::Matrix3f &CP1, Eigen::Matrix3f &CQ1, Eigen::Matrix3f &CT1) const;
-    void generate_nn_init_delta_models(std::vector<ImageTriplet> *models);
+    //void generate_nn_init_delta_models(std::vector<ImageTriplet> *models);
 };
 
 class SharedFocalRelativePoseEstimator {
