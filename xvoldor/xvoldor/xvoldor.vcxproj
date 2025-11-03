@@ -30,6 +30,7 @@
     <ClInclude Include="..\..\voldor\kitti.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
     <ClInclude Include="..\..\voldor\trifocal.h" />
+    <ClInclude Include="..\..\voldor\trifocal_poselib.h" />
     <ClInclude Include="..\..\voldor\utils.h" />
     <ClInclude Include="..\..\voldor\voldor.h" />
   </ItemGroup>
@@ -48,7 +49,7 @@
     <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\relative_pose.cc" />
     <ClCompile Include="..\..\thirdparty\PoseLib\robust\ransac.cc" />
     <ClCompile Include="..\..\thirdparty\PoseLib\robust\sampling.cc" />
-    <ClCompile Include="..\..\thirdparty\PoseLib\robust\utils.cc" />
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\pl_utils.cc" />
     <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_5p1pt.cc" />
     <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_6pt.cc" />
     <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_upright_4pt.cc" />
@@ -87,6 +88,7 @@
     <ClCompile Include="..\..\voldor\main.cpp" />
     <ClCompile Include="..\..\voldor\py_export.cpp" />
     <ClCompile Include="..\..\voldor\trifocal.cpp" />
+    <ClCompile Include="..\..\voldor\trifocal_poselib.cpp" />
     <ClCompile Include="..\..\voldor\utils.cpp" />
     <ClCompile Include="..\..\voldor\voldor.cpp" />
     <ClCompile Include="x_utils.cpp" />
@@ -124,6 +126,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -204,6 +207,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3414\build\include;C:\Users\jcds\Documents\GitHub\xvoldor\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
