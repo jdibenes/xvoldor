@@ -11,4 +11,5 @@ extern int py_voldor_wrapper(
 	int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf,
 	// extension
 	// inputs
-	const float* flows_2);
+	const float* flows_2,
+	const float* disparities_pt);
