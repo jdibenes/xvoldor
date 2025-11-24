@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <Eigen/Eigen>
+#include "solver_gpm_hpc0.h"
 #include "lock.h"
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
@@ -18,8 +19,6 @@ Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
 
     return pose;
 }
-
-void planar_2_3_3(float* pa1, float* pb1, float* pa2, float* pb2, float* r01, float* t01);
 
 int main(int argc, char* argv[])
 {
@@ -67,7 +66,7 @@ int main(int argc, char* argv[])
     std::cout << p21 << std::endl;
 
 
-    planar_2_3_3(p11.data(), p11.data() + 3, p21.data(), p21.data() + 3, r.data(), t.data());
+    solver_gpm_hpc0(p11.data(), p11.data() + 3, p21.data(), p21.data() + 3, r.data(), t.data());
 
 
 
