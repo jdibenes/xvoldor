@@ -10,7 +10,8 @@ cdef extern from "../../voldor/py_export.h":
         const int N, const int N_dp, const int w, const int h,
         const char* config,
         int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf,
-        const float* flows_2)
+        const float* flows_2,
+        const float* disparities)
 
 def voldor(
     np.ndarray[float, ndim=4] flows not None,
@@ -22,6 +23,7 @@ def voldor(
     np.ndarray[float, ndim=3] depth_priors = None,
     np.ndarray[float, ndim=2] depth_prior_poses = None,
     np.ndarray[float, ndim=3] depth_prior_pconfs = None,
+    np.ndarray[float, ndim=3] disparities = None,
     str config=''):
     
     cdef int N = flows.shape[0]
@@ -39,6 +41,8 @@ def voldor(
         depth_prior_poses = np.ascontiguousarray(depth_prior_poses)
     if depth_prior_pconfs is not None:
         depth_prior_pconfs = np.ascontiguousarray(depth_prior_pconfs)
+    if disparities is not None:
+        disparities = np.ascontiguousarray(disparities)
     
     cdef np.ndarray[float, ndim=2, mode='c'] poses = \
         np.ascontiguousarray(np.zeros((N, 6), dtype=np.float32))
@@ -65,7 +69,8 @@ def voldor(
                 &poses_covar[0,0,0],
                 &depth[0,0],
                 &depth_conf[0,0],
-                &flows_2[0,0,0,0])
+                &flows_2[0,0,0,0],
+                &disparities[0,0,0] if disparities is not None else NULL)
 
     return {'n_registered': n_registered,
             'poses': poses[:n_registered],
