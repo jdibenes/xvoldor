@@ -3,7 +3,7 @@
 #include <Eigen/Eigen>
 #include "helpers_eigen.h"
 
-void planar_2_3_3(float* pa1, float* pb1, float* pa2, float* pb2, float* r01, float* t01)
+void solver_gpm_hpc0(float* pa1, float* pb1, float* pa2, float* pb2, float* r01, float* t01)
 {
     Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
     Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
