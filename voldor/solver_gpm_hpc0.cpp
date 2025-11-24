@@ -3,6 +3,14 @@
 #include <Eigen/Eigen>
 #include "helpers_eigen.h"
 
+float clamp(float v, float l, float r)
+{
+    if (v <= l) { return l; }
+    if (v >= r) { return r; }
+    return v;
+}
+
+
 void solver_gpm_hpc0(float* pa1, float* pb1, float* pa2, float* pb2, float* r01, float* t01)
 {
     Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
@@ -13,7 +21,7 @@ void solver_gpm_hpc0(float* pa1, float* pb1, float* pa2, float* pb2, float* r01,
     Eigen::Matrix<float, 3, 1> V1 = (PA1 - PB1).normalized();
     Eigen::Matrix<float, 3, 1> V2 = (PA2 - PB2).normalized();
 
-    float thetaF = std::acos(std::clamp(V1.dot(V2), -1.0f, 1.0f));
+    float thetaF = std::acos(clamp(V1.dot(V2), -1.0f, 1.0f));
 
     Eigen::Matrix<float, 3, 1> kF = V1.cross(V2).normalized();
 
@@ -41,7 +49,7 @@ void solver_gpm_hpc0(float* pa1, float* pb1, float* pa2, float* pb2, float* r01,
 
     Eigen::Matrix<float, 3, 1> kR = ((sF_2 * cs * kF) + (cF_2 * cc * V1) + (sF_2 * cc * kG)).normalized();
 
-    float thetaR = 2 * std::acos(std::clamp((cs * cF_2) / std::sqrt((cc * cc) + (cs * cs)), -1.0f, 1.0f));
+    float thetaR = 2 * std::acos(clamp((cs * cF_2) / std::sqrt((cc * cc) + (cs * cs)), -1.0f, 1.0f));
 
     Eigen::Matrix<float, 3, 1> r = kR * thetaR;
     Eigen::Matrix<float, 3, 1> t = ((PA2 + PB2) - (Eigen::AngleAxis<float>(thetaR, kR).toRotationMatrix() * (PA1 + PB1))) / 2.0f;
