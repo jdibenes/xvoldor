@@ -10,7 +10,8 @@ VOLDOR::init
 	std::vector<cv::Mat> _depth_priors,
 	std::vector<cv::Vec6f> _depth_prior_poses,
 	std::vector<cv::Mat> _depth_prior_pconfs,
-	std::vector<cv::Mat> _flows_2
+	std::vector<cv::Mat> _flows_2,
+	std::vector<cv::Mat> _disparities
 )
 {
 
@@ -19,6 +20,7 @@ VOLDOR::init
 	rigidnesses.clear();
 	cams.clear();
 	flows_2.clear();
+	disparities.clear();
 
 	iters_cur = 0;
 	iters_remain = cfg.max_iters;
@@ -29,6 +31,11 @@ VOLDOR::init
 	{
 		std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
 		throw;
+	}
+
+	if (cfg.resize_factor != 1)
+	{
+		std::cout << "WARNING resize_factor != 1" << std::endl;
 	}
 
 	// copy flows
@@ -43,6 +50,13 @@ VOLDOR::init
 		}
 		flows.push_back(flow);
 		flows_2.push_back(flow_2);
+	}
+
+	// copy disparities
+	for (int i = 0; i < _disparities.size(); i++)
+	{
+		cv::Mat depth = cfg.basefocal / _disparities[i];
+		disparities.push_back(depth);
 	}
 
 	// convert disparity to general depth prior
