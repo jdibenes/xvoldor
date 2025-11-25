@@ -14,7 +14,7 @@ Eigen::Matrix<_scalar, _rows, _cols> matrix_from_buffer(_scalar const* data, int
 template <typename _scalar, int _rows, int _cols>
 void matrix_to_buffer(Eigen::Matrix<_scalar, _rows, _cols> const& M, _scalar* data)
 {
-    int rows = M.rows();
-    int cols = M.cols();
+    Eigen::Index rows = M.rows();
+    Eigen::Index cols = M.cols();
     memcpy(data, M.data(), sizeof(_scalar) * rows * cols);
 }
