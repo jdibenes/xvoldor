@@ -16,7 +16,8 @@ optimize_camera_pose
 	bool update_batch_instance,
 	bool update_iter_instance,
 	Config const& cfg,
-	std::vector<cv::Mat> const& flows_2
+	std::vector<cv::Mat> const& flows_2,
+	std::vector<cv::Mat> const& disparities
 );
 
 void estimate_depth_closed_form(cv::Mat flow, cv::Mat& depth, Camera cam,
