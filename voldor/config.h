@@ -25,8 +25,10 @@ struct Config
 	// input-params
 	float resize_factor = 1.0f; //(deprecated, now resize is done in slam logic)
 	float abs_resize_factor = 1.0f; //resize factor related to the size that optical flow is estimated from. (useful to residual model)
-	float fx = 0.0f, fy = 0.0f;
-	float cx = 0.0f, cy = 0.0f;
+	float fx = 0.0f;
+	float fy = 0.0f;
+	float cx = 0.0f;
+	float cy = 0.0f;
 	int exclusive_gpu_context = true; //if only one voldor instance is running under the gpu context, set this to true, a lot of optimization will be applied
 
 	// debug related
