@@ -7,32 +7,30 @@ int
 py_voldor_wrapper
 (
 	// inputs
-	const float* flows_1_pt,
-	const float* disparity_pt,
-	const float* disparity_pconf_pt,
-	const float* depth_priors_pt,
-	const float* depth_prior_poses_pt,
-	const float* depth_prior_pconfs_pt,
-	const float fx,
-	const float fy,
-	const float cx,
-	const float cy,
-	const float basefocal,
-	const int N,
-	const int N_dp,
-	const int w,
-	const int h,
-	const char* config_pt,
+	float const* flows_1_pt,
+	float const* flows_2_pt,
+	float const* disparities_pt,
+	float const* disparity_pt,
+	float const* disparity_pconf_pt,
+	float const* depth_priors_pt,
+	float const* depth_prior_poses_pt,
+	float const* depth_prior_pconfs_pt,
+	float const fx,
+	float const fy,
+	float const cx,
+	float const cy,
+	float const basefocal,
+	int const N,
+	int const N_dp,
+	int const w,
+	int const h,
+	char const* config_pt,
 	// outputs
 	int& n_registered,
 	float* poses_pt,
 	float* poses_covar_pt,
 	float* depth_pt,
-	float* depth_conf_pt,
-	// Extended
-	// inputs
-	const float* flows_2_pt,
-	const float* disparities_pt
+	float* depth_conf_pt
 )
 {
 	std::istringstream iss(config_pt);
