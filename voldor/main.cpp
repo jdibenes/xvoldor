@@ -91,6 +91,8 @@ int main(int argc, char* argv[]) {
 
 	py_voldor_wrapper(
 		flows_pt,
+		flows_2_pt,
+		disparities_pt,
 		disparity_pt,
 		nullptr,
 		nullptr,
@@ -101,9 +103,7 @@ int main(int argc, char* argv[]) {
 		poses,
 		poses_covar,
 		depth,
-		depth_conf,
-		flows_2_pt,
-		disparities_pt
+		depth_conf
 	);
 
 	std::cout << "registered " << n_registered << std::endl;
