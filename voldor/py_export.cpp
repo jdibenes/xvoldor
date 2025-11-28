@@ -43,6 +43,7 @@ py_voldor_wrapper
 	cfg.fy = fy;
 	cfg.cy = cy;
 	cfg.basefocal = basefocal;
+
 	cfg.read_config(cfg_strs);
 
 	std::vector<cv::Mat> flows_1;
