@@ -489,13 +489,13 @@ class VOLDOR_SLAM:
                     raise 'Disparity loader not working or files are missing.'
             py_voldor_kwargs = {
                 'flows'   : np.stack(self.flows[  self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0),
-                'flows_2' : np.stack(self.flows_2[self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0),
+                'flows_2' : np.stack(self.flows_2[self.fid_cur:self.fid_cur+self.voldor_winsize-1], axis=0),
                 'fx':self.fx, 'fy':self.fy, 'cx':self.cx, 'cy':self.cy, 'basefocal':self.basefocal,
                 'disparity' : self.disps[self.fid_cur] if self.mode=='stereo' else None,
                 'depth_priors' : np.stack(depth_priors, axis=0) if len(depth_priors)>0 else None,
                 'depth_prior_pconfs' : np.stack(depth_prior_pconfs, axis=0) if len(depth_prior_pconfs)>0 else None,
                 'depth_prior_poses' : np.stack(depth_prior_poses, axis=0) if len(depth_prior_poses)>0 else None,
-                'disparities' : np.stack(self.disps[  self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0) if self.mode=='stereo' else None,
+                'disparities' : np.stack(self.disps[  self.fid_cur:self.fid_cur+self.voldor_winsize+1], axis=0) if self.mode=='stereo' else None,
                 'config' : self.voldor_config + ' ' + self.voldor_user_config}
 
             py_voldor_funmap = partial(pyvoldor.voldor, **py_voldor_kwargs)
