@@ -6,6 +6,14 @@ struct Config
 {
 	//vector<string> flow_names;
 	int multiview_mode = 2; // 2: binocular, 3: trifocal
+	int cpu_p3p = false; //do p3p on cpu
+	int lambdatwist = true; //use lambdatwist instead of ap3p
+	int solver_select = 0;
+
+	int trifocal_index_0 = 0;
+	int trifocal_index_1 = 0;
+	int trifocal_index_2 = 0;
+	float trifocal_squared_error_thresh = 0.0f;
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
@@ -45,8 +53,6 @@ struct Config
 	int norm_world_scale = true; //normalize mean translation norm to 1.0, improve the robustness for monocular initialization
 
 	// pose sampling related
-	int cpu_p3p = false; //do p3p on cpu
-	int lambdatwist = true; //use lambdatwist instead of ap3p
 	int n_poses_to_sample = 8192;
 	float pose_sample_min_depth = 0.1f;
 	float pose_sample_max_depth = 1000.0f;
