@@ -1,3 +1,4 @@
+
 #include "geometry.h"
 #include "../gpu-kernels/gpu_kernels.h"
 #include "../lambdatwist/lambdatwist_p4p.h"
@@ -5,7 +6,8 @@
 //#include "trifocal_poselib.h"
 
 
-int
+static
+void
 collect_p3p_correspondences
 (
 	std::vector<cv::Mat> const& flows_1,
@@ -19,12 +21,12 @@ collect_p3p_correspondences
 	bool update_batch_instance,
 	bool update_iter_instance,
 	Config const& cfg,
-	cv::Mat& pts2_map,
-	cv::Mat& pts3_map,	
-	cv::Mat& trifocal_0_map,
-	cv::Mat& trifocal_1_map,
-	cv::Mat& trifocal_2_map,
-	cv::Mat& trifocal_squared_error
+	std::vector<cv::Point2f>& pts2_map,
+	std::vector<cv::Point3f>& pts3_map,
+	std::vector<cv::Point3f>& trifocal_0_map,
+	std::vector<cv::Point3f>& trifocal_1_map,
+	std::vector<cv::Point3f>& trifocal_2_map,
+	std::vector<float>& trifocal_squared_error
 )
 {
 	int const w = flows_1[0].cols;
@@ -66,6 +68,15 @@ collect_p3p_correspondences
 		h_ts[i] = (float*)cams[i].t.data;
 	}
 
+	pts2_map.resize(w * h);
+	pts3_map.resize(w * h);
+
+	trifocal_0_map.resize(w * h);
+	trifocal_1_map.resize(w * h);
+	trifocal_2_map.resize(w * h);
+
+	trifocal_squared_error.resize(w * h);
+
 	if (update_batch_instance) {
 		collect_p3p_instances
 		(
@@ -75,8 +86,8 @@ collect_p3p_correspondences
 			(float*)cams[0].K.data,
 			h_Rs,
 			h_ts,
-			(float*)pts2_map.data,
-			(float*)pts3_map.data,
+			(float*)pts2_map.data(),
+			(float*)pts3_map.data(),
 			n_flows,
 			w,
 			h,
@@ -87,16 +98,16 @@ collect_p3p_correspondences
 			cfg.pose_sample_max_depth,
 			cfg.max_trace_on_flow,
 			h_flows_2,
-			(float*)trifocal_0_map.data,
-			(float*)trifocal_1_map.data,
-			(float*)trifocal_2_map.data,
+			(float*)trifocal_0_map.data(),
+			(float*)trifocal_1_map.data(),
+			(float*)trifocal_2_map.data(),
 			h_disparities,
-			NULL,
-			0,
-			0,
-			1,
-			0,
-			0
+			trifocal_squared_error.data(),
+			cfg.multiview_mode == 3,
+			cfg.trifocal_index_0,
+			cfg.trifocal_index_1,
+			cfg.trifocal_index_2,
+			cfg.trifocal_squared_error_thresh
 		);
 	}
 	else if (update_iter_instance) {
@@ -108,8 +119,8 @@ collect_p3p_correspondences
 			NULL,
 			h_Rs,
 			h_ts,
-			(float*)pts2_map.data,
-			(float*)pts3_map.data,
+			(float*)pts2_map.data(),
+			(float*)pts3_map.data(),
 			n_flows,
 			w,
 			h,
@@ -120,16 +131,16 @@ collect_p3p_correspondences
 			cfg.pose_sample_max_depth,
 			cfg.max_trace_on_flow,
 			NULL,
-			(float*)trifocal_0_map.data,
-			(float*)trifocal_1_map.data,
-			(float*)trifocal_2_map.data,
+			(float*)trifocal_0_map.data(),
+			(float*)trifocal_1_map.data(),
+			(float*)trifocal_2_map.data(),
 			NULL,
-			NULL,
-			0,
-			0,
-			1,
-			0,
-			0
+			trifocal_squared_error.data(),
+			cfg.multiview_mode == 3,
+			cfg.trifocal_index_0,
+			cfg.trifocal_index_1,
+			cfg.trifocal_index_2,
+			cfg.trifocal_squared_error_thresh
 		);
 	}
 	else {
@@ -141,8 +152,8 @@ collect_p3p_correspondences
 			NULL,
 			h_Rs,
 			h_ts,
-			(float*)pts2_map.data,
-			(float*)pts3_map.data,
+			(float*)pts2_map.data(),
+			(float*)pts3_map.data(),
 			n_flows,
 			w,
 			h,
@@ -153,16 +164,16 @@ collect_p3p_correspondences
 			cfg.pose_sample_max_depth,
 			cfg.max_trace_on_flow,
 			NULL,
-			(float*)trifocal_0_map.data,
-			(float*)trifocal_1_map.data,
-			(float*)trifocal_2_map.data,
+			(float*)trifocal_0_map.data(),
+			(float*)trifocal_1_map.data(),
+			(float*)trifocal_2_map.data(),
 			NULL,
-			NULL,
-			0,
-			0,
-			1,
-			0,
-			0
+			trifocal_squared_error.data(),
+			cfg.multiview_mode == 3,
+			cfg.trifocal_index_0,
+			cfg.trifocal_index_1,
+			cfg.trifocal_index_2,
+			cfg.trifocal_squared_error_thresh
 		);
 	}
 
@@ -173,44 +184,77 @@ collect_p3p_correspondences
 	if (h_Rs) { delete[] h_Rs; }
 	if (h_ts) { delete[] h_ts; }
 	
-	int n_points = 0;
-	cv::Point2f const* pts2_pt = (cv::Point2f*)pts2_map.data;
-	cv::Point3f const* pts3_pt = (cv::Point3f*)pts3_map.data;
-	cv::Point2f* pts2 = (cv::Point2f*)pts2_map.data; // pts2 is related to frame(active_idx)
-	cv::Point3f* pts3 = (cv::Point3f*)pts3_map.data; // pts3 is related to frame(active_idx-1).
-							                         // Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
-	
-	cv::Point2f const* tri_pt_0 = (cv::Point2f*)trifocal_0_map.data;
-	cv::Point2f const* tri_pt_1 = (cv::Point2f*)trifocal_1_map.data;
-	cv::Point2f const* tri_pt_2 = (cv::Point2f*)trifocal_2_map.data;
 
-	cv::Point2f* tri_0 = (cv::Point2f*)trifocal_0_map.data;
-	cv::Point2f* tri_1 = (cv::Point2f*)trifocal_1_map.data;
-	cv::Point2f* tri_2 = (cv::Point2f*)trifocal_2_map.data;
+
+	// pts2 is related to frame(active_idx)
+	// pts3 is related to frame(active_idx-1)
+	// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
+
+	int n_p3p_points = 0;
+	int n_p3v_points = 0;
+
+	cv::Point2f const* pts2_src = pts2_map.data();
+	cv::Point3f const* pts3_src = pts3_map.data();
+	cv::Point3f const* p3v0_src = trifocal_0_map.data();
+	cv::Point3f const* p3v1_src = trifocal_1_map.data();
+	cv::Point3f const* p3v2_src = trifocal_2_map.data();
+	float const* tse2_src = trifocal_squared_error.data();
+
+	cv::Point2f* pts2_dst = pts2_map.data();
+	cv::Point3f* pts3_dst = pts3_map.data();
+	cv::Point3f* p3v0_dst = trifocal_0_map.data();
+	cv::Point3f* p3v1_dst = trifocal_1_map.data();
+	cv::Point3f* p3v2_dst = trifocal_2_map.data();
+	float* tse2_dst = trifocal_squared_error.data();
 
 	for (int i = 0; i < w * h; i++)
 	{
-		if (isfinite(pts2_pt->x + pts2_pt->y + pts3_pt->x + pts3_pt->y + pts3_pt->z))
+		float pts2_sum = pts2_src->x + pts2_src->y;
+		float pts3_sum = pts3_src->x + pts3_src->y + pts3_src->z;
+
+		float ptsX_sum = pts2_sum + pts3_sum;
+
+		if (isfinite(ptsX_sum))
 		{
-			pts2[n_points] = *pts2_pt;
-			pts3[n_points] = *pts3_pt;
+			pts2_dst[n_p3p_points] = *pts2_src;
+			pts3_dst[n_p3p_points] = *pts3_src;
 
-			tri_0[n_points] = *tri_pt_0;
-			tri_1[n_points] = *tri_pt_1;
-			tri_2[n_points] = *tri_pt_2;
-
-			n_points++;
+			n_p3p_points++;
 		}
 
-		pts2_pt++;
-		pts3_pt++;
+		pts2_src++;
+		pts3_src++;
 
-		tri_pt_0++;
-		tri_pt_1++;
-		tri_pt_2++;
+		float p3v0_sum = p3v0_src->x + p3v0_src->y + p3v0_src->z;
+		float p3v1_sum = p3v1_src->x + p3v1_src->y + p3v1_src->z;
+		float p3v2_sum = p3v2_src->x + p3v2_src->y + p3v2_src->z;
+
+		float p3vX_sum = p3v0_sum + p3v1_sum + ((cfg.multiview_mode == 3) ? p3v2_sum : 0.0f);
+
+		if (isfinite(p3vX_sum))
+		{
+			p3v0_dst[n_p3v_points] = *p3v0_src;
+			p3v1_dst[n_p3v_points] = *p3v1_src;
+			p3v2_dst[n_p3v_points] = *p3v2_src;
+			tse2_dst[n_p3v_points] = *tse2_src;
+
+			n_p3v_points++;
+		}
+
+		p3v0_src++;
+		p3v1_src++;
+		p3v2_src++;
+		tse2_src++;
 	}
 
-	return n_points;
+	pts2_map.resize(n_p3p_points);
+	pts3_map.resize(n_p3p_points);
+
+	trifocal_0_map.resize(n_p3v_points);
+	trifocal_1_map.resize(n_p3v_points);
+	trifocal_2_map.resize(n_p3v_points);
+
+	trifocal_squared_error.resize(n_p3v_points);
 }
 
 
@@ -219,25 +263,24 @@ int
 solve_p3p_pool
 (
 	std::vector<Camera> const& cams,
-	cv::Mat const& pts2_map,
-	cv::Mat const& pts3_map,
-	int n_points,
+	std::vector<cv::Point2f> const& pts2_map,
+	std::vector<cv::Point3f> const& pts3_map,
 	int active_idx,
 	Config const& cfg,
 	cv::Mat& poses_pool,
-	cv::Mat const& trifocal_map_0,
-	cv::Mat const& trifocal_map_1,
-	cv::Mat const& trifocal_map_2
+	std::vector<cv::Point3f> const& trifocal_map_0,
+	std::vector<cv::Point3f> const& trifocal_map_1,
+	std::vector<cv::Point3f> const& trifocal_map_2
 )
 {
-	cv::Point2f const* pts2 = (cv::Point2f*)pts2_map.data;
-	cv::Point3f const* pts3 = (cv::Point3f*)pts3_map.data;
+	cv::Point2f const* pts2 = pts2_map.data();
+	cv::Point3f const* pts3 = pts3_map.data();
 	int poses_pool_used = 0;
 
 
 	if (cfg.cpu_p3p)
 	{
-
+		int n_points = (int)pts2_map.size();
 
 		for (int i = 0; i < cfg.n_poses_to_sample; i++) {
 			int i1 = ((float)rand() / (float)RAND_MAX) * n_points;
@@ -284,6 +327,8 @@ solve_p3p_pool
 	}
 	else if (1)
 	{
+		int n_points = (int)pts2_map.size();
+
 		auto time_stamp = std::chrono::high_resolution_clock::now();
 
 		float* ret_Rs = new float[cfg.n_poses_to_sample * 3];
@@ -316,9 +361,11 @@ solve_p3p_pool
 	{
 		std::cout << "TRI CYCLE ---------------------------------------" << std::endl;
 
-		cv::Point2f const* tm0 = (cv::Point2f*)trifocal_map_0.data;
-		cv::Point2f const* tm1 = (cv::Point2f*)trifocal_map_1.data;
-		cv::Point2f const* tm2 = (cv::Point2f*)trifocal_map_2.data;
+		cv::Point3f const* tm0 = trifocal_map_0.data();
+		cv::Point3f const* tm1 = trifocal_map_1.data();
+		cv::Point3f const* tm2 = trifocal_map_2.data();
+
+		int n_points = trifocal_map_0.size();
 
 		float points_2D_1[2 * 7];
 		float points_2D_2[2 * 7];
@@ -352,38 +399,9 @@ solve_p3p_pool
 				base_2D[(2 * p) + 1] = (pts2[idx].y - cfg.cy) / cfg.fy;
 
 				memcpy(points_3D + (3 * p) + 0, &pts3[idx], sizeof(cv::Point3f));
-
-				/*
-				if (i == sample_point)
-				{
-					std::cout << points_2D_1[(2 * p) + 0] << ","
-						<< points_2D_1[(2 * p) + 1] << ","
-						<< points_2D_2[(2 * p) + 0] << ","
-						<< points_2D_2[(2 * p) + 1] << ","
-						<< points_2D_3[(2 * p) + 0] << ","
-						<< points_2D_3[(2 * p) + 1] << ",SP,"
-						<< base_2D[(2 * p) + 0] << ","
-						<< base_2D[(2 * p) + 1] << ","
-						<< points_3D[(3 * p) + 0] << ","
-						<< points_3D[(3 * p) + 1] << ","
-						<< points_3D[(3 * p) + 2] << ";" << std::endl;
-				}
-				*/
 			}
 
 			trifocal_R_t(points_2D_1, points_2D_2, points_2D_3, base_2D, points_3D, tft, rt01, rt02, s01, s02);
-
-			/*
-			if (i == sample_point)
-			{
-				std::cout << "result " << rt01[0] << ","
-					                   << rt01[1] << ","
-					                   << rt01[2] << ","
-					                   << rt01[3] << ","
-					                   << rt01[4] << ","
-					                   << rt01[5] << std::endl;
-			}
-			*/
 
 			if (isfinite(rt01[0] + rt01[1] + rt01[2] + rt01[3] + rt01[4] + rt01[5]))
 			{
@@ -399,9 +417,11 @@ solve_p3p_pool
 		std::cout << "TRI BATCH CYCLE ---------------------------------------" << std::endl;
 		auto time_stamp = std::chrono::high_resolution_clock::now();
 
-		cv::Point2f const* tm0 = (cv::Point2f*)trifocal_map_0.data;
-		cv::Point2f const* tm1 = (cv::Point2f*)trifocal_map_1.data;
-		cv::Point2f const* tm2 = (cv::Point2f*)trifocal_map_2.data;
+		cv::Point3f const* tm0 = trifocal_map_0.data();
+		cv::Point3f const* tm1 = trifocal_map_1.data();
+		cv::Point3f const* tm2 = trifocal_map_2.data();
+
+		int n_points = trifocal_map_0.size();
 
 		float* p2d_1 = new float[n_points * 2];
 		float* p2d_2 = new float[n_points * 2];
@@ -410,25 +430,6 @@ solve_p3p_pool
 		float* sp3d = new float[n_points * 3];
 		float* rt1 = new float[cfg.n_poses_to_sample * 6];
 		float* rt2 = new float[cfg.n_poses_to_sample * 6];
-		int seeds[16] = {
-			982570992,
-			156771448,
-			1453167113,
-			828969480,
-			1428633992,
-			1793003870,
-			1450716004,
-			583011327,
-			225626512,
-			770619902,
-			1412352324,
-			789718351,
-			1363665346,
-			203010848,
-			604667542,
-			1381341612,
-		};
-
 
 		int sample_point = 8191;
 
@@ -445,26 +446,7 @@ solve_p3p_pool
 			sp2d[(i * 2) + 1] = (pts2[i].y - cfg.cy) / cfg.fy;
 		}
 
-		//trifocal_rng_initialize(1, seeds);
-		//int valid = trifocal_R_t_batch(cfg.n_poses_to_sample, 12, p2d_1, p2d_2, p2d_3, sp2d, (float*)&pts3[0], n_points, nullptr, rt1, rt2, nullptr, nullptr);
-		//std::cout << "TRI BATCH VALID: " << valid << std::endl;
-
 		int valid = trifocal_R_t_batch(cfg.n_poses_to_sample, 12, p2d_1, p2d_2, p2d_3, sp2d, (float*)&pts3[0], n_points, nullptr, rt1, rt2, nullptr, nullptr);
-		//poses_pool_used = trifocal_R_t_batch(cfg.n_poses_to_sample, 12, p2d_1, p2d_2, p2d_3, sp2d, (float*)&pts3[0], n_points, nullptr, (float*)poses_pool.data, rt2, nullptr, nullptr);
-
-		/*
-		{
-			float* base_r1 = r1 + (3 * sample_point);
-			float* base_t1 = t1 + (3 * sample_point);
-
-			std::cout << "FINAL result " << base_r1[0] << ","
-				<< base_r1[1] << ","
-				<< base_r1[2] << ","
-				<< base_t1[0] << ","
-				<< base_t1[1] << ","
-				<< base_t1[2] << std::endl;
-		}
-		*/
 
 		poses_pool_used = 0;
 		for (int i = 0; i < valid; ++i)
@@ -489,9 +471,11 @@ solve_p3p_pool
 	{
 		std::cout << "TRIKK CYCLE ---------------------------------------" << std::endl;
 
-		cv::Point2f const* tm0 = (cv::Point2f*)trifocal_map_0.data;
-		cv::Point2f const* tm1 = (cv::Point2f*)trifocal_map_1.data;
-		cv::Point2f const* tm2 = (cv::Point2f*)trifocal_map_2.data;
+		int n_points = trifocal_map_0.size();
+
+		cv::Point3f const* tm0 = trifocal_map_0.data();
+		cv::Point3f const* tm1 = trifocal_map_1.data();
+		cv::Point3f const* tm2 = trifocal_map_2.data();
 
 		float points_2D_1[2 * 7];
 		float points_2D_2[2 * 7];
@@ -504,8 +488,8 @@ solve_p3p_pool
 		float t1[3];
 		float t2[3];
 
-		float width = trifocal_map_0.cols;
-		float height = trifocal_map_0.rows;
+		//float width = trifocal_map_0.cols;
+		//float height = trifocal_map_0.rows;
 
 		auto time_stamp = std::chrono::high_resolution_clock::now();
 
@@ -573,69 +557,31 @@ optimize_camera_pose
 
 	auto time_stamp = std::chrono::high_resolution_clock::now();
 
-	cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
-	cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
+	std::vector<cv::Point2f> pts2_map;
+	std::vector<cv::Point3f> pts3_map;
+	std::vector<cv::Point3f> trifocal_0_map;
+	std::vector<cv::Point3f> trifocal_1_map;
+	std::vector<cv::Point3f> trifocal_2_map;
+	std::vector<float> trifocal_squared_error;
 
-	cv::Mat trifocal_map_0(cv::Size(w, h), CV_32FC3);
-	cv::Mat trifocal_map_1(cv::Size(w, h), CV_32FC3);
-	cv::Mat trifocal_map_2(cv::Size(w, h), CV_32FC3);
-	cv::Mat trifocal_squared_error(cv::Size(w, h), CV_32F);
+	collect_p3p_correspondences(flows, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map, trifocal_0_map, trifocal_1_map, trifocal_2_map, trifocal_squared_error);
 
-	int n_points = collect_p3p_correspondences(flows, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map, trifocal_map_0, trifocal_map_1, trifocal_map_2, trifocal_squared_error);
-
-	cv::Point2f* tm0 = (cv::Point2f*)trifocal_map_0.data;
-	cv::Point2f* tm1 = (cv::Point2f*)trifocal_map_1.data;
-	cv::Point2f* tm2 = (cv::Point2f*)trifocal_map_2.data;
-
-	/*
-	std::cout << "P3P points: " << n_points << std::endl;
-	std::cout << "TRI (0)" << std::endl;
-	std::cout << tm0[0] << std::endl;
-	std::cout << "TRI (1)" << std::endl;
-	std::cout << tm1[0] << std::endl;
-	std::cout << "TRI (2)" << std::endl;
-	std::cout << tm2[0] << std::endl;
-	*/
-
-	// check if able to have at least one pose
-	if (n_points < 4)
-	{
-		return 0;
-	}
-
-	if (!cfg.silent)
-	{
-		std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
+	if (!cfg.silent) { std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
 
 	//----------------------------------------------------------------------------
-
-	// TODO: TRI
 
 	time_stamp = std::chrono::high_resolution_clock::now();
 
 	cv::Mat poses_pool(cfg.n_poses_to_sample, 6, CV_32F);
-	int poses_pool_used = solve_p3p_pool(cams, pts2_map, pts3_map, n_points, active_idx, cfg, poses_pool, trifocal_map_0, trifocal_map_1, trifocal_map_2);
+	int poses_pool_used = solve_p3p_pool(cams, pts2_map, pts3_map, active_idx, cfg, poses_pool, trifocal_0_map, trifocal_1_map, trifocal_2_map);
 
-	if (poses_pool_used == 0)
-	{
-		return 0;
-	}
+	if (poses_pool_used <= 0) { return 0; }
 
-	if (!cfg.silent)
-	{
-		std::cout << "p3p computing time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
+	if (!cfg.silent) { std::cout << "p3p computing time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
 
 	//----------------------------------------------------------------------------------
 
 	time_stamp = std::chrono::high_resolution_clock::now(); // TODO: ???
-
-
-
-
-
-
 	
 	poses_pool = poses_pool.rowRange(0, poses_pool_used);
 	cams[active_idx].pose_sample_count = poses_pool_used;
@@ -825,3 +771,102 @@ estimate_camera_pose_epipolar
 
 
 
+
+
+
+
+
+//cv::Mat pts2_map(cv::Size(w, h), CV_32FC2);
+//cv::Mat pts3_map(cv::Size(w, h), CV_32FC3);
+
+//cv::Mat trifocal_map_0(cv::Size(w, h), CV_32FC3);
+//cv::Mat trifocal_map_1(cv::Size(w, h), CV_32FC3);
+//cv::Mat trifocal_map_2(cv::Size(w, h), CV_32FC3);
+
+
+//cv::Mat trifocal_squared_error(cv::Size(w, h), CV_32F);
+
+/*
+std::cout << "P3P points: " << n_points << std::endl;
+std::cout << "TRI (0)" << std::endl;
+std::cout << tm0[0] << std::endl;
+std::cout << "TRI (1)" << std::endl;
+std::cout << tm1[0] << std::endl;
+std::cout << "TRI (2)" << std::endl;
+std::cout << tm2[0] << std::endl;
+*/
+// TODO: TRI
+	//cv::Point3f* tm0 = (cv::Point3f*)trifocal_map_0.data;
+	//v::Point3f* tm1 = (cv::Point3f*)trifocal_map_1.data;
+	//cv::Point3f* tm2 = (cv::Point3f*)trifocal_map_2.data;
+	// check if able to have at least one pose
+	//if (n_points < 4)
+	//{
+	//	return 0;
+	//}
+
+//trifocal_rng_initialize(1, seeds);
+		//int valid = trifocal_R_t_batch(cfg.n_poses_to_sample, 12, p2d_1, p2d_2, p2d_3, sp2d, (float*)&pts3[0], n_points, nullptr, rt1, rt2, nullptr, nullptr);
+		//std::cout << "TRI BATCH VALID: " << valid << std::endl;
+		//poses_pool_used = trifocal_R_t_batch(cfg.n_poses_to_sample, 12, p2d_1, p2d_2, p2d_3, sp2d, (float*)&pts3[0], n_points, nullptr, (float*)poses_pool.data, rt2, nullptr, nullptr);
+
+		/*
+		{
+			float* base_r1 = r1 + (3 * sample_point);
+			float* base_t1 = t1 + (3 * sample_point);
+
+			std::cout << "FINAL result " << base_r1[0] << ","
+				<< base_r1[1] << ","
+				<< base_r1[2] << ","
+				<< base_t1[0] << ","
+				<< base_t1[1] << ","
+				<< base_t1[2] << std::endl;
+		}
+		*/
+		/*
+						if (i == sample_point)
+						{
+							std::cout << points_2D_1[(2 * p) + 0] << ","
+								<< points_2D_1[(2 * p) + 1] << ","
+								<< points_2D_2[(2 * p) + 0] << ","
+								<< points_2D_2[(2 * p) + 1] << ","
+								<< points_2D_3[(2 * p) + 0] << ","
+								<< points_2D_3[(2 * p) + 1] << ",SP,"
+								<< base_2D[(2 * p) + 0] << ","
+								<< base_2D[(2 * p) + 1] << ","
+								<< points_3D[(3 * p) + 0] << ","
+								<< points_3D[(3 * p) + 1] << ","
+								<< points_3D[(3 * p) + 2] << ";" << std::endl;
+						}
+						*/
+						/*
+						if (i == sample_point)
+						{
+							std::cout << "result " << rt01[0] << ","
+												   << rt01[1] << ","
+												   << rt01[2] << ","
+												   << rt01[3] << ","
+												   << rt01[4] << ","
+												   << rt01[5] << std::endl;
+						}
+						*/
+						/*
+								int seeds[16] = {
+									982570992,
+									156771448,
+									1453167113,
+									828969480,
+									1428633992,
+									1793003870,
+									1450716004,
+									583011327,
+									225626512,
+									770619902,
+									1412352324,
+									789718351,
+									1363665346,
+									203010848,
+									604667542,
+									1381341612,
+								};
+								*/
