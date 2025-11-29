@@ -216,7 +216,11 @@ void VOLDOR::optimize_cameras() {
 
 		int optimize_success = 0;
 		if (!allow_trunc || cams[i].pose_rigidness_density > cfg.trunc_rigidness_density) {
-			optimize_success = optimize_camera_pose(flows_1, rigidnesses, depth, cams,
+			optimize_success = optimize_camera_pose(
+				flows_1,
+				rigidnesses,
+				depth,
+				cams,
 				n_flows,
 				i, // active idx (from 0 to n_flows-1)
 				cams[i].pose_sample_count == 0 ? false : true, //successive pose?
