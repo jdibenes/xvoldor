@@ -1,5 +1,4 @@
 
-#include <iostream>
 #include <Eigen/Eigen>
 #include "helpers.h"
 #include "helpers_eigen.h"
