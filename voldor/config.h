@@ -5,12 +5,13 @@
 struct Config 
 {
 	//vector<string> flow_names;
-	int multiview_mode = 2; // 2: binocular, 3: trifocal
-	int cpu_p3p = false; //do p3p on cpu (deprecated)
-	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
-	int solver_select = 4;
+	int multiview_mode = 3; // 2: binocular, 3: trifocal
+	int solver_select = 5;
 	int disparities_enable = 1;
 	int trifocal_enable_flow_2 = 0;
+
+	int cpu_p3p = false; //do p3p on cpu (deprecated)
+	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
 
 	int trifocal_index_0 = 0;
 	int trifocal_index_1 = 0;
