@@ -4,6 +4,7 @@
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
 #include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
+#include "helpers_eigen.h"
 
 //-----------------------------------------------------------------------------
 // Functions
@@ -609,8 +610,7 @@ trifocal_R_t_linear
     float const* p2d_1,
     float const* p2d_2,
     float const* p2d_3,
-    float const* p2d_s,
-    float const* p3d_s,
+    float const* p3d_1,
     int N,
     bool use_prior,
     float* r1,
@@ -619,29 +619,21 @@ trifocal_R_t_linear
     float* t2
 )
 {
-    Eigen::MatrixXf p2d_1_w(2, N);
-    Eigen::MatrixXf p2d_2_w(2, N);
-    Eigen::MatrixXf p2d_3_w(2, N);
-    Eigen::MatrixXf p2d_s_w(2, N);
-    Eigen::MatrixXf p3d_s_w(3, N);
-
-    memcpy(p2d_1_w.data(), p2d_1, 2 * N * sizeof(float));
-    memcpy(p2d_2_w.data(), p2d_2, 2 * N * sizeof(float));
-    memcpy(p2d_3_w.data(), p2d_3, 2 * N * sizeof(float));
-    memcpy(p2d_s_w.data(), p2d_s, 2 * N * sizeof(float));
-    memcpy(p3d_s_w.data(), p3d_s, 3 * N * sizeof(float));
+    Eigen::MatrixXf p2d_1_w = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d_1, 2, N);
+    Eigen::MatrixXf p2d_2_w = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d_2, 2, N);
+    Eigen::MatrixXf p2d_3_w = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d_3, 2, N);
+    Eigen::MatrixXf p3d_s_w = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d_1, 3, N);
 
     result_normalize_points rnp_1 = normalize_points(p2d_1_w);
     result_normalize_points rnp_2 = normalize_points(p2d_2_w);
     result_normalize_points rnp_3 = normalize_points(p2d_3_w);
-    
+
     Eigen::MatrixXf A = build_A(rnp_1.p, rnp_2.p, rnp_3.p); // OK
     result_linear_TFT ltr = linear_TFT(A); // OK
-
     ltr.TFT = transform_TFT(ltr.TFT, rnp_1.H, rnp_2.H, rnp_3.H, true);
 
     result_R_t_from_TFT rpt = R_t_from_TFT(ltr.TFT, p2d_1_w, p2d_2_w, p2d_3_w, p3d_s_w, use_prior); // OK
-    float world_scale = compute_scale(p2d_s_w, p3d_s_w, rpt.v2.P);
+    float world_scale = compute_scale(p2d_2_w, p3d_s_w, rpt.v2.P);
 
     Eigen::Matrix<float, 3, 3> R2 = rpt.v2.P(Eigen::all, Eigen::seqN(0, 3));
     Eigen::Matrix<float, 3, 3> R3 = rpt.v3.P(Eigen::all, Eigen::seqN(0, 3));
@@ -655,13 +647,37 @@ trifocal_R_t_linear
     Eigen::Matrix<float, 3, 1> t01 = world_scale * rpt.v2.P.col(3);
     Eigen::Matrix<float, 3, 1> t02 = world_scale * rpt.v3.P.col(3);
 
-    memcpy(r1, r01.data(), 3 * sizeof(float));
-    memcpy(r2, r02.data(), 3 * sizeof(float));
-    memcpy(t1, t01.data(), 3 * sizeof(float));
-    memcpy(t2, t02.data(), 3 * sizeof(float));
+    matrix_to_buffer(r01, r1);
+    matrix_to_buffer(r02, r2);
+    matrix_to_buffer(t01, t1);
+    matrix_to_buffer(t02, t2);
 
     return std::isfinite(r1[0] + r1[1] + r1[2] + t1[0] + t1[1] + t1[2] + r2[0] + r2[1] + r2[2] + t2[0] + t2[1] + t2[2]);
 }
+
+
+
+
+
+//memcpy(r1, r01.data(), 3 * sizeof(float));
+//memcpy(r2, r02.data(), 3 * sizeof(float));
+//memcpy(t1, t01.data(), 3 * sizeof(float));
+//memcpy(t2, t02.data(), 3 * sizeof(float));
+//Eigen::MatrixXf p2d_s_w(2, N);
+//Eigen::MatrixXf p3d_s_w(3, N);
+
+
+
+//memcpy(p2d_1_w.data(), p2d_1, 2 * N * sizeof(float));
+//memcpy(p2d_2_w.data(), p2d_2, 2 * N * sizeof(float));
+//memcpy(p2d_3_w.data(), p2d_3, 2 * N * sizeof(float));
+//memcpy(p2d_s_w.data(), p2d_s, 2 * N * sizeof(float));
+//memcpy(p3d_s_w.data(), p3d_s, 3 * N * sizeof(float));
+
+
+
+
+
 
 // OK
 struct
