@@ -3,6 +3,7 @@
 #include "../gpu-kernels/gpu_kernels.h"
 #include "../lambdatwist/lambdatwist_p4p.h"
 #include "trifocal.h"
+#include "batch_solve.h"
 //#include "trifocal_poselib.h"
 
 
@@ -103,10 +104,12 @@ collect_p3p_correspondences
 			(float*)trifocal_2_map.data(),
 			h_disparities,
 			trifocal_squared_error.data(),
+			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
 			cfg.trifocal_index_0,
 			cfg.trifocal_index_1,
 			cfg.trifocal_index_2,
+			cfg.trifocal_enable_flow_2,
 			cfg.trifocal_squared_error_thresh
 		);
 	}
@@ -136,10 +139,12 @@ collect_p3p_correspondences
 			(float*)trifocal_2_map.data(),
 			NULL,
 			trifocal_squared_error.data(),
+			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
 			cfg.trifocal_index_0,
 			cfg.trifocal_index_1,
 			cfg.trifocal_index_2,
+			cfg.trifocal_enable_flow_2,
 			cfg.trifocal_squared_error_thresh
 		);
 	}
@@ -169,10 +174,12 @@ collect_p3p_correspondences
 			(float*)trifocal_2_map.data(),
 			NULL,
 			trifocal_squared_error.data(),
+			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
 			cfg.trifocal_index_0,
 			cfg.trifocal_index_1,
 			cfg.trifocal_index_2,
+			cfg.trifocal_enable_flow_2,
 			cfg.trifocal_squared_error_thresh
 		);
 	}
@@ -214,10 +221,23 @@ collect_p3p_correspondences
 
 		float ptsX_sum = pts2_sum + pts3_sum;
 
-		if (isfinite(ptsX_sum))
+		float p3v0_sum = p3v0_src->x + p3v0_src->y + p3v0_src->z;
+		float p3v1_sum = p3v1_src->x + p3v1_src->y + p3v1_src->z;
+		float p3v2_sum = p3v2_src->x + p3v2_src->y + p3v2_src->z;
+
+		float p3vX_sum = p3v0_sum + p3v1_sum + ((cfg.multiview_mode == 3) ? p3v2_sum : 0.0f);
+
+		if (isfinite(ptsX_sum) && isfinite(p3vX_sum))
 		{
 			pts2_dst[n_p3p_points] = *pts2_src;
 			pts3_dst[n_p3p_points] = *pts3_src;
+
+			p3v0_dst[n_p3v_points] = *p3v0_src;
+			p3v1_dst[n_p3v_points] = *p3v1_src;
+			p3v2_dst[n_p3v_points] = *p3v2_src;
+			tse2_dst[n_p3v_points] = *tse2_src;
+
+			n_p3v_points++;
 
 			n_p3p_points++;
 		}
@@ -225,21 +245,12 @@ collect_p3p_correspondences
 		pts2_src++;
 		pts3_src++;
 
-		float p3v0_sum = p3v0_src->x + p3v0_src->y + p3v0_src->z;
-		float p3v1_sum = p3v1_src->x + p3v1_src->y + p3v1_src->z;
-		float p3v2_sum = p3v2_src->x + p3v2_src->y + p3v2_src->z;
+		
 
-		float p3vX_sum = p3v0_sum + p3v1_sum + ((cfg.multiview_mode == 3) ? p3v2_sum : 0.0f);
-
-		if (isfinite(p3vX_sum))
-		{
-			p3v0_dst[n_p3v_points] = *p3v0_src;
-			p3v1_dst[n_p3v_points] = *p3v1_src;
-			p3v2_dst[n_p3v_points] = *p3v2_src;
-			tse2_dst[n_p3v_points] = *tse2_src;
-
-			n_p3v_points++;
-		}
+		//if ()
+		//{
+			
+		//}
 
 		p3v0_src++;
 		p3v1_src++;
@@ -268,92 +279,40 @@ solve_p3p_pool
 	int active_idx,
 	Config const& cfg,
 	cv::Mat& poses_pool,
-	std::vector<cv::Point3f> const& trifocal_map_0,
-	std::vector<cv::Point3f> const& trifocal_map_1,
-	std::vector<cv::Point3f> const& trifocal_map_2
+	std::vector<cv::Point3f> const& trifocal_0_map,
+	std::vector<cv::Point3f> const& trifocal_1_map,
+	std::vector<cv::Point3f> const& trifocal_2_map
 )
 {
-	cv::Point2f const* pts2 = pts2_map.data();
-	cv::Point3f const* pts3 = pts3_map.data();
 	int poses_pool_used = 0;
 
-
-	if (cfg.cpu_p3p)
+	switch (cfg.solver_select)
 	{
-		int n_points = (int)pts2_map.size();
-
-		for (int i = 0; i < cfg.n_poses_to_sample; i++) {
-			int i1 = ((float)rand() / (float)RAND_MAX) * n_points;
-			int i2 = ((float)rand() / (float)RAND_MAX) * n_points;
-			int i3 = ((float)rand() / (float)RAND_MAX) * n_points;
-			int i4 = ((float)rand() / (float)RAND_MAX) * n_points;
-
-
-			if (cfg.lambdatwist) {
-				float R_temp[3][3];
-				cv::Vec3f rvec_temp, tvec_temp;
-				if (lambdatwist_p4p<double, float, 5>(
-					(float*)&pts2[i1], (float*)&pts2[i2], (float*)&pts2[i3], (float*)&pts2[i4],
-					(float*)&pts3[i1], (float*)&pts3[i2], (float*)&pts3[i3], (float*)&pts3[i4],
-					cfg.fx, cfg.fy, cfg.cx, cfg.cy,
-					R_temp, tvec_temp.val)) {
-
-					Rodrigues(cv::Matx33f((float*)R_temp), rvec_temp);
-					//cout <<"rvec = "<< rvec_temp << endl;
-					//cout <<"tvec = "<< tvec_temp << endl;
-
-					if (isfinite(tvec_temp[0] + tvec_temp[1] + tvec_temp[2] + rvec_temp[0] + rvec_temp[1] + rvec_temp[2])) {
-						poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = rvec_temp;
-						poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = tvec_temp;
-					}
-
-				}
-			}
-			else {
-				cv::Point2f p2s_tmp[4] = { pts2[i1],pts2[i2],pts2[i3],pts2[i4] };
-				cv::Point3f p3s_tmp[4] = { pts3[i1],pts3[i2],pts3[i3],pts3[i4] };
-				cv::Vec3d rvec_temp, tvec_temp;
-				if (solvePnP(cv::_InputArray(p3s_tmp, 4), cv::_InputArray(p2s_tmp, 4),
-					cams[active_idx].K, cv::Mat(),
-					rvec_temp, tvec_temp, false, 5)) { //5 stands for SOLVEPNP_AP3P, does not work ealier opencv version
-					//cout <<"tvec = "<< tvec_temp << endl;
-					if (isfinite(tvec_temp[0] + tvec_temp[1] + tvec_temp[2] + rvec_temp[0] + rvec_temp[1] + rvec_temp[2])) {
-						poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = rvec_temp;
-						poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = tvec_temp;
-					}
-				}
-			}
-		}
+	case 0:  poses_pool_used = batch_solve_ap3p_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 1:  poses_pool_used = batch_solve_lambdatwist_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 4:  poses_pool_used = batch_solve_gpm_hpc0_cpu(trifocal_0_map, trifocal_1_map, /*pts3_map, pts2_map,*/ cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	default: poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	}
+
+
+	/*
+	//if (cfg.cpu_p3p)
+	if (cfg.solver_select == 0)
+	{
+		
+	}
+
+
+
 	else if (1)
 	{
-		int n_points = (int)pts2_map.size();
+		
 
 		auto time_stamp = std::chrono::high_resolution_clock::now();
 
-		float* ret_Rs = new float[cfg.n_poses_to_sample * 3];
-		float* ret_ts = new float[cfg.n_poses_to_sample * 3];
-
-		if (cfg.lambdatwist) {
-			solve_batch_p3p_lambdatwist_gpu((float*)pts3, (float*)pts2, ret_Rs, ret_ts, (float*)cams[active_idx].K.data, n_points, cfg.n_poses_to_sample);
-		}
-		else {
-			solve_batch_p3p_ap3p_gpu((float*)pts3, (float*)pts2, ret_Rs, ret_ts, (float*)cams[active_idx].K.data, n_points, cfg.n_poses_to_sample);
-		}
-
-		for (int i = 0; i < cfg.n_poses_to_sample; i++) {
-			if (isfinite(ret_Rs[i * 3 + 0] + ret_Rs[i * 3 + 1] + ret_Rs[i * 3 + 2] + ret_ts[i * 3 + 0] + ret_ts[i * 3 + 1] + ret_ts[i * 3 + 2])) {
-				// This is a solved bug, atan2 is more accurate than acos2 in rodrigues implementation
-				// Due to GPU accuracy issue, GPU p3p sometimes gives pure zero rotation, this will cause incorrect covar in rg_refine process
-				//if (rg_refine && (ret_Rs[i * 3 + 0] == 0 && ret_Rs[i * 3 + 1] == 0 && ret_Rs[i * 3 + 2] == 0))
-					//continue;
-				poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(ret_Rs[i * 3 + 0], ret_Rs[i * 3 + 1], ret_Rs[i * 3 + 2]);
-				poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(ret_ts[i * 3 + 0], ret_ts[i * 3 + 1], ret_ts[i * 3 + 2]);
-			}
-		}
-
-		delete[] ret_Rs;
-		delete[] ret_ts;
+		
 
 		std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 	}
@@ -525,6 +484,7 @@ solve_p3p_pool
 		std::cout << "TRIKK POOLS: " << poses_pool_used << std::endl;
 		std::cout << "TRIKK compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 	}
+	*/
 
 	return poses_pool_used;
 }
@@ -870,3 +830,49 @@ std::cout << tm2[0] << std::endl;
 									1381341612,
 								};
 								*/
+
+								//cv::Point2f const* pts2 = pts2_map.data();
+									//cv::Point3f const* pts3 = pts3_map.data();
+										//int n_points = (int)pts2_map.size();
+
+										//for (int i = 0; i < cfg.n_poses_to_sample; i++) {
+										//	int i1 = ((float)rand() / (float)RAND_MAX) * n_points;
+										//	int i2 = ((float)rand() / (float)RAND_MAX) * n_points;
+										//	int i3 = ((float)rand() / (float)RAND_MAX) * n_points;
+										//	int i4 = ((float)rand() / (float)RAND_MAX) * n_points;
+
+
+										//	if (cfg.lambdatwist) {
+												// batch solve lambdatwist
+											//}
+											//else {
+												// batch solve ap3p
+											//}
+										//}
+/*
+		int n_points = (int)pts2_map.size();
+
+		float* ret_Rs = new float[cfg.n_poses_to_sample * 3];
+		float* ret_ts = new float[cfg.n_poses_to_sample * 3];
+
+		if (cfg.lambdatwist) {
+			//solve_batch_p3p_lambdatwist_gpu((float*)pts3, (float*)pts2, ret_Rs, ret_ts, (float*)cams[active_idx].K.data, n_points, cfg.n_poses_to_sample);
+		}
+		else {
+			//solve_batch_p3p_ap3p_gpu((float*)pts3, (float*)pts2, ret_Rs, ret_ts, (float*)cams[active_idx].K.data, n_points, cfg.n_poses_to_sample);
+		}
+
+		for (int i = 0; i < cfg.n_poses_to_sample; i++) {
+			if (isfinite(ret_Rs[i * 3 + 0] + ret_Rs[i * 3 + 1] + ret_Rs[i * 3 + 2] + ret_ts[i * 3 + 0] + ret_ts[i * 3 + 1] + ret_ts[i * 3 + 2])) {
+				// This is a solved bug, atan2 is more accurate than acos2 in rodrigues implementation
+				// Due to GPU accuracy issue, GPU p3p sometimes gives pure zero rotation, this will cause incorrect covar in rg_refine process
+				//if (rg_refine && (ret_Rs[i * 3 + 0] == 0 && ret_Rs[i * 3 + 1] == 0 && ret_Rs[i * 3 + 2] == 0))
+					//continue;
+				poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(ret_Rs[i * 3 + 0], ret_Rs[i * 3 + 1], ret_Rs[i * 3 + 2]);
+				poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(ret_ts[i * 3 + 0], ret_ts[i * 3 + 1], ret_ts[i * 3 + 2]);
+			}
+		}
+
+		delete[] ret_Rs;
+		delete[] ret_ts;
+		*/
