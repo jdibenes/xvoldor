@@ -203,7 +203,7 @@ compute_p3p_map
 
 	if ((p1.x <= 0) || (p1.x >= _w) || (p1.y <= 0) || (p1.y >= _h)) { return; }
 
-	float z0 = disparities_enable ? _d_disparities.at_tex(p0.x, p0.y, active_idx + 0) : 0.0f;
+	float z0 = disparities_enable ? _d_disparities.at_tex(p0.x, p0.y, active_idx + 0) : oz;
 	float z1 = disparities_enable ? _d_disparities.at_tex(p1.x, p1.y, active_idx + 1) : 0.0f;
 
 	_d_trifocal_0_map.at(x, y) = make_float3(p0.x, p0.y, z0);
