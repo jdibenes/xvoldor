@@ -292,7 +292,8 @@ solve_p3p_pool
 	case 1:  poses_pool_used = batch_solve_lambdatwist_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-	case 4:  poses_pool_used = batch_solve_gpm_hpc0_cpu(trifocal_0_map, trifocal_1_map, /*pts3_map, pts2_map,*/ cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 4:  poses_pool_used = batch_solve_gpm_hpc0_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 5:  // Trifocal
 	default: poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	}
 
