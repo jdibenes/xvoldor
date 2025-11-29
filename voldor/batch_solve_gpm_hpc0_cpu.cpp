@@ -4,10 +4,7 @@
 #include <iostream>
 
 // points in format [u, v, z]
-int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<cv::Point3f> const& pts1,
-	//std::vector<cv::Point3f> pts3,
-	//std::vector<cv::Point2f> pts2,
-	cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool)
+int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<cv::Point3f> const& pts1, cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool)
 {
    	int n_points = (int)pts0.size();
 	int poses_pool_used = 0;
@@ -39,10 +36,6 @@ int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<c
 		pb1.y = ((pb1.y - cy) / fy) * pb1.z;
 		pa2.y = ((pa2.y - cy) / fy) * pa2.z;
 		pb2.y = ((pb2.y - cy) / fy) * pb2.z;
-
-		//std::cout << "SAMPLE" << std::endl;
-		//std::cout << pa1 << " | " << pts3[i1] << std::endl;
-		//std::cout << pb1 << " | " << pts3[i2] << std::endl;
 
 		solver_gpm_hpc0((float*)&pa1, (float*)&pb1, (float*)&pa2, (float*)&pb2, (float*)&r, (float*)&t);
 
