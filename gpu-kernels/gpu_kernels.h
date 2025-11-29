@@ -42,16 +42,19 @@ collect_p3p_instances
 	float sample_min_depth,
 	float sample_max_depth,
 	int max_trace_on_flow,
+
 	float const* h_flows_2[],
 	float* h_o_trifocal_0_map,
 	float* h_o_trifocal_1_map,
 	float* h_o_trifocal_2_map,
 	float const* h_disparities[],
 	float* h_o_trifocal_squared_error,
+	const int disparities_enable,
 	const int trifocal_enable,
 	const int trifocal_index_0,
 	const int trifocal_index_1,
 	const int trifocal_index_2,
+	const int trifocal_enable_flow_2,
 	const int trifocal_squared_error_thresh
 );
 
