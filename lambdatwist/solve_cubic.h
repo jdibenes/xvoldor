@@ -98,7 +98,7 @@ namespace cvl {
 	__mlib_host_device
 	constexpr float get_numeric_limit<float>() {
 		// abs limit is 9 digits
-		return 1e-7;
+		return 1e-7f;
 	}
 	template<> 
 	__mlib_host_device
