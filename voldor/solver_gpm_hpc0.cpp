@@ -3,7 +3,7 @@
 #include "helpers.h"
 #include "helpers_eigen.h"
 
-void solver_gpm_hpc0(float* pa1, float* pb1, float* pa2, float* pb2, float* r01, float* t01)
+bool solver_gpm_hpc0(float const* pa1, float const* pb1, float const* pa2, float const* pb2, float* r01, float* t01)
 {
     Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
     Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
@@ -48,4 +48,11 @@ void solver_gpm_hpc0(float* pa1, float* pb1, float* pa2, float* pb2, float* r01,
 
     matrix_to_buffer(r, r01);
     matrix_to_buffer(t, t01);
+
+    float r_sum = r01[0] + r01[1] + r01[2];
+    float t_sum = t01[0] + t01[1] + t01[2];
+
+    float x_sum = r_sum + t_sum;
+
+    return std::isfinite(x_sum);
 }
