@@ -4,7 +4,7 @@
 #include "helpers.h"
 #include "helpers_eigen.h"
 
-void solver_gpm_hpc1(float* pa1, float* pb1, float* pa2, float* pb2, float* r01, float* t01)
+bool solver_gpm_hpc1(float const* pa1, float const* pb1, float const* pa2, float const* pb2, float* r01, float* t01)
 {
     Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
     Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
@@ -27,5 +27,5 @@ void solver_gpm_hpc1(float* pa1, float* pb1, float* pa2, float* pb2, float* r01,
 
     Eigen::Matrix<float, 3, 1> PB2_w = PB2_n * ((std::abs(PB2(2, 0) - z1) <= std::abs(PB2(2, 0) - z2)) ? z1 : z2);
 
-    solver_gpm_hpc1(PA1.data(), PB1.data(), PA2.data(), PB2_w.data(), r01, t01);
+    return solver_gpm_hpc1(PA1.data(), PB1.data(), PA2.data(), PB2_w.data(), r01, t01);
 }
