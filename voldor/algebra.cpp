@@ -1,6 +1,35 @@
 
 #include <complex>
 
+
+static float refine_root_quadratic(float c, float b, float a, float root, int iterations)
+{
+    float x = root;
+
+    for (int i = 0; i < iterations; ++i)
+    {
+    float x2 = x * x;
+    
+    x -= (a * x2 + b * x + c) / (2 * a * x + b);
+    }
+
+    return x;
+}
+
+void solve_quadratic(float const* factors, float* real_roots, int refine_iterations)
+{
+    float const a = factors[2];
+    float const b = factors[1];
+    float const c = factors[0];
+
+    float d = (b * b) - (4.0f * a * c);
+    float s = (d > 0.0f) ? std::sqrt(d) : 0.0f;
+    float q = 2.0f * a;
+
+    real_roots[0] = refine_root_quadratic(c, b, a, ((-b + s) / q), refine_iterations);
+    real_roots[1] = refine_root_quadratic(c, b, a, ((-b - s) / q), refine_iterations);
+}
+
 static float refine_root_quartic(float a0, float a1, float a2, float a3, float a4, float root, int iterations)
 {
     float x = root;
