@@ -35,6 +35,12 @@ struct Camera {
 	cv::Mat R = cv::Mat::eye(3, 3, CV_32F);
 	cv::Mat t = cv::Mat::zeros(3, 1, CV_32F);
 	cv::Mat pose_covar = cv::Mat::zeros(6, 6, CV_32F);
+
+	std::vector<cv::Vec6f> trifocal_1_2_pool;
+
+
+
+
 	//Mat _R2;
 	//Mat pose_sample_mask;
 	float pose_density = 0;
