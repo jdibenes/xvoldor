@@ -58,7 +58,7 @@ static Eigen::Matrix<float, 6, 1> solver_gpm_hpc2_build_conic(Eigen::Matrix<floa
     return conic;
 }
 
-bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float const* pa2, float const* pb2, float const* pc2, float* r01, float* t01)
+bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float const* pa2, float const* pb2, float const* pc2, float* r01, float* t01, int refine_iterations)
 {
     Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
     Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
@@ -125,7 +125,7 @@ bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float
 
     float roots[4];
 
-    solve_quartic(polynomial.data(), roots);
+    solve_quartic(polynomial.data(), roots, refine_iterations);
 
     float kx;
     float ky;
