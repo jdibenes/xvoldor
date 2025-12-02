@@ -1,7 +1,6 @@
 
 #include <complex>
 
-
 static float refine_root_quadratic(float c, float b, float a, float root, int iterations)
 {
     float x = root;
