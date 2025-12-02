@@ -635,22 +635,25 @@ trifocal_R_t_linear
     result_R_t_from_TFT rpt = R_t_from_TFT(ltr.TFT, p2d_1_w, p2d_2_w, p2d_3_w, p3d_s_w, use_prior); // OK
     float world_scale = compute_scale(p2d_2_w, p3d_s_w, rpt.v2.P);
 
-    Eigen::Matrix<float, 3, 3> R2 = rpt.v2.P(Eigen::all, Eigen::seqN(0, 3));
-    Eigen::Matrix<float, 3, 3> R3 = rpt.v3.P(Eigen::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R12 = rpt.v2.P(Eigen::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R13 = rpt.v3.P(Eigen::all, Eigen::seqN(0, 3));
 
-    Eigen::AngleAxis<float> R01(R2);
-    Eigen::AngleAxis<float> R02(R3);
+    Eigen::Matrix<float, 3, 1> t12 = world_scale * rpt.v2.P.col(3);
+    Eigen::Matrix<float, 3, 1> t13 = world_scale * rpt.v3.P.col(3);
 
-    Eigen::Matrix<float, 3, 1> r01 = R01.angle() * R01.axis();
-    Eigen::Matrix<float, 3, 1> r02 = R02.angle() * R02.axis();
+    Eigen::Matrix<float, 3, 3> R23 = R12.transpose() * R13;
+    Eigen::Matrix<float, 3, 1> t23 = R12.transpose() * (t13 - t12);
 
-    Eigen::Matrix<float, 3, 1> t01 = world_scale * rpt.v2.P.col(3);
-    Eigen::Matrix<float, 3, 1> t02 = world_scale * rpt.v3.P.col(3);
+    Eigen::AngleAxis<float> aa_12(R12);
+    Eigen::AngleAxis<float> aa_23(R23);
 
-    matrix_to_buffer(r01, r1);
-    matrix_to_buffer(r02, r2);
-    matrix_to_buffer(t01, t1);
-    matrix_to_buffer(t02, t2);
+    Eigen::Matrix<float, 3, 1> r12 = aa_12.angle() * aa_12.axis();
+    Eigen::Matrix<float, 3, 1> r23 = aa_23.angle() * aa_23.axis();
+
+    matrix_to_buffer(r12, r1);
+    matrix_to_buffer(r23, r2);
+    matrix_to_buffer(t12, t1);
+    matrix_to_buffer(t23, t2);
 
     return std::isfinite(r1[0] + r1[1] + r1[2] + t1[0] + t1[1] + t1[2] + r2[0] + r2[1] + r2[2] + t2[0] + t2[1] + t2[2]);
 }
