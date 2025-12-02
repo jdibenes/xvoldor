@@ -55,7 +55,8 @@ collect_p3p_instances
 	const int trifocal_index_1,
 	const int trifocal_index_2,
 	const int trifocal_enable_flow_2,
-	const int trifocal_squared_error_thresh
+	float const trifocal_squared_error_min_thresh,
+	float const trifocal_squared_error_max_thresh
 );
 
 DLL_EXPORT int solve_batch_p3p_ap3p_gpu(float* h_p3s, float* h_p2s,
