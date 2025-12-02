@@ -8,7 +8,8 @@ struct Config
 	int multiview_mode = 3; // 2: binocular, 3: trifocal
 	int solver_select = 5;
 	int disparities_enable = 1;
-	int trifocal_enable_flow_2 = 0;
+	int trifocal_enable_flow_2 = 1;
+	int root_refine_interations = 2;
 
 	int cpu_p3p = false; //do p3p on cpu (deprecated)
 	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
@@ -16,7 +17,8 @@ struct Config
 	int trifocal_index_0 = 0;
 	int trifocal_index_1 = 0;
 	int trifocal_index_2 = 0;
-	float trifocal_squared_error_thresh = 0.0f;
+	float trifocal_squared_error_min_thresh = 0;//0.01f;
+	float trifocal_squared_error_max_thresh = 4.0f;
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
