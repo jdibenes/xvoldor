@@ -6,7 +6,7 @@
 // points in format [u, v, z]
 int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<cv::Point3f> const& pts1, cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool)
 {
-   	int n_points = (int)pts0.size();
+   	int n_points        = (int)pts0.size();
 	int poses_pool_used = 0;
 
 	float fx = K.at<float>(0, 0);
@@ -46,6 +46,7 @@ int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<c
 
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = r;
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 1) = t;
+
 		poses_pool_used++;
 	}
 
