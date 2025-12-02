@@ -5,6 +5,9 @@
 #include <iostream>
 #include <Eigen/Eigen>
 #include "solver_gpm_hpc0.h"
+#include "solver_gpm_hpc1.h"
+#include "solver_gpm_hpc2.h"
+#include "trifocal.h"
 #include "lock.h"
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
@@ -43,13 +46,15 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 4, 4> pose00h = pose0.inverse() * pose0;
     Eigen::Matrix<float, 4, 4> pose01h = pose0.inverse() * pose1;
     Eigen::Matrix<float, 4, 4> pose02h = pose0.inverse() * pose2;
+    Eigen::Matrix<float, 4, 4> pose12h = pose1.inverse() * pose2;
 
     Eigen::Matrix<float, 3, 4> pose00 = pose00h(Eigen::seqN(0, 3), Eigen::all);
     Eigen::Matrix<float, 3, 4> pose01 = pose01h(Eigen::seqN(0, 3), Eigen::all);
     Eigen::Matrix<float, 3, 4> pose02 = pose02h(Eigen::seqN(0, 3), Eigen::all);
-
-    make_planar(pose01);
-    make_planar(pose02);
+    Eigen::Matrix<float, 3, 4> pose12 = pose12h(Eigen::seqN(0, 3), Eigen::all);
+ 
+    //make_planar(pose01);
+    //make_planar(pose02);
     
     //Eigen::Matrix<float, 3, 3> R_gt = pose01(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
     //Eigen::AngleAxis<float> r_gt = Eigen::AngleAxis<float>(R_gt);
@@ -74,19 +79,27 @@ int main(int argc, char* argv[])
 
 
 
-
+    Eigen::Matrix<float, 3, 3> R_gt = pose01(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 1> t_gt = pose01.col(3);
     Eigen::Matrix<float, 3, 1> r;
     Eigen::Matrix<float, 3, 1> t;
+    Eigen::Matrix<float, 3, 1> r2;
+    Eigen::Matrix<float, 3, 1> t2;
 
-    solver_gpm_hpc0(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data());
-
+    //solver_gpm_hpc0(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data()); // OK
+    //solver_gpm_hpc1(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data(), 1); // Ok
+    //solver_gpm_hpc2(p11.data(), p11.data() + 3, p11.data() + 6, p31.data(), p31.data() + 3, p31.data() + 6, r.data(), t.data(), 2); // OK
+    bool ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
 
 
     std::cout << "GT" << std::endl;
-    std::cout << pose02 << std::endl;
+    std::cout << pose01 << std::endl;
+    std::cout << pose12 << std::endl;
     std::cout << "POSE" << std::endl;
     std::cout << Eigen::AngleAxis<float>(r.norm(), r.normalized()).toRotationMatrix() << std::endl;
     std::cout << t << std::endl;
+    std::cout << Eigen::AngleAxis<float>(r2.norm(), r2.normalized()).toRotationMatrix() << std::endl;
+    std::cout << t2 << std::endl;
 
 
 
