@@ -1,10 +1,12 @@
 
+#include <iostream>
 #include <Eigen/Eigen>
 #include <opencv2/calib3d.hpp>
+#include "batch_solve_common.h"
 #include "trifocal.h"
 
 // points in format [u, v, z]
-int batch_solve_tft_linear_cpu(std::vector<cv::Point3f> const& pts0, std::vector<cv::Point3f> const& pts1, std::vector<cv::Point3f> const& pts2, cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool)
+int batch_solve_tft_linear_cpu(std::vector<cv::Point3f> const& pts0, std::vector<cv::Point3f> const& pts1, std::vector<cv::Point3f> const& pts2, cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool, std::vector<cv::Vec6f>* next_pool)
 {
 	int n_points = (int)pts0.size();
 	int poses_pool_used = 0;
@@ -16,8 +18,7 @@ int batch_solve_tft_linear_cpu(std::vector<cv::Point3f> const& pts0, std::vector
 
 	cv::Vec3f r1;
 	cv::Vec3f t1;
-	cv::Vec3f r2;
-	cv::Vec3f t2;
+	cv::Vec6f rt2;
 
 	Eigen::Matrix<float, 2, 7> p2d_0;
 	Eigen::Matrix<float, 2, 7> p2d_1;
@@ -26,9 +27,13 @@ int batch_solve_tft_linear_cpu(std::vector<cv::Point3f> const& pts0, std::vector
 
 	for (int i = 0; i < poses_to_sample; ++i)
 	{
+		int ix[7];
+
+		sample(n_points, 7, ix);
+
 		for (int j = 0; j < 7; ++j)
 		{
-			int m = (int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
+			int m = ix[j]; //(int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
 
 			cv::Point3f p0 = pts0[m];
 			cv::Point3f p1 = pts1[m];
@@ -48,12 +53,28 @@ int batch_solve_tft_linear_cpu(std::vector<cv::Point3f> const& pts0, std::vector
 			p3d_0(2, j) = p0.z;
 		}
 
-		bool ok = trifocal_R_t_linear(p2d_0.data(), p2d_1.data(), p2d_2.data(), p3d_0.data(), 7, true, (float*)&r1, (float*)&t1, (float*)&r2, (float*)&t2);
+		bool ok = trifocal_R_t_linear(p2d_0.data(), p2d_1.data(), p2d_2.data(), p3d_0.data(), 7, true, (float*)&r1, (float*)&t1, (float*)&rt2, ((float*)&rt2) + 3);
 		if (!ok) { continue; }
+
+		if ((r1[0] == 0.0f) && (r1[1] == 0.0f) && (r1[2] == 0.0f)) {
+			continue;
+			std::cout << "r1 is zero!!" << std::endl;
+			std::cout << "p2d_0" << std::endl;
+			std::cout << p2d_0 << std::endl;
+			std::cout << "p2d_1" << std::endl;
+			std::cout << p2d_1 << std::endl;
+			std::cout << "p2d_2" << std::endl;
+			std::cout << p2d_2 << std::endl;
+			std::cout << "p3d_0" << std::endl;
+			std::cout << p3d_0 << std::endl;
+		}
 
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = r1;
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 1) = t1;
+
 		poses_pool_used++;
+
+		if (next_pool) { next_pool->push_back(rt2); }
 	}
 
 	return poses_pool_used;
