@@ -1,7 +1,7 @@
 
 #include <opencv2/calib3d.hpp>
 #include "solver_gpm_hpc0.h"
-#include <iostream>
+#include "batch_solve_common.h"
 
 // points in format [u, v, z]
 int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<cv::Point3f> const& pts1, cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool)
@@ -19,8 +19,12 @@ int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<c
 
 	for (int i = 0; i < poses_to_sample; ++i)
 	{
-		int i1 = (int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
-		int i2 = (int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
+		int ix[2];
+
+		sample(n_points, 2, ix);
+
+		int i1 = ix[0];
+		int i2 = ix[1];
 
 		cv::Point3f pa1 = pts0[i1];
 		cv::Point3f pb1 = pts0[i2];
@@ -37,14 +41,8 @@ int batch_solve_gpm_hpc0_cpu(std::vector<cv::Point3f> const& pts0, std::vector<c
 		pa2.y = ((pa2.y - cy) / fy) * pa2.z;
 		pb2.y = ((pb2.y - cy) / fy) * pb2.z;
 
-		solver_gpm_hpc0((float*)&pa1, (float*)&pb1, (float*)&pa2, (float*)&pb2, (float*)&r, (float*)&t);
-
-		float t_sum = t[0] + t[1] + t[2];
-		float r_sum = r[0] + r[1] + r[2];
-
-		float x_sum = t_sum + r_sum;
-
-		if (!isfinite(x_sum)) { continue; }
+		bool ok = solver_gpm_hpc0((float*)&pa1, (float*)&pb1, (float*)&pa2, (float*)&pb2, (float*)&r, (float*)&t);
+		if (!ok) { continue; }
 
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = r;
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 1) = t;
