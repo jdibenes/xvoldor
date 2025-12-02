@@ -93,7 +93,8 @@ compute_p3p_map
 	int const trifocal_index_1,
 	int const trifocal_index_2,
 	int const trifocal_enable_flow_2,
-	int const trifocal_squared_error_thresh
+	float const trifocal_squared_error_min_thresh,
+	float const trifocal_squared_error_max_thresh
 )
 {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -233,7 +234,7 @@ compute_p3p_map
 	float dy = p2a.y - p2b.y;
 	
 	squared_error = (dx * dx) + (dy * dy);
-	if ((trifocal_squared_error_thresh > 0) && (squared_error > trifocal_squared_error_thresh)) { return; }
+	if ((squared_error < trifocal_squared_error_min_thresh) || (squared_error > trifocal_squared_error_max_thresh)) { return; }
 	}
 	else
 	{
@@ -287,7 +288,8 @@ collect_p3p_instances
 	const int trifocal_index_1,
 	const int trifocal_index_2,
 	const int trifocal_enable_flow_2,
-	const int trifocal_squared_error_thresh
+	float const trifocal_squared_error_min_thresh,
+	float const trifocal_squared_error_max_thresh
 )
 {
 	// for pixel-wise op
@@ -417,7 +419,7 @@ collect_p3p_instances
 	if (d_trifocal_squared_error.create(w, h, 1)) { cudaMemcpyToSymbol(_d_trifocal_squared_error, &d_trifocal_squared_error, sizeof(d_trifocal_squared_error)); }
 	gpuErrchk;
 
-	compute_p3p_map << <grid_size, block_size >> > (active_idx, rigidness_thresh, rigidness_sum_thresh, sample_min_depth, sample_max_depth, max_trace_on_flow, disparities_enable, trifocal_enable, trifocal_index_0, trifocal_index_1, trifocal_index_2, trifocal_enable_flow_2, trifocal_squared_error_thresh);
+	compute_p3p_map << <grid_size, block_size >> > (active_idx, rigidness_thresh, rigidness_sum_thresh, sample_min_depth, sample_max_depth, max_trace_on_flow, disparities_enable, trifocal_enable, trifocal_index_0, trifocal_index_1, trifocal_index_2, trifocal_enable_flow_2, trifocal_squared_error_min_thresh, trifocal_squared_error_max_thresh);
 	gpuErrchk;
 
 	if (h_o_p2_map) { d_p2_map.copy_to_host((float2*)h_o_p2_map, make_cudaPos(0, 0, 0), w, h, 1); }
