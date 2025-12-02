@@ -61,3 +61,16 @@ Eigen::Matrix<_scalar, Eigen::Dynamic, Eigen::Dynamic> vector_add_padded(Eigen::
 
     return rv;
 }
+
+template <typename _scalar, int _rows, int _cols>
+static Eigen::Matrix<_scalar, _rows, _cols> matrix_R_cayley(_scalar kx, _scalar ky, _scalar kz)
+{
+    Eigen::Matrix<_scalar, _rows, _cols> R(3, 3);
+
+    R << 1 + kx * kx - ky * ky - kz * kz, 2 * kx * ky - 2 * kz, 2 * kx * kz + 2 * ky,
+         2 * kx * ky + 2 * kz, 1 - kx * kx + ky * ky - kz * kz, 2 * ky * kz - 2 * kx,
+         2 * kx * kz - 2 * ky, 2 * ky * kz + 2 * kx, 1 - kx * kx - ky * ky + kz * kz;
+    R /= 1 + kx * kx + ky * ky + kz * kz;
+
+    return R;
+}
