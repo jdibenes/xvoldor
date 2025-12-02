@@ -110,7 +110,8 @@ collect_p3p_correspondences
 			cfg.trifocal_index_1,
 			cfg.trifocal_index_2,
 			cfg.trifocal_enable_flow_2,
-			cfg.trifocal_squared_error_thresh
+			cfg.trifocal_squared_error_min_thresh,
+			cfg.trifocal_squared_error_max_thresh
 		);
 	}
 	else if (update_iter_instance) {
@@ -145,7 +146,8 @@ collect_p3p_correspondences
 			cfg.trifocal_index_1,
 			cfg.trifocal_index_2,
 			cfg.trifocal_enable_flow_2,
-			cfg.trifocal_squared_error_thresh
+			cfg.trifocal_squared_error_min_thresh,
+			cfg.trifocal_squared_error_max_thresh
 		);
 	}
 	else {
@@ -180,7 +182,8 @@ collect_p3p_correspondences
 			cfg.trifocal_index_1,
 			cfg.trifocal_index_2,
 			cfg.trifocal_enable_flow_2,
-			cfg.trifocal_squared_error_thresh
+			cfg.trifocal_squared_error_min_thresh,
+			cfg.trifocal_squared_error_max_thresh
 		);
 	}
 
@@ -237,6 +240,8 @@ collect_p3p_correspondences
 			p3v2_dst[n_p3v_points] = *p3v2_src;
 			tse2_dst[n_p3v_points] = *tse2_src;
 
+			//std::cout << "trifocal_error: " << *tse2_src << std::endl;
+
 			n_p3v_points++;
 
 			n_p3p_points++;
@@ -273,7 +278,7 @@ collect_p3p_correspondences
 int
 solve_p3p_pool
 (
-	std::vector<Camera> const& cams,
+	std::vector<Camera>& cams,
 	std::vector<cv::Point2f> const& pts2_map,
 	std::vector<cv::Point3f> const& pts3_map,
 	int active_idx,
@@ -286,6 +291,11 @@ solve_p3p_pool
 {
 	int poses_pool_used = 0;
 
+	std::vector<cv::Vec6f>* next_pool = (active_idx < (cams.size() - 1)) ? &cams[active_idx + 1].trifocal_1_2_pool : NULL;
+
+	//cams[active_idx + 1].trifocal_1_2_pool.clear(); // active_idx + 1 might not exist
+	if (next_pool) { next_pool->clear(); }
+
 	switch (cfg.solver_select)
 	{
 	case 0:  poses_pool_used = batch_solve_ap3p_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
@@ -293,206 +303,29 @@ solve_p3p_pool
 	case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	
-	case 5:  poses_pool_used = batch_solve_tft_linear_cpu(trifocal_0_map, trifocal_1_map, trifocal_2_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 5:  poses_pool_used = batch_solve_tft_linear_cpu(trifocal_0_map, trifocal_1_map, trifocal_2_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, next_pool); break;
 
 	case 4:  poses_pool_used = batch_solve_gpm_hpc0_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-	case 6:  poses_pool_used = batch_solve_gpm_hpc1_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, 2); break;
-	case 7:  poses_pool_used = batch_solve_gpm_hpc2_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, 1); break;
+	case 6:  poses_pool_used = batch_solve_gpm_hpc1_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, cfg.root_refine_interations); break;
+	case 7:  poses_pool_used = batch_solve_gpm_hpc2_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, cfg.root_refine_interations); break;
+
+
 	default: poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	}
 
-
-	/*
-	//if (cfg.cpu_p3p)
-	if (cfg.solver_select == 0)
+	for (cv::Vec6f const &v : cams[active_idx].trifocal_1_2_pool)
 	{
-		
+		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = ((cv::Vec3f*)&v)[0];
+		poses_pool.at<cv::Vec3f>(poses_pool_used, 1) = ((cv::Vec3f*)&v)[1];
+
+		poses_pool_used++;
+
+		//std::cout << "active_idx: " << active_idx << " | " << v << std::endl;
 	}
-
-
-
-	else if (1)
-	{
-		
-
-		auto time_stamp = std::chrono::high_resolution_clock::now();
-
-		
-
-		std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
-	else if (0)
-	{
-		std::cout << "TRI CYCLE ---------------------------------------" << std::endl;
-
-		cv::Point3f const* tm0 = trifocal_map_0.data();
-		cv::Point3f const* tm1 = trifocal_map_1.data();
-		cv::Point3f const* tm2 = trifocal_map_2.data();
-
-		int n_points = trifocal_map_0.size();
-
-		float points_2D_1[2 * 7];
-		float points_2D_2[2 * 7];
-		float points_2D_3[2 * 7];
-		float points_3D[3 * 7];
-		float base_2D[2 * 7];
-		float tft[27];
-		float rt01[6];
-		float rt02[6];
-		float s01[1];
-		float s02[1];
-
-		auto time_stamp = std::chrono::high_resolution_clock::now();
-		//int sample_point = 8191;//3458;
-
-		for (int i = 0; i < cfg.n_poses_to_sample; i++)
-		{
-			for (int p = 0; p < 7; ++p)
-			{
-				int idx = ((float)rand() / (float)RAND_MAX) * n_points;
-				//if (i == sample_point) { std::cout << "set " << i << " pick: " << idx << std::endl; }
-
-				points_2D_1[(2 * p) + 0] = (tm0[idx].x - cfg.cx) / cfg.fx;
-				points_2D_2[(2 * p) + 0] = (tm1[idx].x - cfg.cx) / cfg.fx;
-				points_2D_3[(2 * p) + 0] = (tm2[idx].x - cfg.cx) / cfg.fx;
-				base_2D[(2 * p) + 0] = (pts2[idx].x - cfg.cx) / cfg.fx;
-
-				points_2D_1[(2 * p) + 1] = (tm0[idx].y - cfg.cy) / cfg.fy;
-				points_2D_2[(2 * p) + 1] = (tm1[idx].y - cfg.cy) / cfg.fy;
-				points_2D_3[(2 * p) + 1] = (tm2[idx].y - cfg.cy) / cfg.fy;
-				base_2D[(2 * p) + 1] = (pts2[idx].y - cfg.cy) / cfg.fy;
-
-				memcpy(points_3D + (3 * p) + 0, &pts3[idx], sizeof(cv::Point3f));
-			}
-
-			trifocal_R_t(points_2D_1, points_2D_2, points_2D_3, base_2D, points_3D, tft, rt01, rt02, s01, s02);
-
-			if (isfinite(rt01[0] + rt01[1] + rt01[2] + rt01[3] + rt01[4] + rt01[5]))
-			{
-				poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(rt01[0], rt01[1], rt01[2]);
-				poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(rt01[3], rt01[4], rt01[5]);
-			}
-		}
-		std::cout << "TRI POOLS: " << poses_pool_used << std::endl;
-		std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
-	else if (0)
-	{
-		std::cout << "TRI BATCH CYCLE ---------------------------------------" << std::endl;
-		auto time_stamp = std::chrono::high_resolution_clock::now();
-
-		cv::Point3f const* tm0 = trifocal_map_0.data();
-		cv::Point3f const* tm1 = trifocal_map_1.data();
-		cv::Point3f const* tm2 = trifocal_map_2.data();
-
-		int n_points = trifocal_map_0.size();
-
-		float* p2d_1 = new float[n_points * 2];
-		float* p2d_2 = new float[n_points * 2];
-		float* p2d_3 = new float[n_points * 2];
-		float* sp2d = new float[n_points * 2];
-		float* sp3d = new float[n_points * 3];
-		float* rt1 = new float[cfg.n_poses_to_sample * 6];
-		float* rt2 = new float[cfg.n_poses_to_sample * 6];
-
-		int sample_point = 8191;
-
-		for (int i = 0; i < n_points; ++i)
-		{
-			p2d_1[(i * 2) + 0] = (tm0[i].x - cfg.cx) / cfg.fx;
-			p2d_2[(i * 2) + 0] = (tm1[i].x - cfg.cx) / cfg.fx;
-			p2d_3[(i * 2) + 0] = (tm2[i].x - cfg.cx) / cfg.fx;
-			sp2d[(i * 2) + 0] = (pts2[i].x - cfg.cx) / cfg.fx;
-
-			p2d_1[(i * 2) + 1] = (tm0[i].y - cfg.cy) / cfg.fy;			
-			p2d_2[(i * 2) + 1] = (tm1[i].y - cfg.cy) / cfg.fy;			
-			p2d_3[(i * 2) + 1] = (tm2[i].y - cfg.cy) / cfg.fy;			
-			sp2d[(i * 2) + 1] = (pts2[i].y - cfg.cy) / cfg.fy;
-		}
-
-		int valid = trifocal_R_t_batch(cfg.n_poses_to_sample, 12, p2d_1, p2d_2, p2d_3, sp2d, (float*)&pts3[0], n_points, nullptr, rt1, rt2, nullptr, nullptr);
-
-		poses_pool_used = 0;
-		for (int i = 0; i < valid; ++i)
-		{
-			poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(rt1[(6 * i) + 0], rt1[(6 * i) + 1], rt1[(6 * i) + 2]);
-			poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(rt1[(6 * i) + 3], rt1[(6 * i) + 4], rt1[(6 * i) + 5]);
-		}
-
-		std::cout << "TRI BATCH POOLS: " << poses_pool_used << std::endl;
-
-		delete[] p2d_1;
-		delete[] p2d_2;
-		delete[] p2d_3;
-		delete[] sp2d;
-		delete[] sp3d;
-		delete[] rt1;
-		delete[] rt2;
-
-		std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
-	else
-	{
-		std::cout << "TRIKK CYCLE ---------------------------------------" << std::endl;
-
-		int n_points = trifocal_map_0.size();
-
-		cv::Point3f const* tm0 = trifocal_map_0.data();
-		cv::Point3f const* tm1 = trifocal_map_1.data();
-		cv::Point3f const* tm2 = trifocal_map_2.data();
-
-		float points_2D_1[2 * 7];
-		float points_2D_2[2 * 7];
-		float points_2D_3[2 * 7];
-		float points_3D[3 * 7];
-		float base_2D[2 * 7];
-
-		float r1[3];
-		float r2[3];
-		float t1[3];
-		float t2[3];
-
-		//float width = trifocal_map_0.cols;
-		//float height = trifocal_map_0.rows;
-
-		auto time_stamp = std::chrono::high_resolution_clock::now();
-
-		for (int i = 0; i < cfg.n_poses_to_sample; i++)
-		{
-			for (int p = 0; p < 5; ++p)
-			{
-				int idx = ((float)rand() / (float)RAND_MAX) * n_points;
-
-				points_2D_1[(2 * p) + 0] = tm0[idx].x;
-				points_2D_2[(2 * p) + 0] = tm1[idx].x;
-				points_2D_3[(2 * p) + 0] = tm2[idx].x;
-				base_2D[(2 * p) + 0] = (pts2[idx].x - cfg.cx) / cfg.fx;
-
-				points_2D_1[(2 * p) + 1] = tm0[idx].y;
-				points_2D_2[(2 * p) + 1] = tm1[idx].y;
-				points_2D_3[(2 * p) + 1] = tm2[idx].y;
-				base_2D[(2 * p) + 1] = (pts2[idx].y - cfg.cy) / cfg.fy;
-
-				memcpy(points_3D + (3 * p) + 0, &pts3[idx], sizeof(cv::Point3f));
-			}
-
-			//trifocal_R_t_poselib(points_2D_1, points_2D_2, points_2D_3, base_2D, points_3D, cfg.fx, cfg.fy, cfg.cx, cfg.cy, width, height, 5, r1, t1, r2, t2);
-
-			std::cout << "r1 " << r1[0] << "," << r1[1] << "," << r1[2] << std::endl;
-
-			if (isfinite(r1[0] + r1[1] + r1[2] + t1[0] + t1[1] + t1[2]))
-			{
-				poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(r1[0], r1[1], r1[2]);
-				poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(t1[0], t1[1], t1[2]);
-			}		
-		}
-		std::cout << "TRIKK POOLS: " << poses_pool_used << std::endl;
-		std::cout << "TRIKK compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
-	*/
 
 	return poses_pool_used;
 }
+
 
 
 
@@ -537,7 +370,7 @@ optimize_camera_pose
 
 	time_stamp = std::chrono::high_resolution_clock::now();
 
-	cv::Mat poses_pool(cfg.n_poses_to_sample, 6, CV_32F);
+	cv::Mat poses_pool(2 * cfg.n_poses_to_sample, 6, CV_32F);
 	int poses_pool_used = solve_p3p_pool(cams, pts2_map, pts3_map, active_idx, cfg, poses_pool, trifocal_0_map, trifocal_1_map, trifocal_2_map);
 
 	if (poses_pool_used <= 0) { return 0; }
@@ -881,3 +714,192 @@ std::cout << tm2[0] << std::endl;
 		delete[] ret_Rs;
 		delete[] ret_ts;
 		*/
+
+		/*
+			//if (cfg.cpu_p3p)
+			if (cfg.solver_select == 0)
+			{
+
+			}
+
+
+
+			else if (1)
+			{
+
+
+				auto time_stamp = std::chrono::high_resolution_clock::now();
+
+
+
+				std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+			}
+			else if (0)
+			{
+				std::cout << "TRI CYCLE ---------------------------------------" << std::endl;
+
+				cv::Point3f const* tm0 = trifocal_map_0.data();
+				cv::Point3f const* tm1 = trifocal_map_1.data();
+				cv::Point3f const* tm2 = trifocal_map_2.data();
+
+				int n_points = trifocal_map_0.size();
+
+				float points_2D_1[2 * 7];
+				float points_2D_2[2 * 7];
+				float points_2D_3[2 * 7];
+				float points_3D[3 * 7];
+				float base_2D[2 * 7];
+				float tft[27];
+				float rt01[6];
+				float rt02[6];
+				float s01[1];
+				float s02[1];
+
+				auto time_stamp = std::chrono::high_resolution_clock::now();
+				//int sample_point = 8191;//3458;
+
+				for (int i = 0; i < cfg.n_poses_to_sample; i++)
+				{
+					for (int p = 0; p < 7; ++p)
+					{
+						int idx = ((float)rand() / (float)RAND_MAX) * n_points;
+						//if (i == sample_point) { std::cout << "set " << i << " pick: " << idx << std::endl; }
+
+						points_2D_1[(2 * p) + 0] = (tm0[idx].x - cfg.cx) / cfg.fx;
+						points_2D_2[(2 * p) + 0] = (tm1[idx].x - cfg.cx) / cfg.fx;
+						points_2D_3[(2 * p) + 0] = (tm2[idx].x - cfg.cx) / cfg.fx;
+						base_2D[(2 * p) + 0] = (pts2[idx].x - cfg.cx) / cfg.fx;
+
+						points_2D_1[(2 * p) + 1] = (tm0[idx].y - cfg.cy) / cfg.fy;
+						points_2D_2[(2 * p) + 1] = (tm1[idx].y - cfg.cy) / cfg.fy;
+						points_2D_3[(2 * p) + 1] = (tm2[idx].y - cfg.cy) / cfg.fy;
+						base_2D[(2 * p) + 1] = (pts2[idx].y - cfg.cy) / cfg.fy;
+
+						memcpy(points_3D + (3 * p) + 0, &pts3[idx], sizeof(cv::Point3f));
+					}
+
+					trifocal_R_t(points_2D_1, points_2D_2, points_2D_3, base_2D, points_3D, tft, rt01, rt02, s01, s02);
+
+					if (isfinite(rt01[0] + rt01[1] + rt01[2] + rt01[3] + rt01[4] + rt01[5]))
+					{
+						poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(rt01[0], rt01[1], rt01[2]);
+						poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(rt01[3], rt01[4], rt01[5]);
+					}
+				}
+				std::cout << "TRI POOLS: " << poses_pool_used << std::endl;
+				std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+			}
+			else if (0)
+			{
+				std::cout << "TRI BATCH CYCLE ---------------------------------------" << std::endl;
+				auto time_stamp = std::chrono::high_resolution_clock::now();
+
+				cv::Point3f const* tm0 = trifocal_map_0.data();
+				cv::Point3f const* tm1 = trifocal_map_1.data();
+				cv::Point3f const* tm2 = trifocal_map_2.data();
+
+				int n_points = trifocal_map_0.size();
+
+				float* p2d_1 = new float[n_points * 2];
+				float* p2d_2 = new float[n_points * 2];
+				float* p2d_3 = new float[n_points * 2];
+				float* sp2d = new float[n_points * 2];
+				float* sp3d = new float[n_points * 3];
+				float* rt1 = new float[cfg.n_poses_to_sample * 6];
+				float* rt2 = new float[cfg.n_poses_to_sample * 6];
+
+				int sample_point = 8191;
+
+				for (int i = 0; i < n_points; ++i)
+				{
+					p2d_1[(i * 2) + 0] = (tm0[i].x - cfg.cx) / cfg.fx;
+					p2d_2[(i * 2) + 0] = (tm1[i].x - cfg.cx) / cfg.fx;
+					p2d_3[(i * 2) + 0] = (tm2[i].x - cfg.cx) / cfg.fx;
+					sp2d[(i * 2) + 0] = (pts2[i].x - cfg.cx) / cfg.fx;
+
+					p2d_1[(i * 2) + 1] = (tm0[i].y - cfg.cy) / cfg.fy;
+					p2d_2[(i * 2) + 1] = (tm1[i].y - cfg.cy) / cfg.fy;
+					p2d_3[(i * 2) + 1] = (tm2[i].y - cfg.cy) / cfg.fy;
+					sp2d[(i * 2) + 1] = (pts2[i].y - cfg.cy) / cfg.fy;
+				}
+
+				int valid = trifocal_R_t_batch(cfg.n_poses_to_sample, 12, p2d_1, p2d_2, p2d_3, sp2d, (float*)&pts3[0], n_points, nullptr, rt1, rt2, nullptr, nullptr);
+
+				poses_pool_used = 0;
+				for (int i = 0; i < valid; ++i)
+				{
+					poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(rt1[(6 * i) + 0], rt1[(6 * i) + 1], rt1[(6 * i) + 2]);
+					poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(rt1[(6 * i) + 3], rt1[(6 * i) + 4], rt1[(6 * i) + 5]);
+				}
+
+				std::cout << "TRI BATCH POOLS: " << poses_pool_used << std::endl;
+
+				delete[] p2d_1;
+				delete[] p2d_2;
+				delete[] p2d_3;
+				delete[] sp2d;
+				delete[] sp3d;
+				delete[] rt1;
+				delete[] rt2;
+
+				std::cout << "TFT compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+			}
+			else
+			{
+				std::cout << "TRIKK CYCLE ---------------------------------------" << std::endl;
+
+				int n_points = trifocal_map_0.size();
+
+				cv::Point3f const* tm0 = trifocal_map_0.data();
+				cv::Point3f const* tm1 = trifocal_map_1.data();
+				cv::Point3f const* tm2 = trifocal_map_2.data();
+
+				float points_2D_1[2 * 7];
+				float points_2D_2[2 * 7];
+				float points_2D_3[2 * 7];
+				float points_3D[3 * 7];
+				float base_2D[2 * 7];
+
+				float r1[3];
+				float r2[3];
+				float t1[3];
+				float t2[3];
+
+				//float width = trifocal_map_0.cols;
+				//float height = trifocal_map_0.rows;
+
+				auto time_stamp = std::chrono::high_resolution_clock::now();
+
+				for (int i = 0; i < cfg.n_poses_to_sample; i++)
+				{
+					for (int p = 0; p < 5; ++p)
+					{
+						int idx = ((float)rand() / (float)RAND_MAX) * n_points;
+
+						points_2D_1[(2 * p) + 0] = tm0[idx].x;
+						points_2D_2[(2 * p) + 0] = tm1[idx].x;
+						points_2D_3[(2 * p) + 0] = tm2[idx].x;
+						base_2D[(2 * p) + 0] = (pts2[idx].x - cfg.cx) / cfg.fx;
+
+						points_2D_1[(2 * p) + 1] = tm0[idx].y;
+						points_2D_2[(2 * p) + 1] = tm1[idx].y;
+						points_2D_3[(2 * p) + 1] = tm2[idx].y;
+						base_2D[(2 * p) + 1] = (pts2[idx].y - cfg.cy) / cfg.fy;
+
+						memcpy(points_3D + (3 * p) + 0, &pts3[idx], sizeof(cv::Point3f));
+					}
+
+					//trifocal_R_t_poselib(points_2D_1, points_2D_2, points_2D_3, base_2D, points_3D, cfg.fx, cfg.fy, cfg.cx, cfg.cy, width, height, 5, r1, t1, r2, t2);
+
+					std::cout << "r1 " << r1[0] << "," << r1[1] << "," << r1[2] << std::endl;
+
+					if (isfinite(r1[0] + r1[1] + r1[2] + t1[0] + t1[1] + t1[2]))
+					{
+						poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = cv::Vec3f(r1[0], r1[1], r1[2]);
+						poses_pool.at<cv::Vec3f>(poses_pool_used++, 1) = cv::Vec3f(t1[0], t1[1], t1[2]);
+					}
+				}
+				std::cout << "TRIKK POOLS: " << poses_pool_used << std::endl;
+				std::cout << "TRIKK compute time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+			}
+			*/
