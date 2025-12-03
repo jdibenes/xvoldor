@@ -18,7 +18,7 @@ struct Config
 	int trifocal_index_1 = 0;
 	int trifocal_index_2 = 0;
 	float trifocal_squared_error_min_thresh = 0;//0.01f;
-	float trifocal_squared_error_max_thresh = 4.0f;
+	float trifocal_squared_error_max_thresh = 2.0f;
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
