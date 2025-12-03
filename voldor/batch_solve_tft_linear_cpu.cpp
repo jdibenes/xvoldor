@@ -56,17 +56,8 @@ int batch_solve_tft_linear_cpu(std::vector<cv::Point3f> const& pts0, std::vector
 		bool ok = trifocal_R_t_linear(p2d_0.data(), p2d_1.data(), p2d_2.data(), p3d_0.data(), 7, true, (float*)&r1, (float*)&t1, (float*)&rt2, ((float*)&rt2) + 3);
 		if (!ok) { continue; }
 
-		if ((r1[0] == 0.0f) && (r1[1] == 0.0f) && (r1[2] == 0.0f)) {
+		if (((r1[0] == 0.0f) && (r1[1] == 0.0f) && (r1[2] == 0.0f)) || ((rt2[0] == 0.0f) && (rt2[1] == 0.0f) && (rt2[2] == 0.0f))) {
 			continue;
-			std::cout << "r1 is zero!!" << std::endl;
-			std::cout << "p2d_0" << std::endl;
-			std::cout << p2d_0 << std::endl;
-			std::cout << "p2d_1" << std::endl;
-			std::cout << p2d_1 << std::endl;
-			std::cout << "p2d_2" << std::endl;
-			std::cout << p2d_2 << std::endl;
-			std::cout << "p3d_0" << std::endl;
-			std::cout << p3d_0 << std::endl;
 		}
 
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = r1;
