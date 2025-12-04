@@ -1,5 +1,5 @@
 
-//#define ENABLE_SOLVER_TEST
+#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -7,6 +7,7 @@
 #include "solver_gpm_hpc0.h"
 #include "solver_gpm_hpc1.h"
 #include "solver_gpm_hpc2.h"
+#include "solver_4p3v_para.h"
 #include "trifocal.h"
 #include "lock.h"
 
@@ -89,7 +90,8 @@ int main(int argc, char* argv[])
     //solver_gpm_hpc0(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data()); // OK
     //solver_gpm_hpc1(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data(), 1); // Ok
     //solver_gpm_hpc2(p11.data(), p11.data() + 3, p11.data() + 6, p31.data(), p31.data() + 3, p31.data() + 6, r.data(), t.data(), 2); // OK
-    bool ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
+    //bool ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
+    solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
 
 
     std::cout << "GT" << std::endl;
