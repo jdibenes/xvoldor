@@ -34,15 +34,36 @@
     <Filter Include="thirdparty\PoseLib\solvers">
       <UniqueIdentifier>{116bcc51-92cf-4fbb-8dab-d033d2a046ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\solvers">
+      <UniqueIdentifier>{542a5dce-178c-4d9b-9382-78e8fda88f22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\solvers">
+      <UniqueIdentifier>{1f026c70-66c4-42ed-af2c-6ad5b20827e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\helpers">
+      <UniqueIdentifier>{4550b308-a58e-4c7b-b543-bd98f70afd07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\wrapper">
+      <UniqueIdentifier>{72c815bb-0150-433c-8525-0d6ccb6813d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\wrapper">
+      <UniqueIdentifier>{8ba73cb3-a2a7-4db9-bc82-fa58602ba132}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\helpers">
+      <UniqueIdentifier>{449fbbfb-c129-484f-829e-1f2636fb7c21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\batch_solve">
+      <UniqueIdentifier>{238d0488-2951-4de2-b126-17fcf3c30908}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\batch_solve">
+      <UniqueIdentifier>{0e0c3bf8-69c4-4a75-b194-7b63f5d0be4d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\voldor\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\geometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\py_export.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\utils.h">
@@ -75,8 +96,38 @@
     <ClInclude Include="..\..\voldor\trifocal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\trifocal_poselib.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\voldor\solver_gpm_hpc0.h">
+      <Filter>Header Files\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\helpers_eigen.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\helpers.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\py_export.h">
+      <Filter>Header Files\wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\lock.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\solver_gpm_hpc1.h">
+      <Filter>Header Files\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\solver_gpm_hpc2.h">
+      <Filter>Header Files\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\algebra.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\batch_solve_common.h">
+      <Filter>Header Files\batch_solve</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\batch_solve.h">
+      <Filter>Header Files\batch_solve</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
+      <Filter>Header Files\solvers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -84,9 +135,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\py_export.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\utils.cpp">
@@ -248,8 +296,59 @@
     <ClCompile Include="..\..\thirdparty\PoseLib\robust.cc">
       <Filter>thirdparty\PoseLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\trifocal_poselib.cpp">
+    <ClCompile Include="..\..\voldor\main_solver_test.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\py_export.cpp">
+      <Filter>Source Files\wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\lock.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\algebra.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_tft_linear.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_ap3p_gpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_cpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_gpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc0_cpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc2_cpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc1_cpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp">
+      <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
