@@ -311,7 +311,7 @@ class VOLDOR_Viewer:
                 ])
                 
                 for i in range(n_vertices):
-                    f.write(f'{self.cache_points[i, 0]} {self.cache_points[i, 1]} {self.cache_points[i, 2]} {self.cache_point_colors[i,0]} {self.cache_point_colors[i,1]} {self.cache_point_colors[i,2]}\n')
+                    f.write(f'{-self.cache_points[i, 0]} {self.cache_points[i, 1]} {self.cache_points[i, 2]} {self.cache_point_colors[i,0]} {self.cache_point_colors[i,1]} {self.cache_point_colors[i,2]}\n')
         
         
 

@@ -1,36 +1,75 @@
-#include "voldor.h"
 
+#include "voldor.h"
 
 void
 VOLDOR::init
 (
-	std::vector<cv::Mat> _flows,
+	std::vector<cv::Mat> _flows_1,
+	std::vector<cv::Mat> _flows_2,
+	std::vector<cv::Mat> _disparities,
 	cv::Mat _disparity,
 	cv::Mat _disparity_pconf,
 	std::vector<cv::Mat> _depth_priors,
 	std::vector<cv::Vec6f> _depth_prior_poses,
-	std::vector<cv::Mat> _depth_prior_pconfs
+	std::vector<cv::Mat> _depth_prior_pconfs	
 )
 {
-
 	// clear
-	flows.clear();
+	flows_1.clear();
+	flows_2.clear();
+	disparities.clear();
 	rigidnesses.clear();
 	cams.clear();
+	
 	iters_cur = 0;
 	iters_remain = cfg.max_iters;
 
 	// we assume flow, disparity and camera parameters need apply resize
 	// while depth_prior and their poses are pre-resized since they are usually previous VOLDOR result
+	//if (_flows_1.size() != _flows_2.size())
+	//{
+	//	std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
+	//	throw;
+	//}
+
+	if (cfg.resize_factor != 1)
+	{
+		std::cout << "WARNING resize_factor != 1" << std::endl;
+	}
 
 	// copy flows
-	for (int i = 0; i < _flows.size(); i++) {
-		cv::Mat flow = _flows[i].clone();
-		if (cfg.resize_factor != 1) {
+	for (int i = 0; i < _flows_1.size(); ++i)
+	{
+		cv::Mat flow = _flows_1[i].clone();	
+		if (cfg.resize_factor != 1) 
+		{
 			cv::resize(flow, flow, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-			flow *= cfg.resize_factor;
+			flow *= cfg.resize_factor;			
 		}
-		flows.push_back(flow);
+		flows_1.push_back(flow);		
+	}
+
+	for (int i = 0; i < _flows_2.size(); ++i)
+	{
+		cv::Mat flow_2 = _flows_2[i].clone();
+		if (cfg.resize_factor != 1) 
+		{
+			cv::resize(flow_2, flow_2, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+			flow_2 *= cfg.resize_factor;
+		}
+		flows_2.push_back(flow_2);
+	}
+
+	// copy disparities
+	for (int i = 0; i < _disparities.size(); ++i)
+	{
+		cv::Mat depth = cfg.basefocal / _disparities[i];
+		if (cfg.resize_factor != 1)
+		{
+			cv::resize(depth, depth, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+			depth *= cfg.resize_factor;
+		}
+		disparities.push_back(depth);
 	}
 
 	// convert disparity to general depth prior
@@ -80,12 +119,13 @@ VOLDOR::init
 		//cfg.basefocal *= cfg.resize_factor;
 	}
 
+	int chop = cfg.multiview_mode - 2;
 
 	// init params
-	w = flows[0].cols;
-	h = flows[0].rows;
-	n_flows = flows.size();
-	n_flows_init = flows.size();
+	w = flows_1[0].cols;
+	h = flows_1[0].rows;
+	n_flows = flows_1.size() - chop;
+	n_flows_init = flows_1.size() - chop;
 	n_depth_priors = depth_priors.size();
 
 	has_disparity = !_disparity.empty(); // tell gpu depth priors do not have disparity prior, so it does not apply disp_delta
@@ -97,7 +137,6 @@ VOLDOR::init
 	// init rigidnesses
 	for (int i = 0; i < n_flows; i++)
 		rigidnesses.push_back(cv::Mat::ones(cv::Size(w, h), CV_32F));
-
 
 	// init cams
 	cv::Mat K = (cv::Mat_<float>(3, 3) <<
@@ -156,8 +195,8 @@ int VOLDOR::solve() {
 void VOLDOR::bootstrap() {
 	tic();
 
-	estimate_camera_pose_epipolar(flows[0], cams[0]);
-	estimate_depth_closed_form(flows[0], depth, cams[0]);
+	estimate_camera_pose_epipolar(flows_1[0], cams[0]);
+	estimate_depth_closed_form(flows_1[0], depth, cams[0]);
 
 	if (!cfg.silent) {
 		cams[0].print_info();
@@ -177,14 +216,21 @@ void VOLDOR::optimize_cameras() {
 
 		int optimize_success = 0;
 		if (!allow_trunc || cams[i].pose_rigidness_density > cfg.trunc_rigidness_density) {
-			optimize_success = optimize_camera_pose(flows, rigidnesses, depth, cams,
+			optimize_success = optimize_camera_pose(
+				flows_1,
+				rigidnesses,
+				depth,
+				cams,
 				n_flows,
 				i, // active idx (from 0 to n_flows-1)
 				cams[i].pose_sample_count == 0 ? false : true, //successive pose?
 				cfg.rg_refine && (!cfg.rg_refine_last_only || iters_remain == 0), //rg_refine?
 				!cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0),  //update batch instance?
 				i == 0, //update iter instance?
-				cfg);
+				cfg,
+				flows_2,
+				disparities
+			);
 		}
 
 		if (!cfg.silent)
@@ -224,7 +270,7 @@ void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
 		h_ts = new float*[n_flows];
 
 		for (int i = 0; i < n_flows; i++) {
-			h_flows[i] = (float*)flows[i].data;
+			h_flows[i] = (float*)flows_1[i].data;
 			h_rigidnesses[i] = (float*)rigidnesses[i].data;
 			h_Rs[i] = (float*)cams[i].R.data;
 			h_ts[i] = (float*)cams[i].t.data;
@@ -376,8 +422,8 @@ VOLDOR::save_result
 
 	if (cfg.save_everything) {
 		// save rigidness maps and flow viz
-		for (int i = 0; i < flows.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "flow-" + std::to_string(i) + ".png", 255 * vis_flow(flows[i]));
+		for (int i = 0; i < flows_1.size(); i++)
+			imwrite(save_dir + PATH_SEPARATOR + "flow-" + std::to_string(i) + ".png", 255 * vis_flow(flows_1[i]));
 		for (int i = 0; i < rigidnesses.size(); i++)
 			imwrite(save_dir + PATH_SEPARATOR + "rigidness-" + std::to_string(i) + ".png", rigidnesses[i]);
 		for (int i = 0; i < depth_prior_confs.size(); i++)

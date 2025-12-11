@@ -157,10 +157,12 @@ class VOLDOR_SLAM:
             raise f'Unknown SLAM mode - {mode}'
 
         self.flows = []
+        self.flows_2 = []
         self.images_grayf = [] # gray-float image for frame-alignment
         self.images_bgri = [] # bgr-uint8 image for viewer rendering
         self.disps = []
         self.flow_loader_pt = -1
+        self.flow_2_loader_pt = -1
         self.image_loader_pt = -1
         self.disp_loader_pt = -1
         self.lc_candidates = []
@@ -213,6 +215,19 @@ class VOLDOR_SLAM:
                 return False
             time.sleep(0.01)
         return True
+    
+    def flow_2_loader_sync(self, fid_query, no_block=False, block_when_uninit=False):
+        if (self.flow_2_loader_pt == -1 and not block_when_uninit) \
+            or fid_query >= self.N_FRAMES-1:
+            return False
+        while self.flow_2_loader_pt <= fid_query:
+            if no_block:
+                return False
+            time.sleep(0.01)
+        return True
+    
+
+
     def image_loader_sync(self, fid_query, no_block=False, block_when_uninit=False):
         if (self.image_loader_pt == -1 and not block_when_uninit) \
             or fid_query >= self.N_FRAMES-1:
@@ -256,6 +271,32 @@ class VOLDOR_SLAM:
                 flow[...,1] *= flow_rescale[1]
             self.flows.append(flow)
             self.flow_loader_pt += 1
+
+
+    def flow_2_loader(self, flow_2_path, resize=1.0, n_cache=100, range=(0,0)):
+        if self.h==0 or self.w==0:
+            raise 'Need start optical flow loader first.'
+
+        self.flow_2_loader_pt = 0
+
+        flow_2_fn_list = sorted(os.listdir(flow_2_path))
+        if (range != (0,0)):
+            flow_2_fn_list =flow_2_fn_list[range[0]:range[1]]
+        print(f'{len(flow_2_fn_list)} flows 2 loaded')
+
+        for fn2 in flow_2_fn_list:
+            while len(self.flows_2) - self.fid_cur > n_cache or self.flow_loader_pt <= 0:
+                time.sleep(0.01)
+
+            flow_2 = load_flow(os.path.join(flow_2_path, fn2))
+            if flow_2.shape[0] != self.h or flow_2.shape[1] != self.w:
+                flow_rescale = (self.w / flow_2.shape[1], self.h / flow_2.shape[0])
+                flow_2 = cv2.resize(flow_2, (self.w, self.h))
+                flow_2[...,0] *= flow_rescale[0]
+                flow_2[...,1] *= flow_rescale[1]
+            self.flows_2.append(flow_2)
+            self.flow_2_loader_pt += 1
+
             
     def image_loader(self, image_path, n_cache=100, range=(0,0)):
         if self.h==0 or self.w==0:
@@ -441,16 +482,20 @@ class VOLDOR_SLAM:
             
             if not self.flow_loader_sync(min(self.fid_cur+self.voldor_winsize-1, self.N_FRAMES-2)):
                 raise 'Flow loader not working or files are missing.'
+            if not self.flow_2_loader_sync(min(self.fid_cur+self.voldor_winsize-1, self.N_FRAMES-2)):
+                raise 'Flow 2 loader not working or files are missing.'
             if self.mode=='stereo':
                 if not self.disp_loader_sync(self.fid_cur):
                     raise 'Disparity loader not working or files are missing.'
             py_voldor_kwargs = {
-                'flows': np.stack(self.flows[self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0),
+                'flows'   : np.stack(self.flows[  self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0),
+                'flows_2' : np.stack(self.flows_2[self.fid_cur:self.fid_cur+self.voldor_winsize-1], axis=0),
                 'fx':self.fx, 'fy':self.fy, 'cx':self.cx, 'cy':self.cy, 'basefocal':self.basefocal,
                 'disparity' : self.disps[self.fid_cur] if self.mode=='stereo' else None,
                 'depth_priors' : np.stack(depth_priors, axis=0) if len(depth_priors)>0 else None,
                 'depth_prior_pconfs' : np.stack(depth_prior_pconfs, axis=0) if len(depth_prior_pconfs)>0 else None,
                 'depth_prior_poses' : np.stack(depth_prior_poses, axis=0) if len(depth_prior_poses)>0 else None,
+                'disparities' : np.stack(self.disps[  self.fid_cur:self.fid_cur+self.voldor_winsize+1], axis=0) if self.mode=='stereo' else None,
                 'config' : self.voldor_config + ' ' + self.voldor_user_config}
 
             py_voldor_funmap = partial(pyvoldor.voldor, **py_voldor_kwargs)

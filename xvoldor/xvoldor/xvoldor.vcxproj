@@ -25,18 +25,195 @@
     <ClInclude Include="..\..\lambdatwist\refine_lambda.h" />
     <ClInclude Include="..\..\lambdatwist\solve_cubic.h" />
     <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
+    <ClInclude Include="..\..\voldor\algebra.h" />
+    <ClInclude Include="..\..\voldor\batch_solve.h" />
+    <ClInclude Include="..\..\voldor\batch_solve_common.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
+    <ClInclude Include="..\..\voldor\helpers.h" />
+    <ClInclude Include="..\..\voldor\helpers_eigen.h" />
     <ClInclude Include="..\..\voldor\kitti.h" />
+    <ClInclude Include="..\..\voldor\lock.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
+    <ClInclude Include="..\..\voldor\solver_4p3v_para.h" />
+    <ClInclude Include="..\..\voldor\solver_gpm_hpc0.h" />
+    <ClInclude Include="..\..\voldor\solver_gpm_hpc1.h" />
+    <ClInclude Include="..\..\voldor\solver_gpm_hpc2.h" />
+    <ClInclude Include="..\..\voldor\trifocal.h" />
     <ClInclude Include="..\..\voldor\utils.h" />
     <ClInclude Include="..\..\voldor\voldor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\colmap_models.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\decompositions.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\essential.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\qep.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\re3q3.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\univariate.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\bundle.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\absolute_pose.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\homography.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\hybrid_pose.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\relative_pose.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\ransac.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\sampling.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\pl_utils.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_5p1pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_6pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_upright_4pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gp3p.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gp4ps.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\homography_4pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p1p2ll.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p2p1ll.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p2p2pl.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3ll.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3p.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3p_ding.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p4pf.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p5lp_radial.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p6lp.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_5pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_6pt_focal.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_7pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_8pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_affine_4p.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_3pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_2pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_3pt.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\threeview_hc.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\threeview_nister.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\threeview_para.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp2p.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp3ps.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp4pl.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up1p1ll.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up1p2pl.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up2p.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up4pl.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\algebra.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_common.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc1_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc2_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_ap3p_gpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc0_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_gpu.cpp" />
     <ClCompile Include="..\..\voldor\geometry.cpp" />
     <ClCompile Include="..\..\voldor\kitti.cpp" />
-    <ClCompile Include="..\..\voldor\main.cpp" />
+    <ClCompile Include="..\..\voldor\lock.cpp" />
+    <ClCompile Include="..\..\voldor\main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\main_solver_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp" />
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp" />
     <ClCompile Include="..\..\voldor\py_export.cpp" />
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp" />
+    <ClCompile Include="..\..\voldor\solver_tft_linear.cpp" />
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp" />
+    <ClCompile Include="..\..\voldor\trifocal.cpp" />
     <ClCompile Include="..\..\voldor\utils.cpp" />
     <ClCompile Include="..\..\voldor\voldor.cpp" />
     <ClCompile Include="x_utils.cpp" />
@@ -74,6 +251,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -153,7 +331,8 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3414\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3414\build\include;C:\Users\jcds\Documents\GitHub\xvoldor\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

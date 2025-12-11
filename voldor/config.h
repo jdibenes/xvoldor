@@ -1,8 +1,24 @@
+
 #pragma once
 #include "utils.h"
 
-struct Config {
+struct Config 
+{
 	//vector<string> flow_names;
+	int multiview_mode = 2; // 2: binocular, 3: trifocal
+	int solver_select = 4;
+	int disparities_enable = 1;
+	int trifocal_enable_flow_2 = 0;
+	int root_refine_interations = 2;
+
+	int cpu_p3p = false; //do p3p on cpu (deprecated)
+	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
+
+	int trifocal_index_0 = 0;
+	int trifocal_index_1 = 0;
+	int trifocal_index_2 = 0;
+	float trifocal_squared_error_min_thresh = 0;//0.01f;
+	float trifocal_squared_error_max_thresh = 2.0f;
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
@@ -22,8 +38,10 @@ struct Config {
 	// input-params
 	float resize_factor = 1.0f; //(deprecated, now resize is done in slam logic)
 	float abs_resize_factor = 1.0f; //resize factor related to the size that optical flow is estimated from. (useful to residual model)
-	float fx = 0.0f, fy = 0.0f;
-	float cx = 0.0f, cy = 0.0f;
+	float fx = 0.0f;
+	float fy = 0.0f;
+	float cx = 0.0f;
+	float cy = 0.0f;
 	int exclusive_gpu_context = true; //if only one voldor instance is running under the gpu context, set this to true, a lot of optimization will be applied
 
 	// debug related
@@ -40,8 +58,6 @@ struct Config {
 	int norm_world_scale = true; //normalize mean translation norm to 1.0, improve the robustness for monocular initialization
 
 	// pose sampling related
-	int cpu_p3p = false; //do p3p on cpu
-	int lambdatwist = true; //use lambdatwist instead of ap3p
 	int n_poses_to_sample = 8192;
 	float pose_sample_min_depth = 0.1f;
 	float pose_sample_max_depth = 1000.0f;
@@ -72,7 +88,7 @@ struct Config {
 	int meanshift_max_iters = 100;
 	int meanshift_max_init_trials = 20;
 	float meanshift_good_init_confidence = 0.5f;
-	float meanshift_epsilon = 1e-5;
+	float meanshift_epsilon = 1e-5f;
 
 	// KITTI ground-height-estimation 
 	// NOTE this function is not used anymore, the code if left here for reference to the paper
@@ -85,33 +101,30 @@ struct Config {
 	static void str_to_arg(std::string str, T& arg) {
 		switch (*(typeid(arg).name()))
 		{
-		case 'i':
-			arg = stoi(str);
-		case 'l':
-			arg = stol(str);
-		case 'f':
-			arg = stof(str);
-		case 'd':
-			arg = stod(str);
-		default:
-			break;
+		case 'i': arg = stoi(str); break;
+		case 'l': arg = stol(str); break;
+		case 'f': arg = stof(str); break;
+		case 'd': arg = stod(str); break;
 		}
 	}
 
 	template <typename T>
-	static T safe_arr_access(std::vector<T> arr, size_t i) {
-		if (i>=0 && i<arr.size())
-			return arr[i];
-		else
-			std::cout << "Config array index out of bound." << std::endl;
-			exit(1);
+	static T safe_arr_access(std::vector<T> arr, size_t i) 
+	{
+		if ((i >= 0) && (i < arr.size())) { return arr[i]; }
+		std::cout << "Config array index out of bound." << std::endl;
+		exit(1);
 	}
 
 	void read_config(std::vector<std::string> cfg_strs) {
-
-		for (int i = 0; i < cfg_strs.size(); i++) {
-			if (0) {
+		for (int i = 0; i < cfg_strs.size(); i++) 
+		{
+			if (0)
+			{
 			}
+
+			else if (cfg_strs[i] == "--multiview_mode")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->multiview_mode);
 
 			else if (cfg_strs[i] == "--basefocal")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->basefocal);
@@ -137,7 +150,6 @@ struct Config {
 			else if (cfg_strs[i] == "--rg_pose_scaling")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_pose_scaling);
 
-
 			else if (cfg_strs[i] == "--resize_factor")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->resize_factor);
 			else if (cfg_strs[i] == "--abs_resize_factor")
@@ -151,7 +163,6 @@ struct Config {
 			else if (cfg_strs[i] == "--cy")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->cy);
 
-
 			else if (cfg_strs[i] == "--debug")
 				this->debug = true;
 			else if (cfg_strs[i] == "--silent")
@@ -164,7 +175,6 @@ struct Config {
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->viz_depth_scale);
 			else if (cfg_strs[i] == "--exclusive_gpu_context")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->exclusive_gpu_context);
-
 
 			else if (cfg_strs[i] == "--lambda")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambda);
@@ -191,7 +201,6 @@ struct Config {
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rigidness_threshold);
 			else if (cfg_strs[i] == "--rigidness_sum_threshold")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rigidness_sum_threshold);
-
 
 			else if (cfg_strs[i] == "--trunc_rigidness_density")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->trunc_rigidness_density);
@@ -222,7 +231,6 @@ struct Config {
 			else if (cfg_strs[i] == "--depth_range_factor")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_range_factor);
 
-
 			else if (cfg_strs[i] == "--meanshift_max_iters")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_max_iters);
 			else if (cfg_strs[i] == "--meanshift_max_init_trials")
@@ -231,7 +239,6 @@ struct Config {
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_good_init_confidence);
 			else if (cfg_strs[i] == "--meanshift_epsilon")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_epsilon);
-
 
 			else if (cfg_strs[i] == "--kitti_estimate_ground")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_estimate_ground);
@@ -242,18 +249,20 @@ struct Config {
 			else if (cfg_strs[i] == "--kitti_ground_meanshift_kernel_var")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_ground_meanshift_kernel_var);
 
-			else {
+			else 
+			{
 				std::cout << "Invalid input config : " << cfg_strs[i] << std::endl;
 				exit(1);
 			}
-
-
-
 		}
 	}
 
-	void print_info() {
+	void print_info()
+	{
 		std::cout << std::endl << "================= Configurations =================" << std::endl;
+
+		std::cout << "multiview_mode = " << multiview_mode << std::endl;
+
 		std::cout << "omega = " << omega << std::endl;
 		std::cout << "delta = " << delta << std::endl;
 		std::cout << "disp_delta = " << disp_delta << std::endl;
@@ -298,7 +307,6 @@ struct Config {
 		std::cout << "max_iters = " << max_iters << std::endl;
 		std::cout << "min_iters_after_trunc = " << min_iters_after_trunc << std::endl;
 
-
 		std::cout << "fb_smooth = " << fb_smooth << std::endl;
 		std::cout << "fb_emm = " << fb_emm << std::endl;
 		std::cout << "fb_no_change_prob = " << fb_no_change_prob << std::endl;
@@ -313,12 +321,10 @@ struct Config {
 		std::cout << "meanshift_good_init_confidence = " << meanshift_good_init_confidence << std::endl;
 		std::cout << "meanshift_epsilon = " << meanshift_epsilon << std::endl;
 
-
 		std::cout << "kitti_estimate_ground = " << kitti_estimate_ground << std::endl;
 		std::cout << "kitti_ground_holo_width = " << kitti_ground_holo_width << std::endl;
 		std::cout << "kitti_ground_roi = " << kitti_ground_roi << std::endl;
 		std::cout << "kitti_ground_meanshift_kernel_var = " << kitti_ground_meanshift_kernel_var << std::endl;
-
 
 		std::cout << "==================================================" << std::endl << std::endl;
 	}

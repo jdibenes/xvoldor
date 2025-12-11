@@ -9,33 +9,65 @@
 __constant__ static float c_mean[MAX_DIMS];
 
 
-template <bool compute_weight_only = false>
-__global__ static void compute_weighted_space(
-	float* d_space, float kernel_var, float* d_o_weight, float* d_o_weighted_space, int N, int dims) {
+template 
+<
+	bool compute_weight_only = false
+>
+__global__ 
+static
+void
+compute_weighted_space
+(
+	float* d_space,
+	float kernel_var,
+	float* d_o_weight,
+	float* d_o_weighted_space,
+	int N,
+	int dims
+)
+{
 	int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
-	if (idx < N) {
+	if (idx < N) 
+	{
 		float l2_distance_sqr = 0;
 		float weight = 0;
 
 		for (int d = 0; d < dims; d++)
-			l2_distance_sqr += SQR(d_space[idx*dims + d] - c_mean[d]);
+		{
+			l2_distance_sqr += SQR(d_space[idx * dims + d] - c_mean[d]);
+		}
 
 		weight = expf(-l2_distance_sqr / (2 * kernel_var));
 		d_o_weight[idx] = weight;
-		if (!compute_weight_only) {
+		if (!compute_weight_only) 
+		{
 			for (int d = 0; d < dims; d++)
-				d_o_weighted_space[idx*dims + d] = d_space[idx*dims + d] * weight;
+			{
+				d_o_weighted_space[idx * dims + d] = d_space[idx * dims + d] * weight;
+			}
 		}
 	}
 }
 
 
-int meanshift_gpu(float* h_space, float kernel_var,
-	float* h_io_mean, float* h_o_confidence, int* used_iters,
-	bool use_external_init_mean, int N, int dims,
-	float epsilon, int max_iters,
-	int max_init_trials, float good_init_confidence) {
+int
+meanshift_gpu
+(
+	float* h_space,
+	float kernel_var,
+	float* h_io_mean,
+	float* h_o_confidence,
+	int* used_iters,
+	bool use_external_init_mean,
+	int N,
+	int dims,
+	float epsilon,
+	int max_iters,
+	int max_init_trials,
+	float good_init_confidence
+)
+{
 
 	float* d_space;
 	float* d_weight;

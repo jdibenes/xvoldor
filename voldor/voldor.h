@@ -23,14 +23,19 @@ public:
 	Config cfg;
 	bool has_disparity;
 
-	cv::Mat depth;
+	
+	std::vector<cv::Mat> flows_1;
+	std::vector<cv::Mat> flows_2;
+	std::vector<cv::Mat> disparities;
 	std::vector<cv::Mat> depth_priors;
 	std::vector<Camera> depth_prior_poses;
 	std::vector<cv::Mat> depth_prior_pconfs;
 	std::vector<cv::Mat> depth_prior_confs;
-	std::vector<cv::Mat> flows;
+
+	cv::Mat depth;
 	std::vector<cv::Mat> rigidnesses;
 	std::vector<Camera> cams;
+	
 
 	KittiGround ground;
 
@@ -40,11 +45,18 @@ public:
 			cfg.print_info();
 	}
 
-	void init(std::vector<cv::Mat> _flows,
-		cv::Mat _disparity = cv::Mat(), cv::Mat _disparity_pconf = cv::Mat(),
+	void
+	init
+	(
+		std::vector<cv::Mat> _flows_1,
+		std::vector<cv::Mat> _flows_2 = std::vector<cv::Mat>(),
+		std::vector<cv::Mat> _disparities = std::vector<cv::Mat>(),
+		cv::Mat _disparity = cv::Mat(),
+		cv::Mat _disparity_pconf = cv::Mat(),
 		std::vector<cv::Mat> _depth_priors = std::vector<cv::Mat>(),
 		std::vector<cv::Vec6f> _depth_prior_poses = std::vector<cv::Vec6f>(),
-		std::vector<cv::Mat> _depth_prior_pconfs = std::vector<cv::Mat>());
+		std::vector<cv::Mat> _depth_prior_pconfs = std::vector<cv::Mat>()
+	);
 
 	int solve();
 
@@ -75,7 +87,7 @@ private:
 	}
 
 	float toc() {
-		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6;
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6f;
 	}
 	void toc(std::string job_name) {
 		std::cout << job_name << " elapsed time = " << toc() << "ms." << std::endl;

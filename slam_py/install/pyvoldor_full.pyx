@@ -4,7 +4,7 @@ from libcpp cimport bool
 
 cdef extern from "../../voldor/py_export.h":
     int py_voldor_wrapper(
-        const float* flows, const float* disparity, const float* disparity_pconf,
+        const float* flows, const float* flows_2, const float* disparities, const float* disparity, const float* disparity_pconf,
         const float* depth_priors, const float* depth_prior_poses, const float* depth_prior_pconfs,
         const float fx, const float fy, const float cx, const float cy, const float basefocal,
         const int N, const int N_dp, const int w, const int h,
@@ -20,6 +20,8 @@ def voldor(
     np.ndarray[float, ndim=3] depth_priors = None,
     np.ndarray[float, ndim=2] depth_prior_poses = None,
     np.ndarray[float, ndim=3] depth_prior_pconfs = None,
+    np.ndarray[float, ndim=4] flows_2 = None,
+    np.ndarray[float, ndim=3] disparities = None,
     str config=''):
     
     cdef int N = flows.shape[0]
@@ -28,6 +30,10 @@ def voldor(
     cdef int N_dp = 0 if depth_priors is None else depth_priors.shape[0]
 
     flows = np.ascontiguousarray(flows)
+    if flows_2 is not None:
+        flows_2 = np.ascontiguousarray(flows_2)
+    if disparities is not None:
+        disparities = np.ascontiguousarray(disparities)
     if disparity is not None:
         disparity = np.ascontiguousarray(disparity)
     if depth_priors is not None:
@@ -49,6 +55,8 @@ def voldor(
     cdef int n_registered = 0
     py_voldor_wrapper(
                 &flows[0,0,0,0],
+                &flows_2[0,0,0,0],
+                &disparities[0,0,0] if disparities is not None else NULL,
                 &disparity[0,0] if disparity is not None else NULL,
                 &disparity_pconf[0,0] if disparity_pconf is not None else NULL,
                 &depth_priors[0,0,0] if depth_priors is not None else NULL,
