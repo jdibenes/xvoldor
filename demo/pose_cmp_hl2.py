@@ -6,14 +6,14 @@ import os
 
 sequence = 'hl2_5'
 mode = 'stereo'
-toolname = 'searaft'
+toolname = 'gt'
 fname_cmp = os.path.join('./poses', f'pose_{sequence}_{mode}_{toolname}.txt')
 
 poses_cmp_obj = kitti.pose_loader(fname_cmp)
 poses_gt_file = xv_file.scan_files(f'./data/{sequence}/pose')
 
-print(poses_cmp_obj.count())
-print(len(poses_gt_file))
+#print(poses_cmp_obj.count())
+#print(len(poses_gt_file))
 
 hl2_to_opencv = np.array([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]], dtype=np.float32)
 
@@ -32,11 +32,13 @@ for i in range(0, len(poses_gt_file)):
     error_t += np.linalg.norm(pose_error[:3, 3])
 
 
-    print('################')
-    print(rel_pose_gt)
-    print(pose_vo)    
-    print(pose_error)
+    #print('################')
+    #print(rel_pose_gt)
+    #print(pose_vo)    
+    #print(pose_error)
 
 # avg error
+print('average rotation error (degrees)')
 print(np.rad2deg(error_r) / poses_cmp_obj.count()) # 0.009222941243538691 deg
+print('average rotation error (meters)')
 print(error_t / poses_cmp_obj.count()) # 0.006117813473687373 m
