@@ -348,6 +348,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
