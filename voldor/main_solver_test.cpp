@@ -1,15 +1,19 @@
 
-//#define ENABLE_SOLVER_TEST
+#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
 #include <Eigen/Eigen>
+#include <opencv2/calib3d.hpp>
 #include "solver_gpm_hpc0.h"
 #include "solver_gpm_hpc1.h"
 #include "solver_gpm_hpc2.h"
 #include "solver_4p3v_para.h"
 #include "trifocal.h"
 #include "lock.h"
+
+bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01);
+
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
 {
@@ -54,8 +58,8 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 4> pose02 = pose02h(Eigen::seqN(0, 3), Eigen::all);
     Eigen::Matrix<float, 3, 4> pose12 = pose12h(Eigen::seqN(0, 3), Eigen::all);
  
-    //make_planar(pose01);
-    //make_planar(pose02);
+    make_planar(pose01);
+    make_planar(pose02);
     
     //Eigen::Matrix<float, 3, 3> R_gt = pose01(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
     //Eigen::AngleAxis<float> r_gt = Eigen::AngleAxis<float>(R_gt);
@@ -80,6 +84,7 @@ int main(int argc, char* argv[])
 
 
 
+
     Eigen::Matrix<float, 3, 3> R_gt = pose01(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
     Eigen::Matrix<float, 3, 1> t_gt = pose01.col(3);
     Eigen::Matrix<float, 3, 1> r;
@@ -91,12 +96,20 @@ int main(int argc, char* argv[])
     //solver_gpm_hpc1(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data(), 1); // Ok
     //solver_gpm_hpc2(p11.data(), p11.data() + 3, p11.data() + 6, p31.data(), p31.data() + 3, p31.data() + 6, r.data(), t.data(), 2); // OK
     //bool ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
-    solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
+    //solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
+
+    std::cout << "p11" << std::endl;
+    std::cout << p11 << std::endl;
+    std::cout << "p31" << std::endl;
+    std::cout << p31 << std::endl;
+
+    solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
 
 
     std::cout << "GT" << std::endl;
     std::cout << pose01 << std::endl;
     std::cout << pose12 << std::endl;
+    std::cout << pose02 << std::endl;
     std::cout << "POSE" << std::endl;
     std::cout << Eigen::AngleAxis<float>(r.norm(), r.normalized()).toRotationMatrix() << std::endl;
     std::cout << t << std::endl;
@@ -104,7 +117,35 @@ int main(int argc, char* argv[])
     std::cout << t2 << std::endl;
 
 
+    cv::Mat w_x11(7, 1, CV_32FC2, x11.data());
+    cv::Mat w_x31(7, 1, CV_32FC2, x31.data());
+    cv::Mat pj1 = cv::Mat::eye(3, 4, CV_32FC1);
+    cv::Mat pj2(3, 4, CV_32FC1);
 
+    pj2.at<float>(0, 0) = pose02(0, 0);
+    pj2.at<float>(1, 0) = pose02(1, 0);
+    pj2.at<float>(2, 0) = pose02(2, 0);
+
+    pj2.at<float>(0, 1) = pose02(0, 1);
+    pj2.at<float>(1, 1) = pose02(1, 1);
+    pj2.at<float>(2, 1) = pose02(2, 1);
+
+    pj2.at<float>(0, 2) = pose02(0, 2);
+    pj2.at<float>(1, 2) = pose02(1, 2);
+    pj2.at<float>(2, 2) = pose02(2, 2);
+
+    pj2.at<float>(0, 3) = pose02(0, 3);
+    pj2.at<float>(1, 3) = pose02(1, 3);
+    pj2.at<float>(2, 3) = pose02(2, 3);
+
+    cv::Mat w_X11(4, 7, CV_32FC1);
+    cv::Mat w_X11i(3, 7, CV_32FC1);
+
+    cv::triangulatePoints(pj1, pj2, w_x11, w_x31, w_X11);
+    //cv::convertPointsFromHomogeneous(w_X11, w_X11i);
+
+    std::cout << "TRI" << std::endl;
+    std::cout << w_X11 << std::endl;
 
 
 
