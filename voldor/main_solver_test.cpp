@@ -1,5 +1,5 @@
 
-#define ENABLE_SOLVER_TEST
+//#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -44,19 +44,19 @@ void make_planar(Eigen::Matrix<float, 3, 4>& pose)
 
 int main(int argc, char* argv[])
 {
-    Eigen::Matrix<float, 4, 4> pose0 = load_pose("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000062.bin").transpose();
-    Eigen::Matrix<float, 4, 4> pose1 = load_pose("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000072.bin").transpose();
-    Eigen::Matrix<float, 4, 4> pose2 = load_pose("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000082.bin").transpose();
+    Eigen::Matrix<float, 4, 4> pose0 = load_pose("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000062.bin").transpose();
+    Eigen::Matrix<float, 4, 4> pose1 = load_pose("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000072.bin").transpose();
+    Eigen::Matrix<float, 4, 4> pose2 = load_pose("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000082.bin").transpose();
 
     Eigen::Matrix<float, 4, 4> pose00h = pose0.inverse() * pose0;
     Eigen::Matrix<float, 4, 4> pose01h = pose0.inverse() * pose1;
     Eigen::Matrix<float, 4, 4> pose02h = pose0.inverse() * pose2;
     Eigen::Matrix<float, 4, 4> pose12h = pose1.inverse() * pose2;
 
-    Eigen::Matrix<float, 3, 4> pose00 = pose00h(Eigen::seqN(0, 3), Eigen::all);
-    Eigen::Matrix<float, 3, 4> pose01 = pose01h(Eigen::seqN(0, 3), Eigen::all);
-    Eigen::Matrix<float, 3, 4> pose02 = pose02h(Eigen::seqN(0, 3), Eigen::all);
-    Eigen::Matrix<float, 3, 4> pose12 = pose12h(Eigen::seqN(0, 3), Eigen::all);
+    Eigen::Matrix<float, 3, 4> pose00 = pose00h(Eigen::seqN(0, 3), Eigen::indexing::all);
+    Eigen::Matrix<float, 3, 4> pose01 = pose01h(Eigen::seqN(0, 3), Eigen::indexing::all);
+    Eigen::Matrix<float, 3, 4> pose02 = pose02h(Eigen::seqN(0, 3), Eigen::indexing::all);
+    Eigen::Matrix<float, 3, 4> pose12 = pose12h(Eigen::seqN(0, 3), Eigen::indexing::all);
  
     make_planar(pose01);
     make_planar(pose02);
@@ -66,6 +66,7 @@ int main(int argc, char* argv[])
 
     //std::cout << "PLANAR" << std::endl;
     //std::cout << pose01.col(3).dot(r_gt.axis()) << std::endl;
+
 
     Eigen::Matrix<float, 4, 7> p1h{
         {1,   2, -3, -1.5, 4, -5, 1.5},
@@ -92,7 +93,7 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 1> r2;
     Eigen::Matrix<float, 3, 1> t2;
 
-    //solver_gpm_hpc0(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data()); // OK
+    solver_gpm_hpc0(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data()); // OK
     //solver_gpm_hpc1(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data(), 1); // Ok
     //solver_gpm_hpc2(p11.data(), p11.data() + 3, p11.data() + 6, p31.data(), p31.data() + 3, p31.data() + 6, r.data(), t.data(), 2); // OK
     //bool ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
@@ -103,7 +104,7 @@ int main(int argc, char* argv[])
     std::cout << "p31" << std::endl;
     std::cout << p31 << std::endl;
 
-    solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
+    //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
 
 
     std::cout << "GT" << std::endl;

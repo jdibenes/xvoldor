@@ -3,7 +3,8 @@
 #include <iostream>
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
-#include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
+//#include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
+#include <unsupported/Eigen/KroneckerProduct>
 #include "helpers_eigen.h"
 
 //-----------------------------------------------------------------------------
@@ -38,7 +39,7 @@ normalize_points
         {0.0f, 0.0f,       1.0f},
     };
 
-    result.p = result.H(Eigen::seqN(0, 2), Eigen::all) * p_i.colwise().homogeneous();
+    result.p = result.H(Eigen::seqN(0, 2), Eigen::placeholders::all) * p_i.colwise().homogeneous();
 
     return result;
 }
@@ -98,7 +99,7 @@ triangulate
             L(0, 2) =  p2d((2 * m) + 1, n);
             L(1, 2) = -p2d((2 * m) + 0, n);
 
-            ls_matrix(Eigen::seqN(2 * m, 2), Eigen::all) = L * P(Eigen::all, Eigen::seqN(4 * m, 4));
+            ls_matrix(Eigen::seqN(2 * m, 2), Eigen::placeholders::all) = L * P(Eigen::placeholders::all, Eigen::seqN(4 * m, 4));
         }
 
         p3d_h.col(n) = ls_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().col(3); // Previously BDC SVD, Full = Thin
@@ -123,7 +124,7 @@ compute_scale
 {
     int const N = p2d.cols();
 
-    Eigen::Matrix<float, 3, Eigen::Dynamic> X3 = P2(Eigen::all, Eigen::seqN(0, 3)) * p3d;
+    Eigen::Matrix<float, 3, Eigen::Dynamic> X3 = P2(Eigen::placeholders::all, Eigen::seqN(0, 3)) * p3d;
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3 = p2d.colwise().homogeneous();
     Eigen::Matrix<float, 3, 1> p3_X3;
     Eigen::Matrix<float, 3, 1> p3_t3;
@@ -155,7 +156,7 @@ compute_scale_los
 {
     int const N = p2d.cols();
 
-    Eigen::Matrix<float, 3, Eigen::Dynamic> X3 = P2(Eigen::all, Eigen::seqN(0, 3)) * p3d;
+    Eigen::Matrix<float, 3, Eigen::Dynamic> X3 = P2(Eigen::placeholders::all, Eigen::seqN(0, 3)) * p3d;
     Eigen::Matrix<float, 3, Eigen::Dynamic> p3 = p2d.colwise().homogeneous();
 
     float s = 0;
@@ -187,8 +188,8 @@ R_t_from_E
 
     Eigen::MatrixXf p2d(4, N);
 
-    p2d(Eigen::seqN(0, 2), Eigen::all) = p2d_1;
-    p2d(Eigen::seqN(2, 2), Eigen::all) = p2d_2;
+    p2d(Eigen::seqN(0, 2), Eigen::placeholders::all) = p2d_1;
+    p2d(Eigen::seqN(2, 2), Eigen::placeholders::all) = p2d_2;
 
     // TODO: Constant
     Eigen::Matrix<float, 3, 3> W
@@ -231,27 +232,27 @@ R_t_from_E
         switch (i)
         {
         case 0:
-            P2(Eigen::all, Eigen::seqN(0, 3)) = R1;
+            P2(Eigen::placeholders::all, Eigen::seqN(0, 3)) = R1;
             P2.col(3) = pt;
             break;
         case 1:
-            P2(Eigen::all, Eigen::seqN(0, 3)) = R1;
+            P2(Eigen::placeholders::all, Eigen::seqN(0, 3)) = R1;
             P2.col(3) = nt;
             break;
         case 2:
-            P2(Eigen::all, Eigen::seqN(0, 3)) = R2;
+            P2(Eigen::placeholders::all, Eigen::seqN(0, 3)) = R2;
             P2.col(3) = pt;
             break;
         case 3:
-            P2(Eigen::all, Eigen::seqN(0, 3)) = R2;
+            P2(Eigen::placeholders::all, Eigen::seqN(0, 3)) = R2;
             P2.col(3) = nt;
             break;
         }
 
         if (!use_prior) 
         {
-            PX(Eigen::all, Eigen::seqN(0, 4)) = P1;
-            PX(Eigen::all, Eigen::seqN(4, 4)) = P2;
+            PX(Eigen::placeholders::all, Eigen::seqN(0, 4)) = P1;
+            PX(Eigen::placeholders::all, Eigen::seqN(4, 4)) = P2;
 
             XYZW = triangulate(PX, p2d).colwise().hnormalized().colwise().homogeneous(); // OK
         }
@@ -481,24 +482,24 @@ linear_TFT
 
     Eigen::MatrixXf E(27, 18);
 
-    E(Eigen::all, Eigen::seqN(0, 9)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3));
-    E(Eigen::all, Eigen::seqN(9, 9)) = Eigen::kroneckerProduct(I9,                        -e.col(0));         
+    E(Eigen::placeholders::all, Eigen::seqN(0, 9)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3));
+    E(Eigen::placeholders::all, Eigen::seqN(9, 9)) = Eigen::kroneckerProduct(I9,                        -e.col(0));         
 
     Eigen::BDCSVD<Eigen::MatrixXf> svd_E = E.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);  // BDC SVD gives NaN sometimes, Jacobi SVD doesn't
     if (threshold > 0) { svd_E.setThreshold(threshold); }
     int r = svd_E.rank();
 
-    Eigen::MatrixXf Up = svd_E.matrixU()(Eigen::all, Eigen::seqN(0, r)); // Rank seems to be always 15
-    Eigen::VectorXf tp = ((A.transpose() * Up).bdcSvd(Eigen::ComputeThinV).matrixV()(Eigen::all, Eigen::last)); // Previously BDC SVD
-    Eigen::VectorXf ap = svd_E.matrixV()(Eigen::all, Eigen::seqN(0, r)) * svd_E.singularValues()(Eigen::seqN(0, r)).asDiagonal().inverse() * tp;
+    Eigen::MatrixXf Up = svd_E.matrixU()(Eigen::placeholders::all, Eigen::seqN(0, r)); // Rank seems to be always 15
+    Eigen::VectorXf tp = ((A.transpose() * Up).bdcSvd(Eigen::ComputeThinV).matrixV()(Eigen::placeholders::all, Eigen::placeholders::last)); // Previously BDC SVD
+    Eigen::VectorXf ap = svd_E.matrixV()(Eigen::placeholders::all, Eigen::seqN(0, r)) * svd_E.singularValues()(Eigen::seqN(0, r)).asDiagonal().inverse() * tp;
 
     result_linear_TFT result;
 
     result.TFT = Up * tp;
 
-    result.P2(Eigen::all, Eigen::seqN(0, 3)) = ap(Eigen::seqN(0, 9)).reshaped(3, 3);
+    result.P2(Eigen::placeholders::all, Eigen::seqN(0, 3)) = ap(Eigen::seqN(0, 9)).reshaped(3, 3);
     result.P2.col(3) = e.col(0);
-    result.P3(Eigen::all, Eigen::seqN(0, 3)) = ap(Eigen::seqN(9, 9)).reshaped(3, 3);
+    result.P3(Eigen::placeholders::all, Eigen::seqN(0, 3)) = ap(Eigen::seqN(9, 9)).reshaped(3, 3);
     result.P3.col(3) = e.col(1);
 
     return result;
@@ -635,8 +636,8 @@ trifocal_R_t_linear
     result_R_t_from_TFT rpt = R_t_from_TFT(ltr.TFT, p2d_1_w, p2d_2_w, p2d_3_w, p3d_s_w, use_prior); // OK
     float world_scale = compute_scale(p2d_2_w, p3d_s_w, rpt.v2.P);
 
-    Eigen::Matrix<float, 3, 3> R12 = rpt.v2.P(Eigen::all, Eigen::seqN(0, 3));
-    Eigen::Matrix<float, 3, 3> R13 = rpt.v3.P(Eigen::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R12 = rpt.v2.P(Eigen::placeholders::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R13 = rpt.v3.P(Eigen::placeholders::all, Eigen::seqN(0, 3));
 
     Eigen::Matrix<float, 3, 1> t12 = world_scale * rpt.v2.P.col(3);
     Eigen::Matrix<float, 3, 1> t13 = world_scale * rpt.v3.P.col(3);
@@ -750,26 +751,26 @@ gh_ressl
     // mn=zeros(3);
     // mn(:,Ind2)=reshape(p(12:17),3,2);
     Eigen::Matrix<float, 3, 3> mn = Eigen::Matrix<float, 3, 3>::Zero();
-    mn(Eigen::all, Ind2) = p_in(Eigen::seq(11, 16), 0).reshaped(3, 2);
+    mn(Eigen::placeholders::all, Ind2) = p_in(Eigen::seq(11, 16), 0).reshaped(3, 2);
 
     // % tensor
     // T1=(S(:,1)*e21.'+e31*mn(1,:)).';
-    Eigen::Matrix<float, 3, 3> T1 = (S(Eigen::all, 0) * e21.transpose() + e31 * mn(0, Eigen::all)).transpose();
+    Eigen::Matrix<float, 3, 3> T1 = (S(Eigen::placeholders::all, 0) * e21.transpose() + e31 * mn(0, Eigen::placeholders::all)).transpose();
     
     // T2=(S(:,2)*e21.'+e31*mn(2,:)).';
-    Eigen::Matrix<float, 3, 3> T2 = (S(Eigen::all, 1) * e21.transpose() + e31 * mn(1, Eigen::all)).transpose();
+    Eigen::Matrix<float, 3, 3> T2 = (S(Eigen::placeholders::all, 1) * e21.transpose() + e31 * mn(1, Eigen::placeholders::all)).transpose();
     
     // T3=(S(:,3)*e21.'+e31*mn(3,:)).';
-    Eigen::Matrix<float, 3, 3> T3 = (S(Eigen::all, 2) * e21.transpose() + e31 * mn(2, Eigen::all)).transpose();
+    Eigen::Matrix<float, 3, 3> T3 = (S(Eigen::placeholders::all, 2) * e21.transpose() + e31 * mn(2, Eigen::placeholders::all)).transpose();
 
     // % other slices of the TFT
     // J3=[T1(3,:);T2(3,:);T3(3,:)];
     Eigen::Matrix<float, 3, 3> J3;
-    J3 << T1(2, Eigen::all), T2(2, Eigen::all), T3(2, Eigen::all);
+    J3 << T1(2, Eigen::placeholders::all), T2(2, Eigen::placeholders::all), T3(2, Eigen::placeholders::all);
 
     // K3=[T1(:,3),T2(:,3),T3(:,3)];
     Eigen::Matrix<float, 3, 3> K3;    
-    K3 << T1(Eigen::all, 2), T2(Eigen::all, 2), T3(Eigen::all, 2);
+    K3 << T1(Eigen::placeholders::all, 2), T2(Eigen::placeholders::all, 2), T3(Eigen::placeholders::all, 2);
 
     // N=size(x,1)/6;
     int N = x_in.rows() / 6;
@@ -844,7 +845,7 @@ gh_ressl
 
         // % Jacobians for the trilinearities
         // Ap(ind2+1:ind2+4,:)=kron(S3,S2).'*kron([x1;1].',eye(9));
-        Ap(Eigen::seq(ind2 + 0, ind2 + 3), Eigen::all) = Eigen::kroneckerProduct(S3, S2).transpose() * Eigen::kroneckerProduct(x1.colwise().homogeneous().transpose(), I9);
+        Ap(Eigen::seq(ind2 + 0, ind2 + 3), Eigen::placeholders::all) = Eigen::kroneckerProduct(S3, S2).transpose() * Eigen::kroneckerProduct(x1.colwise().homogeneous().transpose(), I9);
 
         // B(ind2+1:ind2+4,ind+1)=reshape(S2.'*T1*S3,4,1);
         B(Eigen::seq(ind2 + 0, ind2 + 3), ind + 0) = (S2.transpose() * T1 * S3).reshaped(4, 1);
@@ -867,12 +868,12 @@ gh_ressl
     Eigen::MatrixXf D = Eigen::MatrixXf::Zero(27, 20);
 
     // D(:,1:9)=kron(eye(3),kron(eye(3),e21));
-    D(Eigen::all, Eigen::seq(0, 8)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(I3, e21));
+    D(Eigen::placeholders::all, Eigen::seq(0, 8)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(I3, e21));
     
     // aux=zeros(3,2); 
     // aux(Ind2,:)=eye(2);
     Eigen::Matrix<float, 3, 2> aux = Eigen::Matrix<float, 3, 2>::Zero();
-    aux(Ind2, Eigen::all) = I2;
+    aux(Ind2, Eigen::placeholders::all) = I2;
 
     // D(:,10:11)=[kron(S(:,1),aux);
     //             kron(S(:,2),aux);
@@ -881,13 +882,13 @@ gh_ressl
     tmp_D_9_10 << Eigen::kroneckerProduct(S.col(0), aux),
                   Eigen::kroneckerProduct(S.col(1), aux),
                   Eigen::kroneckerProduct(S.col(2), aux);
-    D(Eigen::all, Eigen::seq(9, 10)) = tmp_D_9_10;
+    D(Eigen::placeholders::all, Eigen::seq(9, 10)) = tmp_D_9_10;
 
     // D(:,12:14)=kron(eye(3),kron(e31,aux(:,1)));
-    D(Eigen::all, Eigen::seq(11, 13)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e31, aux.col(0)));
+    D(Eigen::placeholders::all, Eigen::seq(11, 13)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e31, aux.col(0)));
     
     // D(:,15:17)=kron(eye(3),kron(e31,aux(:,2)));
-    D(Eigen::all, Eigen::seq(14, 16)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e31, aux.col(1)));
+    D(Eigen::placeholders::all, Eigen::seq(14, 16)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e31, aux.col(1)));
 
     // D(:,18:20)=[kron(eye(3),mn(1,:).');
     //             kron(eye(3),mn(2,:).');
@@ -896,7 +897,7 @@ gh_ressl
     tmp_D_17_19 << Eigen::kroneckerProduct(I3, mn.row(0).transpose()),
                    Eigen::kroneckerProduct(I3, mn.row(1).transpose()),
                    Eigen::kroneckerProduct(I3, mn.row(2).transpose());
-    D(Eigen::all, Eigen::seq(17, 19)) = tmp_D_17_19;
+    D(Eigen::placeholders::all, Eigen::seq(17, 19)) = tmp_D_17_19;
 
     // % jacobian of f w.r.t. the minimal parameterization
     // A=Ap*D;
@@ -1057,8 +1058,8 @@ Gauss_Helmert
 
         // dt=aux(1:u,:); 
         // dy=aux(u+1:u+s,:);
-        dt = aux(Eigen::seq(0, u - 1), Eigen::all);
-        dy = aux(Eigen::seq(u, u + s - 1), Eigen::all);
+        dt = aux(Eigen::seq(0, u - 1), Eigen::placeholders::all);
+        dy = aux(Eigen::seq(u, u + s - 1), Eigen::placeholders::all);
 
         // v=-inv(P)*B.'*(W*(A*dt-w));
         v = -(Pi * ghe.B.transpose() * (W * (ghe.A * dt - w)));
@@ -1268,8 +1269,8 @@ trifocal_R_t_Ressl
 
     float world_scale = compute_scale(p2d_s_w, p3d_s_w, rpt.v2.P);
 
-    Eigen::Matrix<float, 3, 3> R2 = rpt.v2.P(Eigen::all, Eigen::seqN(0, 3));
-    Eigen::Matrix<float, 3, 3> R3 = rpt.v3.P(Eigen::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R2 = rpt.v2.P(Eigen::placeholders::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R3 = rpt.v3.P(Eigen::placeholders::all, Eigen::seqN(0, 3));
 
     Eigen::AngleAxis<float> R01(R2);
     Eigen::AngleAxis<float> R02(R3);

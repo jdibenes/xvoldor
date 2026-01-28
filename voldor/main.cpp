@@ -53,26 +53,26 @@ int main(int argc, char* argv[]) {
 	float* depth_conf = new float[w * h];
 	memset(poses, 0, N * 6);
 
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000061.flo", flows_pt + 0 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000062.flo", flows_pt + 1 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000063.flo", flows_pt + 2 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000064.flo", flows_pt + 3 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000065.flo", flows_pt + 4 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000061.flo", flows_pt + 0 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000062.flo", flows_pt + 1 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000063.flo", flows_pt + 2 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000064.flo", flows_pt + 3 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt/000065.flo", flows_pt + 4 * (w * h * 2), 12, -1);
 
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000061.flo", flows_2_pt + 0 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000062.flo", flows_2_pt + 1 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000063.flo", flows_2_pt + 2 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000064.flo", flows_2_pt + 3 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000065.flo", flows_2_pt + 4 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000061.flo", flows_2_pt + 0 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000062.flo", flows_2_pt + 1 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000063.flo", flows_2_pt + 2 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000064.flo", flows_2_pt + 3 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt/000065.flo", flows_2_pt + 4 * (w * h * 2), 12, -1);
 
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000061.flo", disparity_pt, 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000061.flo", disparity_pt, 12, -1);
 
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000061.flo", disparities_pt + 0 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000062.flo", disparities_pt + 1 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000063.flo", disparities_pt + 2 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000064.flo", disparities_pt + 3 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000065.flo", disparities_pt + 4 * (w * h * 2), 12, -1);
-	load_file("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000066.flo", disparities_pt + 5 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000061.flo", disparities_pt + 0 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000062.flo", disparities_pt + 1 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000063.flo", disparities_pt + 2 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000064.flo", disparities_pt + 3 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000065.flo", disparities_pt + 4 * (w * h * 2), 12, -1);
+	load_file("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt/000066.flo", disparities_pt + 5 * (w * h * 2), 12, -1);
 
 	for (int i = 0; i < (w * h); ++i)
 	{
