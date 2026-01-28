@@ -8,16 +8,16 @@ import numpy
 import shutil
 
 # Change these folders
-opencv_include_dir = 'C:/Users/jcds/SDK/opencv_3414/build/include'
-ceres_include_dirs = ['C:/Users/jcds/SDK/ceres_2/ceres-solver/include', \
-                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/config', \
-                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/eigen', \
-                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/build', \
-                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/src', \
-                        'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/src/windows']
+opencv_include_dir = 'D:/jcds/SDK/opencv_3414/build/include'
+ceres_include_dirs = ['D:/jcds/SDK/ceres_2/ceres-solver/include', \
+                        'D:/jcds/SDK/ceres_2/ceres-solver/config', \
+                        'D:/jcds/SDK/ceres_2/ceres-solver/eigen', \
+                        'D:/jcds/SDK/ceres_2/ceres-solver/glog/build', \
+                        'D:/jcds/SDK/ceres_2/ceres-solver/glog/src', \
+                        'D:/jcds/SDK/ceres_2/ceres-solver/glog/src/windows']
 
-opencv_lib_dir = 'C:/Users/jcds/SDK/opencv_3414/build/x64/vc15/lib'
-ceres_lib_dirs = ['C:/Users/jcds/SDK/ceres_2/ceres-solver/ceres-bin/lib/Release', 'C:/Users/jcds/SDK/ceres_2/ceres-solver/glog/build/Release']
+opencv_lib_dir = 'D:/jcds/SDK/opencv_3414/build/x64/vc15/lib'
+ceres_lib_dirs = ['D:/jcds/SDK/ceres_2/ceres-solver/ceres-bin/lib/Release', 'D:/jcds/SDK/ceres_2/ceres-solver/glog/build/Release']
 
 opencv_lib_name = 'opencv_world3414'
 ceres_lib_names = ['ceres', 'glog']
