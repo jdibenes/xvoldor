@@ -42,10 +42,10 @@ big_table = [
 
 if __name__ == '__main__':
     sequence_index = 18
-    toolset = 'searaft'
+    toolset = 'gt'
     mode_name = 'stereo'
     set_save_pose = True
-    set_enable_mapping = True
+    set_enable_mapping = False
     set_enable_loop_closure = False    
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     path_img = os.path.join(path_base, sequence, 'img')
     fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}.txt')
 
-    cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe c:/Users/jcds/Documents/GitHub/xvoldor/demo/demo.py'
+    cmd = 'C:/Users/jdibe/AppData/Local/Programs/Python/Python36/python.exe D:/jcds/Documents/GitHub/xvoldor/demo/demo.py'
     fx = f'--fx {fx_val}'
     fy = f'--fy {fy_val}'
     cx = f'--cx {cx_val}'
