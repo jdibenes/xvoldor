@@ -293,3 +293,4 @@ slam_py/install/pyvoldor_full.cpp
 /demo/lib_p3p_but_not_planar
 /demo/lib_gpm_3d3d
 /.vscode
+/demo/lib_vs_p3p_migration
