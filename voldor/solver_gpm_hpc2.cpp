@@ -3,6 +3,7 @@
 #include "algebra.h"
 #include "helpers.h"
 #include "helpers_eigen.h"
+#include "helpers_geometry.h"
 
 static Eigen::Matrix<float, 10, 1> solver_gpm_hpc2_build_quadric(Eigen::Matrix<float, 3, 1> const& q, Eigen::Matrix<float, 3, 1> const& p)
 {
