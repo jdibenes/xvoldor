@@ -332,7 +332,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\jcds\SDK\eigen-5.0.0;D:\jcds\SDK\opencv_3414\build\include;D:\jcds\Documents\GitHub\xvoldor\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\jcds\SDK\ceres_2\ceres-solver\eigen;D:\jcds\SDK\opencv_3414\build\include;D:\jcds\Documents\GitHub\xvoldor\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

@@ -30,7 +30,7 @@ bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01)
     Q.col(4) = Q.col(4) - Q.col(0);
     Q.col(8) = Q.col(8) - Q.col(0);
 
-    Eigen::Matrix<float, 8, 1> k = Q(Eigen::placeholders::all, Eigen::seqN(1, 8)).fullPivLu().kernel();
+    Eigen::Matrix<float, 8, 1> k = Q(Eigen::all, Eigen::seqN(1, 8)).fullPivLu().kernel();
     Eigen::Matrix<float, 9, 1> e;
 
     e << (-(k(3) + k(7))), k;
