@@ -37,7 +37,8 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> triangulate(Ei
 
 // OK
 // For N points
-template <typename _scalar> struct result_R_t_from_E
+template <typename _scalar>
+struct result_R_t_from_E
 {
     Eigen::Matrix<_scalar, Eigen::Dynamic, Eigen::Dynamic> P;     // 3x4
     Eigen::Matrix<_scalar, Eigen::Dynamic, Eigen::Dynamic> p3d_h; // 4xN
@@ -136,23 +137,7 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix_E_const
     return Q;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// OK
 template <typename _scalar, int _rows, int _cols>
 static Eigen::Matrix<_scalar, _rows, _cols> matrix_R_cayley(_scalar kx, _scalar ky, _scalar kz)
 {
@@ -166,10 +151,13 @@ static Eigen::Matrix<_scalar, _rows, _cols> matrix_R_cayley(_scalar kx, _scalar 
     return R;
 }
 
-template <typename _scalar, int _rows_1, int _cols_1, int _rows_2, int _cols_2>
-Eigen::Matrix<_scalar, _rows_1, _cols_1> cross_matrix(Eigen::Matrix<_scalar, _rows_2, _cols_2> const& v)
+// OK
+// v:      3x1
+// return: 3x3
+template <int _rows, int _cols, typename A>
+Eigen::Matrix<typename A::Scalar, _rows, _cols> matrix_cross(Eigen::MatrixBase<A> const& v)
 {
-    Eigen::Matrix<_scalar, _rows_1, _cols_1> M(3, 3);
+    Eigen::Matrix<typename A::Scalar, _rows, _cols> M(3, 3);
 
     M(0, 0) = 0;
     M(1, 0) =  v(2);
@@ -184,9 +172,12 @@ Eigen::Matrix<_scalar, _rows_1, _cols_1> cross_matrix(Eigen::Matrix<_scalar, _ro
     return M;
 }
 
-template <typename _scalar, int _rows, int _cols>
-Eigen::Matrix<_scalar, _rows, _cols> normalize_essential(Eigen::Matrix<_scalar, _rows, _cols> const& E)
+// OK
+// E:      3x3
+// return: 3x3
+template <int _rows, int _cols, typename A>
+Eigen::Matrix<typename A::Scalar, _rows, _cols> normalize_E(Eigen::MatrixBase<A> const& E)
 {
-    Eigen::JacobiSVD<Eigen::Matrix<_scalar, _rows, _cols>> E_svd = E.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
-    return E_svd.matrixU() * Eigen::Matrix<_scalar, _rows, _cols>{ { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } } * E_svd.matrixV().transpose();
+    Eigen::JacobiSVD<typename A::PlainObject> E_svd = E.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
+    return E_svd.matrixU() * Eigen::Matrix<typename A::Scalar, 3, 3>{ { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } } * E_svd.matrixV().transpose();
 }
