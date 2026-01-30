@@ -58,7 +58,7 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
     p2d(Eigen::seqN(0, 2), Eigen::all) = p2d_1;
     p2d(Eigen::seqN(2, 2), Eigen::all) = p2d_2;
 
-    Eigen::Matrix<typename A::Scalar, 3, 3> W{ {0, -1, 0}, {1,  0, 0}, {0,  0, 1} };
+    Eigen::Matrix<typename A::Scalar, 3, 3> W{ {0, -1, 0}, {1, 0, 0}, {0, 0, 1} };
 
     Eigen::JacobiSVD<typename A::PlainObject> E_svd = E.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV); // Full = Thin
 
@@ -108,6 +108,40 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
 
     return result;
 }
+
+// OK
+// E = [e11 e12 e13; e21, e22, e23; e31, e32, e33]
+// e = [e11 e21 e31 e12 e22 e32 e13 e23 e33]
+// For N points
+// p2dh_1: 3xN
+// p2dh_2: 3xN
+// return: Nx9
+template <typename A, typename B>
+Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix_E_constraints(Eigen::MatrixBase<A> const& p2dh_1, Eigen::MatrixBase<B> const& p2dh_2)
+{
+    Eigen::Index const N = p2dh_1.cols();
+
+    Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> Q(N, 9);
+
+    Q.col(0) = p2dh_1.row(0).cwiseProduct(p2dh_2.row(0)).transpose();
+    Q.col(1) = p2dh_1.row(0).cwiseProduct(p2dh_2.row(1)).transpose();
+    Q.col(2) = p2dh_1.row(0).cwiseProduct(p2dh_2.row(2)).transpose();
+    Q.col(3) = p2dh_1.row(1).cwiseProduct(p2dh_2.row(0)).transpose();
+    Q.col(4) = p2dh_1.row(1).cwiseProduct(p2dh_2.row(1)).transpose();
+    Q.col(5) = p2dh_1.row(1).cwiseProduct(p2dh_2.row(2)).transpose();
+    Q.col(6) = p2dh_1.row(2).cwiseProduct(p2dh_2.row(0)).transpose();
+    Q.col(7) = p2dh_1.row(2).cwiseProduct(p2dh_2.row(1)).transpose();
+    Q.col(8) = p2dh_1.row(2).cwiseProduct(p2dh_2.row(2)).transpose();
+
+    return Q;
+}
+
+
+
+
+
+
+
 
 
 
