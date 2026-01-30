@@ -1,7 +1,5 @@
 
 #include <Eigen/Eigen>
-#include <iostream>
-#include <opencv2/calib3d.hpp>
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
@@ -16,17 +14,7 @@ bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01)
     Eigen::Matrix<float, 3, 7> Q1 = q1.colwise().homogeneous();
     Eigen::Matrix<float, 3, 7> Q2 = q2.colwise().homogeneous();
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Q(7, 9);
-
-    Q.col(0) = Q1.row(0).cwiseProduct(Q2.row(0)).transpose();
-    Q.col(1) = Q1.row(0).cwiseProduct(Q2.row(1)).transpose();
-    Q.col(2) = Q1.row(0).cwiseProduct(Q2.row(2)).transpose();
-    Q.col(3) = Q1.row(1).cwiseProduct(Q2.row(0)).transpose();
-    Q.col(4) = Q1.row(1).cwiseProduct(Q2.row(1)).transpose();
-    Q.col(5) = Q1.row(1).cwiseProduct(Q2.row(2)).transpose();
-    Q.col(6) = Q1.row(2).cwiseProduct(Q2.row(0)).transpose();
-    Q.col(7) = Q1.row(2).cwiseProduct(Q2.row(1)).transpose();
-    Q.col(8) = Q1.row(2).cwiseProduct(Q2.row(2)).transpose();
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Q = matrix_E_constraints(Q1, Q2);
 
     Q.col(4) = Q.col(4) - Q.col(0);
     Q.col(8) = Q.col(8) - Q.col(0);
