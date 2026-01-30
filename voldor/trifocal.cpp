@@ -6,6 +6,7 @@
 //#include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
 #include <unsupported/Eigen/KroneckerProduct>
 #include "helpers_eigen.h"
+#include "helpers_geometry.h"
 
 //-----------------------------------------------------------------------------
 // Functions
@@ -42,29 +43,6 @@ normalize_points
     result.p = result.H(Eigen::seqN(0, 2), Eigen::all) * p_i.colwise().homogeneous();
 
     return result;
-}
-
-// OK
-static
-Eigen::Matrix<float, 3, 3>
-cross_matrix
-(
-    Eigen::Ref<const Eigen::Matrix<float, 3, 1>> const& v
-)
-{
-    Eigen::Matrix<float, 3, 3> M;
-
-    M(0, 0) = 0;
-    M(1, 0) =  v(2);
-    M(2, 0) = -v(1);
-    M(0, 1) = -v(2);
-    M(1, 1) = 0;
-    M(2, 1) =  v(0);
-    M(0, 2) =  v(1);
-    M(1, 2) = -v(0);
-    M(2, 2) = 0;
-
-    return M;
 }
 
 //-----------------------------------------------------------------------------
@@ -166,7 +144,7 @@ compute_scale_los
 
 // OK
 struct
-result_R_t_from_E
+result_R_t_from_E_2
 {
     Eigen::Matrix<float, 3, 4> P;
     Eigen::MatrixXf p3d_h;
@@ -174,7 +152,7 @@ result_R_t_from_E
 
 // OK
 static
-result_R_t_from_E
+result_R_t_from_E_2
 R_t_from_E
 (
     Eigen::Ref<const Eigen::Matrix<float, 3, 3>> const& E,
@@ -217,7 +195,7 @@ R_t_from_E
     Eigen::Matrix<float, 3, 4> P2;
     Eigen::Matrix<float, 3, 8> PX;
 
-    result_R_t_from_E result;
+    result_R_t_from_E_2 result;
     Eigen::MatrixXf XYZW;
     int64_t max_count = -1;
 
@@ -509,8 +487,8 @@ linear_TFT
 struct
 result_R_t_from_TFT
 {
-    result_R_t_from_E v2;
-    result_R_t_from_E v3;
+    result_R_t_from_E_2 v2;
+    result_R_t_from_E_2 v3;
 };
 
 // OK
@@ -530,8 +508,11 @@ R_t_from_TFT
 
     Eigen::Matrix<float, 3, 2> e = epipoles_from_TFT(TFT); // OK
 
-    Eigen::Matrix<float, 3, 3> epi21_x = cross_matrix(e.col(0)); // OK
-    Eigen::Matrix<float, 3, 3> epi31_x = cross_matrix(e.col(1)); // OK
+    Eigen::Matrix<float, 3, 1> e0 = e.col(0);
+    Eigen::Matrix<float, 3, 1> e1 = e.col(1);
+
+    Eigen::Matrix<float, 3, 3> epi21_x = cross_matrix<float, 3, 3, 3, 1>(e0); // OK
+    Eigen::Matrix<float, 3, 3> epi31_x = cross_matrix<float, 3, 3, 3, 1>(e1); // OK
 
     Eigen::Matrix<float, 3, 3> T1 = TFT(Eigen::seqN( 0, 9)).reshaped(3, 3);
     Eigen::Matrix<float, 3, 3> T2 = TFT(Eigen::seqN( 9, 9)).reshaped(3, 3);
