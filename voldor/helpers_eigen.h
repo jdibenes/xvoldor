@@ -23,7 +23,7 @@ void matrix_to_buffer(Eigen::Matrix<_scalar, _rows, _cols> const& M, _scalar* da
 
 // OK
 template <typename A, typename B>
-Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_convolve(Eigen::MatrixBase<A> const& o1, Eigen::MatrixBase<B> const& o2)
+Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_multiply(Eigen::MatrixBase<A> const& o1, Eigen::MatrixBase<B> const& o2)
 {
     Eigen::Index sz1 = o1.size();
     Eigen::Index sz2 = o2.size();
@@ -43,7 +43,7 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_convolv
 
 // OK
 template <typename A, typename B>
-Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_add_padded(Eigen::MatrixBase<A> const& o1, Eigen::MatrixBase<B> const& o2, typename A::Scalar s1 = 1, typename A::Scalar s2 = 1)
+Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_add(Eigen::MatrixBase<A> const& o1, Eigen::MatrixBase<B> const& o2, typename A::Scalar s1 = 1, typename A::Scalar s2 = 1)
 {
     Eigen::Index sz1 = o1.size();
     Eigen::Index sz2 = o2.size();
@@ -55,3 +55,6 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_add_pad
 
     return rv;
 }
+
+
+
