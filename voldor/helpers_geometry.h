@@ -138,6 +138,7 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix_E_const
 }
 
 // OK
+// return: 3x3
 template <typename _scalar, int _rows, int _cols>
 static Eigen::Matrix<_scalar, _rows, _cols> matrix_R_cayley(_scalar kx, _scalar ky, _scalar kz)
 {
