@@ -109,18 +109,18 @@ bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float
     float a_1 = conic_1(0, 0);
     float a_2 = conic_2(0, 0);
  
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2_1 = vector_convolve(dc_2, feb_1);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2_2 = vector_convolve(dc_1, feb_2);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2_1 = vector_multiply(dc_2, feb_1);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2_2 = vector_multiply(dc_1, feb_2);
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2 = vector_add_padded(v2_1, v2_2);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2 = vector_add(v2_1, v2_2);
 
     Eigen::Matrix<float, 3, 1> v1 = a_1 * feb_2 - a_2 * feb_1;
     Eigen::Matrix<float, 2, 1> w1 = a_1 *  dc_2 + a_2 *  dc_1;
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> lhs = vector_convolve(v1, v1);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> rhs = vector_convolve(v2, w1);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> lhs = vector_multiply(v1, v1);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> rhs = vector_multiply(v2, w1);
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> polynomial = vector_add_padded(lhs, rhs, 1.0f, -1.0f);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> polynomial = vector_add(lhs, rhs, 1.0f, -1.0f);
 
     polynomial.normalize();
 
