@@ -43,15 +43,30 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_multipl
 
 // OK
 template <typename A, typename B>
-Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_add(Eigen::MatrixBase<A> const& o1, Eigen::MatrixBase<B> const& o2, typename A::Scalar s1 = 1, typename A::Scalar s2 = 1)
+Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_add(Eigen::MatrixBase<A> const& o1, Eigen::MatrixBase<B> const& o2)
 {
     Eigen::Index sz1 = o1.size();
     Eigen::Index sz2 = o2.size();
 
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> rv = Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic>::Zero(std::max(sz1, sz2), 1);
 
-    for (int i1 = 0; i1 < sz1; ++i1) { rv(i1) += s1 * o1(i1); }
-    for (int i2 = 0; i2 < sz2; ++i2) { rv(i2) += s2 * o2(i2); }
+    for (int i1 = 0; i1 < sz1; ++i1) { rv(i1) += o1(i1); }
+    for (int i2 = 0; i2 < sz2; ++i2) { rv(i2) += o2(i2); }
+
+    return rv;
+}
+
+// OK
+template <typename A, typename B>
+Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_subtract(Eigen::MatrixBase<A> const& o1, Eigen::MatrixBase<B> const& o2)
+{
+    Eigen::Index sz1 = o1.size();
+    Eigen::Index sz2 = o2.size();
+
+    Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> rv = Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic>::Zero(std::max(sz1, sz2), 1);
+
+    for (int i1 = 0; i1 < sz1; ++i1) { rv(i1) += o1(i1); }
+    for (int i2 = 0; i2 < sz2; ++i2) { rv(i2) -= o2(i2); }
 
     return rv;
 }
