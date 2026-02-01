@@ -120,7 +120,7 @@ bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> lhs = vector_multiply(v1, v1);
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> rhs = vector_multiply(v2, w1);
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> polynomial = vector_add(lhs, rhs, 1.0f, -1.0f);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> polynomial = vector_subtract(lhs, rhs);
 
     polynomial.normalize();
 
