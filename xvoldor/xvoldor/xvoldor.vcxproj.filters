@@ -135,9 +135,6 @@
     <ClInclude Include="..\..\voldor\algebra.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\polynomial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\rolling_shutter\danilevsky.h">
       <Filter>Rolling Shutter</Filter>
     </ClInclude>

@@ -42,7 +42,6 @@
     <ClInclude Include="..\..\voldor\helpers_geometry.h" />
     <ClInclude Include="..\..\voldor\kitti.h" />
     <ClInclude Include="..\..\voldor\lock.h" />
-    <ClInclude Include="..\..\voldor\polynomial.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
     <ClInclude Include="..\..\voldor\solver_4p3v_para.h" />
     <ClInclude Include="..\..\voldor\solver_gpm_hpc0.h" />
