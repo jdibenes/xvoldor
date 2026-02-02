@@ -58,6 +58,9 @@
     <Filter Include="Header Files\batch_solve">
       <UniqueIdentifier>{0e0c3bf8-69c4-4a75-b194-7b63f5d0be4d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rolling Shutter">
+      <UniqueIdentifier>{6db5c421-8240-4986-b3b6-bd2e68e97522}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\voldor\config.h">
@@ -66,7 +69,7 @@
     <ClInclude Include="..\..\voldor\geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\utils.h">
+    <ClInclude Include="..\..\voldor\voldor_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\voldor.h">
@@ -117,17 +120,44 @@
     <ClInclude Include="..\..\voldor\solver_gpm_hpc2.h">
       <Filter>Header Files\solvers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\algebra.h">
-      <Filter>Header Files\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\batch_solve_common.h">
-      <Filter>Header Files\batch_solve</Filter>
+    <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\batch_solve.h">
-      <Filter>Header Files\batch_solve</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
-      <Filter>Header Files\solvers</Filter>
+    <ClInclude Include="..\..\voldor\batch_solve_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\helpers_geometry.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\algebra.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\polynomial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rolling_shutter\danilevsky.h">
+      <Filter>Rolling Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rolling_shutter\hidden6.h">
+      <Filter>Rolling Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rolling_shutter\prepare_1lin.h">
+      <Filter>Rolling Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rolling_shutter\prepare_2lin.h">
+      <Filter>Rolling Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rolling_shutter\rnp.h">
+      <Filter>Rolling Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rolling_shutter\sturm.h">
+      <Filter>Rolling Shutter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rolling_shutter\utils.h">
+      <Filter>Rolling Shutter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -335,9 +365,6 @@
     <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
-      <Filter>Source Files\batch_solve</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc0_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -353,5 +380,49 @@
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\benchmark.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\iterative.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\python_bindings.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\r6p_1lin.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\r6p_2lin.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\r6p_iter.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\r7pf.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\r7pfr.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\rnp.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\sturm.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\rolling_shutter\utils.cpp">
+      <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\voldor\voldor_bin.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
