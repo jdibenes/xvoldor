@@ -1,10 +1,12 @@
 
-//#define ENABLE_SOLVER_TEST
+#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
 #include <Eigen/Eigen>
 #include <opencv2/calib3d.hpp>
+#include "../rolling_shutter/rnp.h"
+#include "helpers_eigen.h"
 #include "solver_gpm_hpc0.h"
 #include "solver_gpm_hpc1.h"
 #include "solver_gpm_hpc2.h"
@@ -93,7 +95,7 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 1> r2;
     Eigen::Matrix<float, 3, 1> t2;
 
-    solver_gpm_hpc0(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data()); // OK
+    //solver_gpm_hpc0(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data()); // OK
     //solver_gpm_hpc1(p11.data(), p11.data() + 3, p31.data(), p31.data() + 3, r.data(), t.data(), 1); // Ok
     //solver_gpm_hpc2(p11.data(), p11.data() + 3, p11.data() + 6, p31.data(), p31.data() + 3, p31.data() + 6, r.data(), t.data(), 2); // OK
     //bool ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
@@ -104,12 +106,36 @@ int main(int argc, char* argv[])
     std::cout << "p31" << std::endl;
     std::cout << p31 << std::endl;
 
+    RSSinglelinCameraPoseVector results1Lin;
+
     //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
+    
+    Eigen::MatrixXd p3D(3, 6);
+    Eigen::MatrixXd p2D(2, 6);
+
+    for (int i = 0; i < 6; ++i) {
+        p3D(0, i) = p11(0, i);
+        p3D(1, i) = p11(1, i);
+        p3D(2, i) = p11(2, i);
+        p2D(0, i) = x31(0, i);
+        p2D(1, i) = x31(1, i);
+    }
+
+
+
+
+    R6P1Lin(p3D, p2D, 0, 0, 2, &results1Lin);
+    std::cout << "R6P " << std::endl;
+    for (int i = 0; i < results1Lin.size(); ++i) {
+        std::cout << "SOL " << i << std::endl;
+        std::cout << results1Lin[i].v << std::endl;
+        std::cout << results1Lin[i].C << std::endl;
+    }
 
 
     std::cout << "GT" << std::endl;
-    std::cout << pose01 << std::endl;
-    std::cout << pose12 << std::endl;
+    //std::cout << pose01 << std::endl;
+    //std::cout << pose12 << std::endl;
     std::cout << pose02 << std::endl;
     std::cout << "POSE" << std::endl;
     std::cout << Eigen::AngleAxis<float>(r.norm(), r.normalized()).toRotationMatrix() << std::endl;
