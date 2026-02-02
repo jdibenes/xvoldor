@@ -240,7 +240,7 @@
     <ClCompile Include="..\..\voldor\solver_tft_linear.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp" />
     <ClCompile Include="..\..\voldor\trifocal.cpp" />
-    <ClCompile Include="..\..\voldor\utils.cpp" />
+    <ClCompile Include="..\..\voldor\voldor_utils.cpp" />
     <ClCompile Include="..\..\voldor\voldor.cpp" />
     <ClCompile Include="x_utils.cpp" />
   </ItemGroup>

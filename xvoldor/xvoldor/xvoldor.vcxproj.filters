@@ -167,7 +167,7 @@
     <ClCompile Include="..\..\voldor\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\utils.cpp">
+    <ClCompile Include="..\..\voldor\voldor_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\voldor.cpp">
