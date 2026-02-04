@@ -138,11 +138,16 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix_E_const
 }
 
 // OK
+// k:      3x1
 // return: 3x3
-template <typename _scalar, int _rows, int _cols>
-static Eigen::Matrix<_scalar, _rows, _cols> matrix_R_cayley(_scalar kx, _scalar ky, _scalar kz)
+template <typename A>
+Eigen::Matrix<typename A::Scalar, 3, 3> matrix_R_cayley(Eigen::MatrixBase<A> const& k)
 {
-    Eigen::Matrix<_scalar, _rows, _cols> R(3, 3);
+    Eigen::Matrix<typename A::Scalar, 3, 3> R;
+
+    typename A::Scalar kx = k(0);
+    typename A::Scalar ky = k(1);
+    typename A::Scalar kz = k(2);
 
     R << 1 + kx * kx - ky * ky - kz * kz, 2 * kx * ky - 2 * kz, 2 * kx * kz + 2 * ky,
          2 * kx * ky + 2 * kz, 1 - kx * kx + ky * ky - kz * kz, 2 * ky * kz - 2 * kx,
@@ -155,10 +160,10 @@ static Eigen::Matrix<_scalar, _rows, _cols> matrix_R_cayley(_scalar kx, _scalar 
 // OK
 // v:      3x1
 // return: 3x3
-template <int _rows, int _cols, typename A>
-Eigen::Matrix<typename A::Scalar, _rows, _cols> matrix_cross(Eigen::MatrixBase<A> const& v)
+template <typename A>
+Eigen::Matrix<typename A::Scalar, 3, 3> matrix_cross(Eigen::MatrixBase<A> const& v)
 {
-    Eigen::Matrix<typename A::Scalar, _rows, _cols> M(3, 3);
+    Eigen::Matrix<typename A::Scalar, 3, 3> M;
 
     M(0, 0) = 0;
     M(1, 0) =  v(2);
@@ -176,9 +181,20 @@ Eigen::Matrix<typename A::Scalar, _rows, _cols> matrix_cross(Eigen::MatrixBase<A
 // OK
 // E:      3x3
 // return: 3x3
-template <int _rows, int _cols, typename A>
-Eigen::Matrix<typename A::Scalar, _rows, _cols> normalize_E(Eigen::MatrixBase<A> const& E)
+template <typename A>
+Eigen::Matrix<typename A::Scalar, 3, 3> normalize_E(Eigen::MatrixBase<A> const& E)
 {
     Eigen::JacobiSVD<typename A::PlainObject> E_svd = E.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
     return E_svd.matrixU() * Eigen::Matrix<typename A::Scalar, 3, 3>{ { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } } * E_svd.matrixV().transpose();
+}
+
+// OK
+// r:      3x1
+// return: 3x3
+template <typename A>
+Eigen::Matrix<typename A::Scalar, 3, 3> matrix_R_rodrigues(Eigen::MatrixBase<A> const& r, typename A::Scalar tolerance = 1e-15)
+{
+    typename A::Scalar n = r.norm();
+    if (n < tolerance) { return Eigen::Matrix<typename A::Scalar, 3, 3>::Identity(); }
+    return Eigen::AngleAxis<typename A::Scalar>(n, r / n).toRotationMatrix();
 }
