@@ -148,7 +148,7 @@ bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float
     default: ky = roots[r]; kx = v1.dot(Eigen::Matrix<float, 3, 1>{ 1, ky, ky * ky }) / w1.dot(Eigen::Matrix<float, 2, 1>{ 1, ky }); kz = -((kx * sdx) + (ky * sdy)) / sdz; break; // z eliminated, solving for (x,x^2), y is hidden
     }
 
-    Eigen::Matrix<float, 3, 3> Ri = matrix_R_cayley<float, 3, 3>(kx, ky, kz);
+    Eigen::Matrix<float, 3, 3> Ri = matrix_R_cayley(Eigen::Matrix<float, 3, 1>{ kx, ky, kz });
     Eigen::Matrix<float, 3, 1> ti = PA2 - Ri * PA1;
 
     float DB = (PB2 - (Ri * PB1 + ti)).norm();
