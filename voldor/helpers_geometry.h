@@ -198,3 +198,13 @@ Eigen::Matrix<typename A::Scalar, 3, 3> matrix_R_rodrigues(Eigen::MatrixBase<A> 
     if (n < tolerance) { return Eigen::Matrix<typename A::Scalar, 3, 3>::Identity(); }
     return Eigen::AngleAxis<typename A::Scalar>(n, r / n).toRotationMatrix();
 }
+
+// OK
+// R:      3x3
+// return: 3x1
+template <typename A>
+Eigen::Matrix<typename A::Scalar, 3, 1> vector_r_rodrigues(Eigen::MatrixBase<A> const& R)
+{
+    Eigen::AngleAxis<typename A::Scalar> aa(R);
+    return aa.axis() * aa.angle();
+}
