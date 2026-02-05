@@ -5,7 +5,7 @@
 #include <iostream>
 #include <Eigen/Eigen>
 #include <opencv2/calib3d.hpp>
-#include "../rolling_shutter/rnp.h"
+//#include "../rolling_shutter/rnp.h"
 #include "helpers_eigen.h"
 #include "solver_gpm_hpc0.h"
 #include "solver_gpm_hpc1.h"
