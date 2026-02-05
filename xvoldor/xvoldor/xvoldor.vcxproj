@@ -25,13 +25,13 @@
     <ClInclude Include="..\..\lambdatwist\refine_lambda.h" />
     <ClInclude Include="..\..\lambdatwist\solve_cubic.h" />
     <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
-    <ClInclude Include="..\..\rolling_shutter\danilevsky.h" />
-    <ClInclude Include="..\..\rolling_shutter\hidden6.h" />
-    <ClInclude Include="..\..\rolling_shutter\prepare_1lin.h" />
-    <ClInclude Include="..\..\rolling_shutter\prepare_2lin.h" />
-    <ClInclude Include="..\..\rolling_shutter\rnp.h" />
-    <ClInclude Include="..\..\rolling_shutter\sturm.h" />
-    <ClInclude Include="..\..\rolling_shutter\utils.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\danilevsky.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\hidden6.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\prepare_1lin.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\prepare_2lin.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\rnp.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\sturm.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\utils.h" />
     <ClInclude Include="..\..\voldor\algebra.h" />
     <ClInclude Include="..\..\voldor\batch_solve.h" />
     <ClInclude Include="..\..\voldor\batch_solve_common.h" />
@@ -47,28 +47,12 @@
     <ClInclude Include="..\..\voldor\solver_gpm_hpc0.h" />
     <ClInclude Include="..\..\voldor\solver_gpm_hpc1.h" />
     <ClInclude Include="..\..\voldor\solver_gpm_hpc2.h" />
+    <ClInclude Include="..\..\voldor\solver_rnp.h" />
     <ClInclude Include="..\..\voldor\trifocal.h" />
     <ClInclude Include="..\..\voldor\voldor_utils.h" />
     <ClInclude Include="..\..\voldor\voldor.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\rolling_shutter\benchmark.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\iterative.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\python_bindings.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\r6p_1lin.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\r6p_2lin.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\r6p_iter.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\r7pf.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\r7pfr.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\rnp.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\sturm.cpp" />
-    <ClCompile Include="..\..\rolling_shutter\utils.cpp" />
     <ClCompile Include="..\..\thirdparty\PoseLib\misc\colmap_models.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -213,6 +197,21 @@
     <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up4pl.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\benchmark.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\iterative.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\python_bindings.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_1lin.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_2lin.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_iter.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\r7pf.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\r7pfr.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\rnp.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\utils.cpp" />
     <ClCompile Include="..\..\voldor\algebra.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_common.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc1_cpu.cpp" />
@@ -238,6 +237,7 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp" />
+    <ClCompile Include="..\..\voldor\solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\solver_tft_linear.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp" />
     <ClCompile Include="..\..\voldor\trifocal.cpp" />

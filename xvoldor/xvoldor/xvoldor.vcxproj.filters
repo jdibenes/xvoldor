@@ -58,8 +58,11 @@
     <Filter Include="Header Files\batch_solve">
       <UniqueIdentifier>{0e0c3bf8-69c4-4a75-b194-7b63f5d0be4d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rolling Shutter">
-      <UniqueIdentifier>{6db5c421-8240-4986-b3b6-bd2e68e97522}</UniqueIdentifier>
+    <Filter Include="Libraries\lambdatwist">
+      <UniqueIdentifier>{7f4d6162-ac5c-4985-8c18-0869b841e9c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\rnp">
+      <UniqueIdentifier>{46b4a89f-e445-4518-8015-309e8b07bbd0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -74,24 +77,6 @@
     </ClInclude>
     <ClInclude Include="..\..\voldor\voldor.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\matrix.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\refine_lambda.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_cubic.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
-      <Filter>Libraries</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\kitti.h">
       <Filter>Header Files</Filter>
@@ -135,26 +120,47 @@
     <ClInclude Include="..\..\voldor\algebra.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rolling_shutter\danilevsky.h">
-      <Filter>Rolling Shutter</Filter>
+    <ClInclude Include="..\..\voldor\solver_rnp.h">
+      <Filter>Header Files\solvers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rolling_shutter\hidden6.h">
-      <Filter>Rolling Shutter</Filter>
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
+      <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rolling_shutter\prepare_1lin.h">
-      <Filter>Rolling Shutter</Filter>
+    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h">
+      <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rolling_shutter\prepare_2lin.h">
-      <Filter>Rolling Shutter</Filter>
+    <ClInclude Include="..\..\lambdatwist\matrix.h">
+      <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rolling_shutter\rnp.h">
-      <Filter>Rolling Shutter</Filter>
+    <ClInclude Include="..\..\lambdatwist\refine_lambda.h">
+      <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rolling_shutter\sturm.h">
-      <Filter>Rolling Shutter</Filter>
+    <ClInclude Include="..\..\lambdatwist\solve_cubic.h">
+      <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rolling_shutter\utils.h">
-      <Filter>Rolling Shutter</Filter>
+    <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\danilevsky.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\hidden6.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\prepare_1lin.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\prepare_2lin.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\rnp.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\sturm.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\utils.h">
+      <Filter>Libraries\rnp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -380,41 +386,44 @@
     <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\benchmark.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\iterative.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\python_bindings.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\r6p_1lin.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\r6p_2lin.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\r6p_iter.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\r7pf.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\r7pfr.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\rnp.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\sturm.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\rolling_shutter\utils.cpp">
-      <Filter>Rolling Shutter</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rnp.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\benchmark.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\iterative.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\python_bindings.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_1lin.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_2lin.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_iter.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r7pf.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r7pfr.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\rnp.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\utils.cpp">
+      <Filter>Libraries\rnp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
