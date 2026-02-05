@@ -1,8 +1,7 @@
 
-#include "../rolling_shutter/rnp.h"
-#include <iostream>
 #include <limits>
 #include <opencv2/calib3d.hpp>
+#include "../rolling_shutter/rnp.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
