@@ -511,8 +511,8 @@ R_t_from_TFT
     Eigen::Matrix<float, 3, 1> e0 = e.col(0);
     Eigen::Matrix<float, 3, 1> e1 = e.col(1);
 
-    Eigen::Matrix<float, 3, 3> epi21_x = matrix_cross<3, 3>(e0); // OK
-    Eigen::Matrix<float, 3, 3> epi31_x = matrix_cross<3, 3>(e1); // OK
+    Eigen::Matrix<float, 3, 3> epi21_x = matrix_cross(e0); // OK
+    Eigen::Matrix<float, 3, 3> epi31_x = matrix_cross(e1); // OK
 
     Eigen::Matrix<float, 3, 3> T1 = TFT(Eigen::seqN( 0, 9)).reshaped(3, 3);
     Eigen::Matrix<float, 3, 3> T2 = TFT(Eigen::seqN( 9, 9)).reshaped(3, 3);

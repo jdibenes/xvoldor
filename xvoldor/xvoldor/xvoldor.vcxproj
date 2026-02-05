@@ -54,10 +54,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\rolling_shutter\benchmark.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\rolling_shutter\iterative.cpp" />
     <ClCompile Include="..\..\rolling_shutter\python_bindings.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\rolling_shutter\r6p_1lin.cpp" />
     <ClCompile Include="..\..\rolling_shutter\r6p_2lin.cpp" />

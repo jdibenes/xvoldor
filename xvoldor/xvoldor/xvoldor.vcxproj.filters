@@ -380,9 +380,6 @@
     <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
-      <Filter>Source Files\solvers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\rolling_shutter\benchmark.cpp">
       <Filter>Rolling Shutter</Filter>
     </ClCompile>
@@ -415,6 +412,9 @@
     </ClCompile>
     <ClCompile Include="..\..\rolling_shutter\utils.cpp">
       <Filter>Rolling Shutter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

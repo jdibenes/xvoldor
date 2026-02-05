@@ -11,6 +11,7 @@
 #include "solver_gpm_hpc1.h"
 #include "solver_gpm_hpc2.h"
 #include "solver_4p3v_para.h"
+#include "solver_rnp.h"
 #include "trifocal.h"
 #include "lock.h"
 
@@ -106,10 +107,14 @@ int main(int argc, char* argv[])
     std::cout << "p31" << std::endl;
     std::cout << p31 << std::endl;
 
+    //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
+
+    //solver_r6p1l(p11.data(), x31.data(), 0, 0, 2, r.data(), t.data());
+    //solver_r6p2l(p11.data(), x31.data(), 0, 0, r.data(), t.data());
+    solver_r6pi(p11.data(), x31.data(), 0, 0, 5, r.data(), t.data());
+    /*
     RSSinglelinCameraPoseVector results1Lin;
 
-    //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
-    
     Eigen::MatrixXd p3D(3, 6);
     Eigen::MatrixXd p2D(2, 6);
 
@@ -121,9 +126,6 @@ int main(int argc, char* argv[])
         p2D(1, i) = x31(1, i);
     }
 
-
-
-
     R6P1Lin(p3D, p2D, 0, 0, 2, &results1Lin);
     std::cout << "R6P " << std::endl;
     for (int i = 0; i < results1Lin.size(); ++i) {
@@ -131,6 +133,7 @@ int main(int argc, char* argv[])
         std::cout << results1Lin[i].v << std::endl;
         std::cout << results1Lin[i].C << std::endl;
     }
+    */
 
 
     std::cout << "GT" << std::endl;
