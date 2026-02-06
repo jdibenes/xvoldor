@@ -151,7 +151,7 @@ public:
                 (
                     [&](_scalar element_b, indices_t const& indices_b)
                     {
-                        for (int i = 0; i < indices_b.size(); ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
+                        for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
                         result[indices_c] = element_a * element_b;
                     }
                 );
