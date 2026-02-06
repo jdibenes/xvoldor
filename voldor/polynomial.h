@@ -1,7 +1,9 @@
 
 #pragma once
 
+#include <vector>
 #include <type_traits>
+#include <functional>
 #include "helpers_traits.h"
 
 template <typename _scalar, int _n>
