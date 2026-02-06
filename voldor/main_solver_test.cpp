@@ -16,6 +16,7 @@
 #include "lock.h"
 
 bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01);
+void test_poly();
 
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
@@ -176,6 +177,8 @@ int main(int argc, char* argv[])
 
     std::cout << "TRI" << std::endl;
     std::cout << w_X11 << std::endl;
+
+    test_poly();
 
 
 
