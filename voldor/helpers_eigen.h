@@ -70,6 +70,3 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_subtrac
 
     return rv;
 }
-
-
-
