@@ -162,6 +162,12 @@
     <ClInclude Include="..\..\thirdparty\rnp\utils.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\polynomial.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\helpers_traits.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
