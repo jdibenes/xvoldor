@@ -7,6 +7,7 @@
 #include <opencv2/calib3d.hpp>
 //#include "../rolling_shutter/rnp.h"
 #include "helpers_eigen.h"
+#include "helpers_geometry.h"
 #include "solver_gpm_hpc0.h"
 #include "solver_gpm_hpc1.h"
 #include "solver_gpm_hpc2.h"
@@ -16,7 +17,8 @@
 #include "lock.h"
 
 bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01);
-void test_poly();
+bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01);
+//void test_poly();
 
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
@@ -109,10 +111,11 @@ int main(int argc, char* argv[])
     std::cout << p31 << std::endl;
 
     //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
+    solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
 
     //solver_r6p1l(p11.data(), x31.data(), 0, 0, 2, r.data(), t.data());
     //solver_r6p2l(p11.data(), x31.data(), 0, 0, r.data(), t.data());
-    solver_r6pi(p11.data(), x31.data(), 0, 0, 5, r.data(), t.data());
+    //solver_r6pi(p11.data(), x31.data(), 0, 0, 5, r.data(), t.data());
     /*
     RSSinglelinCameraPoseVector results1Lin;
 
@@ -136,8 +139,16 @@ int main(int argc, char* argv[])
     }
     */
 
+    Eigen::Matrix<float, 3, 3> E_gt = matrix_cross(pose02.col(3)) * pose02(Eigen::all, Eigen::seqN(0, 3));
+    E_gt.normalize();
+
+
+
 
     std::cout << "GT" << std::endl;
+    std::cout << "E " << std::endl;
+    std::cout << E_gt << std::endl;
+    
     //std::cout << pose01 << std::endl;
     //std::cout << pose12 << std::endl;
     std::cout << pose02 << std::endl;
@@ -172,13 +183,13 @@ int main(int argc, char* argv[])
     cv::Mat w_X11(4, 7, CV_32FC1);
     cv::Mat w_X11i(3, 7, CV_32FC1);
 
-    cv::triangulatePoints(pj1, pj2, w_x11, w_x31, w_X11);
+    //cv::triangulatePoints(pj1, pj2, w_x11, w_x31, w_X11);
     //cv::convertPointsFromHomogeneous(w_X11, w_X11i);
 
-    std::cout << "TRI" << std::endl;
-    std::cout << w_X11 << std::endl;
+    //std::cout << "TRI" << std::endl;
+    //std::cout << w_X11 << std::endl;
 
-    test_poly();
+    //test_poly();
 
 
 
