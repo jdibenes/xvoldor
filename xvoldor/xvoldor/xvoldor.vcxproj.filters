@@ -392,9 +392,6 @@
     <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rnp.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
@@ -430,6 +427,12 @@
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\utils.cpp">
       <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm5.cpp">
+      <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

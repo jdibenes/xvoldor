@@ -237,6 +237,7 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp" />
     <ClCompile Include="..\..\voldor\py_export.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp" />
+    <ClCompile Include="..\..\voldor\solver_gpm_nm5.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp" />
     <ClCompile Include="..\..\voldor\solver_rnp.cpp" />
