@@ -89,7 +89,7 @@ public:
     {
     }
 
-    polynomial(_scalar bias)
+    polynomial(_scalar const& bias)
     {
         (*this)[indices_t(_n)] = bias;
     }
