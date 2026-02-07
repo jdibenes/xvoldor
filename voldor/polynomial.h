@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <type_traits>
-#include <functional>
 #include "helpers_traits.h"
 
 template <typename _scalar, int _n>
@@ -14,14 +13,15 @@ public:
     using indices_t = std::vector<index_t>;
     using data_t = typename add_vector<_scalar, _n>::type;
     using callback_t = void(_scalar&, indices_t const&);
-    using const_callback_t = void(_scalar, indices_t const&);
+    using const_callback_t = void(_scalar const&, indices_t const&);
     using polynomial_t = polynomial<_scalar, _n>;
 
 private:
     data_t data;
+    _scalar zero = _scalar(0);
 
-    template <typename _unpacked>
-    void for_each(_unpacked& object, int level, indices_t& indices, std::function<callback_t> callback)
+    template <typename _unpacked, typename _callback>
+    void for_each(_unpacked& object, int level, indices_t& indices, _callback callback)
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
@@ -37,8 +37,8 @@ private:
         }
     }
 
-    template <typename _unpacked>
-    void for_each(_unpacked const& object, int level, indices_t& indices, std::function<const_callback_t> callback) const
+    template <typename _unpacked, typename _callback>
+    void for_each(_unpacked const& object, int level, indices_t& indices, _callback callback) const
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
@@ -79,18 +79,30 @@ private:
         else
         {
             index_t index = indices[level];
-            return at(object.at(index), level + 1, indices);
+            if (index >= object.size()) { return zero; }
+            return at(object[index], level + 1, indices);
         }
     }
 
 public:
-    void for_each(std::function<callback_t> callback)
+    polynomial()
+    {
+    }
+
+    polynomial(_scalar bias)
+    {
+        (*this)[indices_t(_n)] = bias;
+    }
+
+    template <typename _callback>
+    void for_each(_callback callback)
     {
         indices_t scratch(_n);
         for_each(data, 0, scratch, callback);
     }
 
-    void for_each(std::function<const_callback_t> callback) const
+    template <typename _callback>
+    void for_each(_callback callback) const
     {
         indices_t scratch(_n);
         for_each(data, 0, scratch, callback);
@@ -100,7 +112,7 @@ public:
     polynomial<_other_scalar, _n> cast() const
     {
         polynomial<_other_scalar, _n> result;
-        std::function<const_callback_t> f([&](_scalar element, indices_t const& indices) { result[indices] = static_cast<_other_scalar>(element); });
+        auto f = [&](_scalar const& element, indices_t const& indices) { result[indices] = static_cast<_other_scalar>(element); };
         for_each(f);
         return result;
     }
@@ -143,47 +155,41 @@ public:
         polynomial_t result;
         indices_t indices_c(_n);
 
-        std::function<const_callback_t> f
-        (
-            [&](_scalar element_a, indices_t const& indices_a)
+        auto f = [&](_scalar const& element_a, indices_t const& indices_a)
+        {
+            auto g = [&](_scalar const& element_b, indices_t const& indices_b)
             {
-                std::function<const_callback_t> g
-                (
-                    [&](_scalar element_b, indices_t const& indices_b)
-                    {
-                        for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
-                        result[indices_c] = element_a * element_b;
-                    }
-                );
-                other.for_each(g);
-            }
-        );
+                for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
+                result[indices_c] = element_a * element_b;
+            };
+            other.for_each(g);
+        };
         for_each(f);
 
         return result;
     }
 
-    polynomial_t operator*(_scalar other) const
+    polynomial_t operator*(_scalar const& other) const
     {
         polynomial_t result = *this;
         return result *= other;
     }
 
-    friend polynomial<_scalar, _n> operator*(_scalar other, polynomial<_scalar, _n> const& x)
+    friend polynomial<_scalar, _n> operator*(_scalar const& other, polynomial<_scalar, _n> const& x)
     {
         return x * other;
     }
 
     polynomial_t& operator+=(polynomial_t const& other)
     {
-        std::function<const_callback_t> f([&](_scalar element, indices_t const& indices) { (*this)[indices] += element; });
+        auto f = [&](_scalar const& element, indices_t const& indices) { (*this)[indices] += element; };
         other.for_each(f);
         return *this;
     }
 
     polynomial_t& operator-=(polynomial_t const& other)
     {
-        std::function<const_callback_t> f([&](_scalar element, indices_t const& indices) { (*this)[indices] -= element; });
+        auto f = [&](_scalar const& element, indices_t const& indices) { (*this)[indices] -= element; };
         other.for_each(f);
         return *this;
     }
@@ -193,9 +199,9 @@ public:
         return *this = *this * other; // true *= has aliasing issues
     }
 
-    polynomial_t& operator*=(_scalar other)
+    polynomial_t& operator*=(_scalar const& other)
     {
-        std::function<callback_t> f([&](_scalar& element, indices_t const&) { element *= other; });
+        auto f = [&](_scalar& element, indices_t const&) { element *= other; };
         for_each(f);
         return *this;
     }
