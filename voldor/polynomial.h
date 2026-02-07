@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <Eigen/Eigen>
 #include <vector>
 #include <type_traits>
 #include "helpers_traits.h"
@@ -157,12 +158,12 @@ public:
 
         auto f = [&](_scalar const& element_a, indices_t const& indices_a)
         {
-            auto g = [&](_scalar const& element_b, indices_t const& indices_b)
-            {
-                for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
-                result[indices_c] = element_a * element_b;
-            };
-            other.for_each(g);
+        auto g = [&](_scalar const& element_b, indices_t const& indices_b)
+        {
+        for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
+        result[indices_c] += element_a * element_b;
+        };
+        other.for_each(g);
         };
         for_each(f);
 
@@ -196,7 +197,8 @@ public:
 
     polynomial_t& operator*=(polynomial_t const& other)
     {
-        return *this = *this * other; // true *= has aliasing issues
+        *this = *this * other; // true *= has aliasing issues
+        return *this;
     }
 
     polynomial_t& operator*=(_scalar const& other)
@@ -206,3 +208,24 @@ public:
         return *this;
     }
 };
+
+template <typename _scalar, int _n, int _output_rows, int _output_cols, typename A>
+Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> matrix_to_linear_polynomial_matrix(Eigen::MatrixBase<A> const& M, int output_rows = _output_rows, int output_cols = _output_cols)
+{
+    Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> E(output_rows, output_cols);
+    typename polynomial<_scalar, _n>::indices_t indices(_n);
+
+    for (int i = 0; i < output_cols; ++i)
+    {
+    for (int j = 0; j < output_rows; ++j)
+    {
+    for (int p = 0; p < (_n + 1); ++p)
+    {
+    for (int q = 0; q < _n; ++q) { indices[q] = p == (q + 1); }
+    E(j, i)[indices] = M((i * output_rows) + j, p);
+    }
+    }
+    }
+
+    return E;
+}
