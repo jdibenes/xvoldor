@@ -1,34 +1,8 @@
 
 #include <Eigen/Eigen>
-#include <iostream>
 #include "polynomial.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
-
-
-template <typename _scalar, int _n>
-class polynomial_matrix_3x3
-{
-private:
-    polynomial<_scalar, _n> data[3][3];
-
-
-public:
-    polynomial()
-    {
-    }
-
-    polynomial<_scalar, _n> determinant()
-    {
-        return data[0][0] * (data[1][1] * data[2][2] - data[1][2] * data[2][1])
-             - data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0])
-             + data[0][2] * (data[1][0] * data[2][1] - data[1][1] * data[2][0]);
-    }
-};
-
-
-
-
 
 bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01)
 {
@@ -51,63 +25,28 @@ bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01)
 
     e << (-(k(3, Eigen::all) + k(7, Eigen::all))), k;
 
-    // e = [e11 e21 e31 e12 e22 e32 e13 e23 e33]
+    Eigen::Matrix<polynomial<float, 1>, 3, 3> E = matrix_to_linear_polynomial_matrix<float, 1, 3, 3>(e); // OK
 
-    // det(E) == 0
-    // 2*E*E^T*E - tr(E*E^T)E
+    polynomial<float, 1> E_determinant = E.determinant();
 
-    polynomial<float, 1> e_poly;
-    e0[{0}] = e(0, 0);
-    e0[{1}] = e(0, 1);
+    Eigen::Matrix<polynomial<float, 1>, 3, 3> EEt = E * E.transpose();
+    Eigen::Matrix<polynomial<float, 1>, 3, 3> E_singular_values = (EEt * E) - ((0.5 * EEt.trace()) * E);
 
+    Eigen::Matrix<float, 10, 4> S = Eigen::Matrix<float, 10, 4>::Zero();
 
+    for (int i = 0; i < 3; ++i)
+    {
+    for (int j = 0; j < 3; ++j)
+    {
+    E_singular_values(j, i).for_each([&](float const& element, polynomial<float, 1>::indices_t const& indices) { S((i * 3) + j, indices[0]) = element; });
+    }
+    }
 
-
-
-
-    //std::vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> v;
-
-    //for (int i = 0; i < 9; ++i) { v.push_back(Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>{ e(0, Eigen::all) }); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    E_determinant.for_each([&](float const& element, polynomial<float, 1>::indices_t const& indices) { S(9, indices[0]) = element; });
     
+    Eigen::Matrix<float, 4, 1> solution = S.bdcSvd(Eigen::ComputeThinV).matrixV().col(3);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    Eigen::Matrix<float, 3, 3> fake_E = e.reshaped(3, 3);
+    Eigen::Matrix<float, 3, 3> fake_E = (e(Eigen::all, 0) + ((solution(1) / solution(0)) * e(Eigen::all, 1))).reshaped(3, 3);
 
     result_R_t_from_E result = R_t_from_E(fake_E, q1, q2);
 
@@ -128,125 +67,4 @@ bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01)
     float x_sum = r_sum + t_sum;
 
     return std::isfinite(x_sum);
-    */
-    return true;
 }
-
-
-
-
-void test_poly()
-{
-    polynomial<float, 3> A;
-    polynomial<float, 3> B;
-
-    A[{ 0, 0, 0 }] = 2;
-    A[{ 1, 2, 0 }] = 4;
-    A[{ 3, 1, 2 }] = 3;
-
-    B[{ 1, 0, 0 }] = 5;
-    B[{ 2, 2, 2 }] = 6;
-
-    polynomial<float, 3> const& Ar = A;
-
-    float a = A[{ 0, 0, 0 }];
-    float ar = Ar[{ 0, 0, 0 }];
-    //Ar.at({ 0,0,0 }) = 11;
-    
-
-    std::function<void(float const&, std::vector<int> const&)> f([](float const& element, std::vector<int> const& indices) { std::cout << indices[0] << ":" << indices[1] << ":" << indices[2] << " -> " << element << std::endl; /*element += 14.0f*/; });
-    std::function<void(float&, std::vector<int> const&)> g([](float const& element, std::vector<int> const& indices) { std::cout << indices[0] << ":" << indices[1] << ":" << indices[2] << " -> " << element << std::endl; /*element += 14.0f*/; });
-
-    //f = g;
-    //g = f;
-
-
-
-
-
-
-    polynomial<float, 3> C = A + B;
-    C = A - B;
-    C = +A;
-    C = -A;
-    C = A * B;
-    C = A * 2;
-    C = 2 * A;
-    C += A;
-    C -= B;
-    C *= A;
-    C *= -2;
-
-    polynomial<double, 3> D = C.cast<double>();
-
-
-
-
-
-
-    A.for_each(f);
-    Ar.for_each(f);
-    C.for_each(f);
-
-    A.for_each(g);
-    //Ar.for_each(g);
-    C.for_each(g);
-    
-
-    
-    //multivariate_polynomial<std::vector<std::vector<float>>> p;
-    //std::function<void(float const&, std::vector<int> const&)> f([](float const& element, std::vector<int> const& indices) { std::cout << indices[0] << ":" << indices[1] << " -> " << element << std::endl; /*element += 14.0f*/; });
-    /*
-    p.for_each(f);
-    p.for_each(f);
-    p.for_each(f);
-    auto const& x = p[{0, 0}];
-
-
-    multivariate_polynomial<std::vector<std::vector<float>>> const& p_const = p;
-
-    float y = p_const.at({ 0,0 });
-
-
-    p.at({ 1, 2 }) = 12;
-    float z = p.at({ 1, 2 });
-    std::cout << "Z: " << z << std::endl;
-
-    std::vector<float> t;
-
-    multivariate_polynomial<std::vector<std::vector<float>>> A;
-    multivariate_polynomial<std::vector<std::vector<float>>> B;
-
-    A.at({ 1, 1 }) = 5; // 5xy
-    B.at({ 1, 1 }) = 2; // 2xy
-    B.at({ 1, 0 }) = 3; // 3x
-
-    A.for_each(f);
-    B.for_each(f);
-    auto C = A * B; // 5xy * (2xy + 3x) = 10x^2y^2 + 15x^2y -> {2, 2} -> 10, {2, 1} -> 15
-    C.for_each(f);
-
-    auto D = A + 3;
-    D.for_each(f);
-
-    auto E = B * 11;
-    E.for_each(f);
-    */
-
-    //t.resize();
-    //p.data.resize(5);
-    //p.data[2].resize(7);
-    //p.data[4].resize(3);
-
-
-    
-    //std::vector<int> indices{ 0,0 };
-
-    //p.for_each(p.data, 0, indices, f);
-
-
-
-
-
-}
-
