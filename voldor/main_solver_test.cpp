@@ -18,6 +18,7 @@
 
 bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01);
 bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01);
+bool solver_gpm_nm5(float const* p1, float const* p2, float* r01, float* t01);
 //void test_poly();
 
 
@@ -111,7 +112,8 @@ int main(int argc, char* argv[])
     std::cout << p31 << std::endl;
 
     //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
-    solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
+    //solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
+    solver_gpm_nm5(p11.data(), p31.data(), r.data(), t.data());
 
     //solver_r6p1l(p11.data(), x31.data(), 0, 0, 2, r.data(), t.data());
     //solver_r6p2l(p11.data(), x31.data(), 0, 0, r.data(), t.data());
