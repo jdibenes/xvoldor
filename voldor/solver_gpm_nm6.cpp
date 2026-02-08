@@ -25,7 +25,7 @@ bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01)
 
     e << (-(k(3, Eigen::all) + k(7, Eigen::all))), k;
 
-    Eigen::Matrix<polynomial<float, 1>, 3, 3> E = matrix_to_linear_polynomial_matrix<float, 1, 3, 3>(e); // OK
+    Eigen::Matrix<polynomial<float, 1>, 3, 3> E = matrix_to_polynomial_grevlex<1, 3, 3>(e); // OK
 
     polynomial<float, 1> E_determinant = E.determinant();
 
@@ -38,11 +38,11 @@ bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01)
     {
     for (int j = 0; j < 3; ++j)
     {
-    E_singular_values(j, i).for_each([&](float const& element, polynomial<float, 1>::indices_t const& indices) { S((i * 3) + j, indices[0]) = element; });
+    E_singular_values(j, i).for_each([&](float const& element, monomial_indices_t const& indices) { S((i * 3) + j, indices[0]) = element; });
     }
     }
 
-    E_determinant.for_each([&](float const& element, polynomial<float, 1>::indices_t const& indices) { S(9, indices[0]) = element; });
+    E_determinant.for_each([&](float const& element, monomial_indices_t const& indices) { S(9, indices[0]) = element; });
     
     Eigen::Matrix<float, 4, 1> solution = S.bdcSvd(Eigen::ComputeThinV).matrixV().col(3);
 
