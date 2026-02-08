@@ -387,15 +387,7 @@ template <typename _scalar, int _n, int _output_rows, int _output_cols, typename
 Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int output_rows = _output_rows, int output_cols = _output_cols)
 {
     Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> E(output_rows, output_cols);
-
-    for (int i = 0; i < output_cols; ++i)
-    {
-        for (int j = 0; j < output_rows; ++j)
-        {
-            E(j, i) = vector_to_polynomial_grevlex<_scalar, _n>(M.row((i * output_rows) + j));
-        }
-    }
-
+    for (int i = 0; i < output_cols; ++i) { for (int j = 0; j < output_rows; ++j) { E(j, i) = vector_to_polynomial_grevlex<_scalar, _n>(M.row((i * output_rows) + j)); } }
     return E;
 }
 
