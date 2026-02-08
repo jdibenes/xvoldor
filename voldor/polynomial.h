@@ -418,22 +418,37 @@ Eigen::Matrix<_vector_scalar, _rows, _cols> vector_from_polynomial_grevlex(polyn
 }
 
 
-/*
+//matrix_to_polynomial_grevlex input items, cofs -> rows, cols with rows*cols == items 
+
+template <typename _matrix_scalar, int _rows, int _cols, typename A>
 Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(Eigen::MatrixBase<A> const& src, int rows = _rows, int cols = _cols)
 {
     Eigen::Matrix<_matrix_scalar, _rows, _cols> dst(rows, cols);
-    for (int i = 0; i < src.cols(); ++i)
+    Eigen::Index input_cols = src.cols();
+    Eigen::Index input_rows = src.rows();
+    for (int i = 0; i < input_cols; ++i)
     {
-        for (int j = 0; j < src.rows(); ++j)
+        for (int j = 0; j < input_rows; ++j)
         {
-            dst() = 
+            dst.row((i * input_rows) + j) = vector_from_polynomial_grevlex<_matrix_scalar, 1, _cols>(src(j, i), 1, cols);
         }
     }
 
 
 
+    // rows == src.rows * src.cols
+    // cols == cofs
+
+
+
+    
+    return dst;
+
+
+
 }
-*/
+
+
 
 
 
