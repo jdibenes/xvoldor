@@ -27,15 +27,15 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-        callback(object, indices);
+            callback(object, indices);
         }
         else
         {
-        for (monomial_index_t i = 0; i < object.size(); ++i)
-        {
-        indices[level] = i;
-        for_each(object[i], level + 1, indices, callback);
-        }
+            for (monomial_index_t i = 0; i < object.size(); ++i)
+            {
+                indices[level] = i;
+                for_each(object[i], level + 1, indices, callback);
+            }
         }
     }
 
@@ -44,15 +44,15 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-        callback(object, indices);
+            callback(object, indices);
         }
         else
         {
-        for (monomial_index_t i = 0; i < object.size(); ++i)
-        {
-        indices[level] = i;
-        for_each(object[i], level + 1, indices, callback);
-        }
+            for (monomial_index_t i = 0; i < object.size(); ++i)
+            {
+                indices[level] = i;
+                for_each(object[i], level + 1, indices, callback);
+            }
         }
     }
 
@@ -61,13 +61,13 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-        return object;
+            return object;
         }
         else
         {
-        monomial_index_t index = indices[level];
-        if (index >= object.size()) { object.resize(index + 1); }
-        return at(object[index], level + 1, indices);
+            monomial_index_t index = indices[level];
+            if (index >= object.size()) { object.resize(index + 1); }
+            return at(object[index], level + 1, indices);
         }
     }
 
@@ -76,13 +76,13 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-        return object;
+            return object;
         }
         else
         {
-        monomial_index_t index = indices[level];
-        if (index >= object.size()) { return zero; }
-        return at(object[index], level + 1, indices);
+            monomial_index_t index = indices[level];
+            if (index >= object.size()) { return zero; }
+            return at(object[index], level + 1, indices);
         }
     }
 
@@ -159,12 +159,12 @@ public:
 
         auto f = [&](_scalar const& element_a, monomial_indices_t const& indices_a)
         {
-        auto g = [&](_scalar const& element_b, monomial_indices_t const& indices_b)
-        {
-        for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
-        result[indices_c] += element_a * element_b;
-        };
-        other.for_each(g);
+            auto g = [&](_scalar const& element_b, monomial_indices_t const& indices_b)
+            {
+                for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
+                result[indices_c] += element_a * element_b;
+            };
+            other.for_each(g);
         };
         for_each(f);
 
@@ -228,7 +228,7 @@ private:
     }
 
 public:
-    grevlex_generator() : indices(_n), power{-1}, sum{0}, index{-1}
+    grevlex_generator() : indices(_n), power{ -1 }, sum{ 0 }, index{ -1 }
     {
     }
 
@@ -238,7 +238,7 @@ public:
 
     grevlex_generator(monomial_indices_t const& start_indices) : grevlex_generator(start_indices, ravel(start_indices))
     {
-    }    
+    }
 
     monomial_indices_t const& next()
     {
@@ -365,10 +365,10 @@ Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> ma
 
     for (int i = 0; i < output_cols; ++i)
     {
-    for (int j = 0; j < output_rows; ++j)
-    {
-    E(j, i) = vector_to_polynomial_grevlex<_n>(M.row((i * output_rows) + j));
-    }
+        for (int j = 0; j < output_rows; ++j)
+        {
+            E(j, i) = vector_to_polynomial_grevlex<_n>(M.row((i * output_rows) + j));
+        }
     }
 
     return E;
