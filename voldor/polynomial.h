@@ -214,32 +214,182 @@ template <int _n>
 class grevlex_generator
 {
 private:
-    std::vector<int> indices = std::vector<int>(_n);
-    int power = -1;
-    int sum = 0;
+    std::vector<int> indices;
+    int power;
+    int sum;
+    int index;
+
+    void decrement()
+    {
+        int i;
+        for (i = _n - 1; (i >= 0) && (indices[i] <= 0); --i) 
+        {
+            indices[i] = power;
+            sum += power; 
+        }
+        indices[i]--;
+        sum--;
+    }
+
+    void increment()
+    {
+        int i;
+        for (i = _n - 1; (i >= 0) && (indices[i] >= power); --i)
+        {
+            indices[i] = 0;
+            sum -= power;
+        }
+        indices[i]++;
+        sum++;
+    }
+
+    grevlex_generator(std::vector<int> const& start_indices, int start_index) : indices(_n)
+    {
+        sum = 0;
+        for (int i = 0; i < _n; ++i) { sum += (indices[i] = start_indices[i]); }
+        power = sum;
+        index = start_index;
+    }
 
 public:
+    grevlex_generator() : indices(_n), power{-1}, sum{0}, index{-1}
+    {
+    }
+
+    grevlex_generator(int start_index) : grevlex_generator(unravel(start_index), start_index)
+    {
+    }
+
+    grevlex_generator(std::vector<int> const& start_indices) : grevlex_generator(start_indices, ravel(start_indices))
+    {
+    }    
+
     std::vector<int> const& next()
     {
         do
         {
             if (sum > 0)
             {
-                int i;
-                for (i = _n - 1; (i >= 0) && (indices[i] <= 0); --i) { sum += (indices[i] = power); }
-                indices[i]--;
-                sum--;
+                decrement();
             }
             else
             {
-                sum = indices[0] = ++power;
+                power++;
+                indices[0] = power;
+                sum = power;
             }
-        } 
+        }
         while (sum != power);
+        index++;
         return indices;
     }
+
+    std::vector<int> const& previous(bool &underflow)
+    {
+        underflow = power <= 0;
+        if (underflow) { return indices; }
+        do
+        {
+            if (indices[0] < power)
+            {
+                increment();
+            }
+            else
+            {
+                power--;
+                indices[0] = 0;
+                sum = 0;
+            }
+        }
+        while (sum != power);
+        index--;
+        return indices;
+    }
+
+    std::vector<int> const& current_indices()
+    {
+        return indices;
+    }
+
+    int current_power()
+    {
+        return power;
+    }
+
+    int current_index()
+    {
+        return index;
+    }
+
+    static std::vector<int> unravel(int index)
+    {
+        grevlex_generator<_n> gg;
+        for (int i = 0; i < index; ++i) { gg.next(); }
+        return gg.next();
+    }
+
+    static int ravel(std::vector<int> const& indices)
+    {
+        grevlex_generator<_n> gg;
+        while (!equal_monomial(indices, gg.next()));
+        return gg.current_index();
+    }
+
+
+
+
+
+
+    static bool equal_monomial(std::vector<int> a, std::vector<int> b)
+    {
+        for (int i = 0; i < _n; ++i)
+        {
+            if ((a[i] - b[i]) != 0) { return false; }
+        }
+        return true;
+    }
+
+    
 };
 
+
+
+
+
+
+
+
+// index++; //with start index = -1
+// index == -1 -> underflow
+        // index == 0 -> underflow
+        //if (sum == power) { index++; }
+
+
+
+
+
+
+
+
+
+
+
+
+        //do
+       // {
+
+        //} while (power >= 0);
+
+
+
+
+
+
+
+        //underflow = power < 0;
+        //if (0) {  }
+
+/*
 template <int _n>
 int grevlex_ravel(std::vector<int> const& idx)
 {
@@ -253,14 +403,7 @@ int grevlex_ravel(std::vector<int> const& idx)
     {
         if (indices[0] < power)
         {
-            int i;
-            for (i = _n - 1; (i >= 0) && (indices[i] >= power); --i)
-            {
-                indices[i] = 0;
-                sum -= power;
-            }
-            indices[i]++;
-            sum++;
+            // increment
         }
         else
         {
@@ -274,15 +417,9 @@ int grevlex_ravel(std::vector<int> const& idx)
 
     return index;
 }
+*/
 
-template <int _n>
-std::vector<int> grevlex_unravel(int index)
-{
-    grevlex_generator<_n> gg;
-    std::vector<int> indices;
-    for (int i = 0; i < index; ++i) { gg.next(); }
-    return gg.next();
-}
+
 
 
 
