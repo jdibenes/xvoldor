@@ -362,42 +362,79 @@ public:
     }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-template <int _n, typename A>
-polynomial<typename A::Scalar, _n> vector_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M)
+template <typename _scalar, int _n, typename _index_type, typename _array_type, typename _callback_size, typename _callback_read>
+static polynomial<_scalar, _n> vector_to_polynomial_grevlex(_array_type const& a, _callback_size size, _callback_read read)
 {
-    polynomial<typename A::Scalar, _n> rv;
+    polynomial<_scalar, _n> p;
     grevlex_generator<_n> gg;
-    for (int p = 0; p < M.size(); ++p) { rv[gg.next()] = M(p); }
-    return rv;
+    for (_index_type i = 0; i < size(a); ++i) { p[gg.next()] = read(a, i); }
+    return p;
 }
 
-template <int _n, int _output_rows, int _output_cols, typename A>
-Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int output_rows = _output_rows, int output_cols = _output_cols)
+template <typename _scalar, int _n, typename A>
+static polynomial<_scalar, _n> vector_to_polynomial_grevlex(std::vector<A> const& grevlex_coefficients)
 {
-    Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> E(output_rows, output_cols);
+    return vector_to_polynomial_grevlex<_scalar, _n, size_t>(grevlex_coefficients, [](std::vector<A> const& a) { return a.size(); }, [](std::vector<A> const& a, size_t i) { return a[i]; });
+}
+
+template <typename _scalar, int _n, typename A>
+polynomial<_scalar, _n> vector_to_polynomial_grevlex(Eigen::DenseBase<A> const& grevlex_coefficients)
+{
+    return vector_to_polynomial_grevlex<_scalar, _n, Eigen::Index>(grevlex_coefficients, [](Eigen::DenseBase<A> const& a) { return a.size(); }, [](Eigen::DenseBase<A> const& a, Eigen::Index i) { return a(i); });
+}
+
+template <typename _scalar, int _n, int _output_rows, int _output_cols, typename A>
+Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int output_rows = _output_rows, int output_cols = _output_cols)
+{
+    Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> E(output_rows, output_cols);
 
     for (int i = 0; i < output_cols; ++i)
     {
         for (int j = 0; j < output_rows; ++j)
         {
-            E(j, i) = vector_to_polynomial_grevlex<_n>(M.row((i * output_rows) + j));
+            E(j, i) = vector_to_polynomial_grevlex<_scalar, _n>(M.row((i * output_rows) + j));
         }
     }
 
     return E;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
 template <typename _scalar, int _rows, int _cols, int _n>
@@ -407,6 +444,7 @@ void polynomial_transfer(Eigen::Ref<Eigen::Matrix<_scalar, _rows, _cols>> dst, p
     src.for_each(f);
 }
 */
+
 
 
 
