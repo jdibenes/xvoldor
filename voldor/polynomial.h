@@ -391,31 +391,16 @@ Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> matrix_to_pol
     return E;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+template <typename _matrix_scalar, int _rows, int _cols, typename _scalar, int _n>
+void polynomial_grevlex_transfer(Eigen::Matrix<_matrix_scalar, _rows, _cols>& dst, polynomial<_scalar, _n> const& src, int row)
+{
+    auto f = [&](_scalar const& element, monomial_indices_t const& indices)
+    {
+        int i = grevlex_generator<_n>::ravel(indices);
+        if (i < dst.cols()) { dst(row, i) = element; }
+    };
+    src.for_each(f);
+}
 
 
 
@@ -429,13 +414,44 @@ Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> matrix_to_pol
 
 
 /*
-template <typename _scalar, int _rows, int _cols, int _n>
-void polynomial_transfer(Eigen::Ref<Eigen::Matrix<_scalar, _rows, _cols>> dst, polynomial<_scalar, _n> const& src, int row)
-{
-    auto f = [&](_scalar const& element, monomial_indices_t const& indices) { dst(row, grevlex_generator<_n>::ravel(indices)) = element; };
-    src.for_each(f);
-}
+
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
