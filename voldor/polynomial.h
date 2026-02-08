@@ -27,15 +27,15 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-            callback(object, indices);
+        callback(object, indices);
         }
         else
         {
-            for (index_t i = 0; i < object.size(); ++i)
-            {
-                indices[level] = i;
-                for_each(object[i], level + 1, indices, callback);
-            }
+        for (index_t i = 0; i < object.size(); ++i)
+        {
+        indices[level] = i;
+        for_each(object[i], level + 1, indices, callback);
+        }
         }
     }
 
@@ -44,15 +44,15 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-            callback(object, indices);
+        callback(object, indices);
         }
         else
         {
-            for (index_t i = 0; i < object.size(); ++i)
-            {
-                indices[level] = i;
-                for_each(object[i], level + 1, indices, callback);
-            }
+        for (index_t i = 0; i < object.size(); ++i)
+        {
+        indices[level] = i;
+        for_each(object[i], level + 1, indices, callback);
+        }
         }
     }
 
@@ -61,13 +61,13 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-            return object;
+        return object;
         }
         else
         {
-            index_t index = indices[level];
-            if (index >= object.size()) { object.resize(index + 1); }
-            return at(object[index], level + 1, indices);
+        index_t index = indices[level];
+        if (index >= object.size()) { object.resize(index + 1); }
+        return at(object[index], level + 1, indices);
         }
     }
 
@@ -76,13 +76,13 @@ private:
     {
         if constexpr (std::is_arithmetic_v<_unpacked>)
         {
-            return object;
+        return object;
         }
         else
         {
-            index_t index = indices[level];
-            if (index >= object.size()) { return zero; }
-            return at(object[index], level + 1, indices);
+        index_t index = indices[level];
+        if (index >= object.size()) { return zero; }
+        return at(object[index], level + 1, indices);
         }
     }
 
@@ -210,7 +210,6 @@ public:
     }
 };
 
-
 template <int _n>
 class grevlex_generator
 {
@@ -220,7 +219,7 @@ private:
     int sum = 0;
 
 public:
-    std::vector<int> next()
+    std::vector<int> const& next()
     {
         do
         {
@@ -233,7 +232,7 @@ public:
             }
             else
             {
-                indices[0] = sum = ++power;
+                sum = indices[0] = ++power;
             }
         } 
         while (sum != power);
@@ -241,56 +240,32 @@ public:
     }
 };
 
-
-
-
-
-
-
-
-
-/*
-template <int _n>
-void unravel_grevlex(int index, std::vector<int>& indices, int power = 0)
+template <int _n, typename A>
+polynomial<typename A::Scalar, _n> vector_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M)
 {
-    indices[0] = power;
-    for (int i = 1; i < _n; ++i) { indices[i] = 0; }
-
-    while (index >= 0)
-    {
-        int sum = 0;
-        for (int i = 0; i < _n; ++i) { sum += indices[i]; }
-        if ((sum == power) && ((--index) < 0)) { return; }
-        if (sum == 0)
-        {
-            indices[0] = ++power;
-            continue;
-        }
-
-
-
-
-
-
-
-
-        
-        
-        for (int i = _n - 1; i >= 0; --i)
-        {
-            if (indices[i] > 0)
-            {
-                indices[i]--;
-                break;
-            }
-            else
-            {
-                indices[i] = power;
-            }
-        }
-    }
+    polynomial<typename A::Scalar, _n> rv;
+    grevlex_generator<_n> gg;
+    for (int p = 0; p < M.size(); ++p) { rv[gg.next()] = M(p); }
+    return rv;
 }
-*/
+
+template <int _n, int _output_rows, int _output_cols, typename A>
+Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int output_rows = _output_rows, int output_cols = _output_cols)
+{
+    Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> E(output_rows, output_cols);
+
+    for (int i = 0; i < output_cols; ++i)
+    {
+    for (int j = 0; j < output_rows; ++j)
+    {
+    E(j, i) = vector_to_polynomial_grevlex<_n>(M.row((i * output_rows) + j));
+    }
+    }
+
+    return E;
+}
+
+
 
 /*
 for 3 variables
@@ -317,80 +292,4 @@ for 3 variables
 17 [0,2,1] y^2z
 18 [0,1,2] yz^2
 19 [0,0,3] z^3
-
-
-
-[1,1,1]
-[0,3,0]
-[1,2,0]
-[0,2,1]
-[
-
-
 */
-
-/*
-
-template <int _n, typename A>
-polynomial<typename A::Scalar, _n> vector_polynomial_multivariate(Eigen::MatrixBase<A> const& M)
-{
-    polynomial<typename A::Scalar, _n> rv;
-    typename polynomial<typename A::Scalar, _n>::index_t indices(_n);
-    Eigen::Index cc = std::min({ Eigen::index(_n + 1, M.size() });
-    for (int p = 0; p < cc; ++p)
-    {
-        
-        
-        
-        //for (int q = 0; q < _n; ++q) { indices[q] = p == (q + 1); }
-        rv[indices] = M(p);
-    }
-    return rv;
-}
-
-
-
-
-
-
-template <typename A>
-polynomial<typename A::Scalar, 1> vector_to_polynomial_univariate(Eigen::MatrixBase<A> const& M)
-{
-    polynomial<typename A::Scalar, 1> rv;
-    for (Eigen::index i = 0; i < M.size(); ++i)
-    {
-    rv({ polynomial<typename A::Scalar, 1>::index_t(i) }) = M(i);
-    }
-    return rv;
-}
-*/
-
-
-
-
-
-
-
-
-
-
-template <typename _scalar, int _n, int _output_rows, int _output_cols, typename A>
-Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> matrix_to_linear_polynomial_matrix(Eigen::MatrixBase<A> const& M, int output_rows = _output_rows, int output_cols = _output_cols)
-{
-    Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> E(output_rows, output_cols);
-    typename polynomial<_scalar, _n>::indices_t indices(_n);
-
-    for (int i = 0; i < output_cols; ++i)
-    {
-    for (int j = 0; j < output_rows; ++j)
-    {
-    for (int p = 0; p < (_n + 1); ++p)
-    {
-    for (int q = 0; q < _n; ++q) { indices[q] = p == (q + 1); }
-    E(j, i)[indices] = M((i * output_rows) + j, p);
-    }
-    }
-    }
-
-    return E;
-}
