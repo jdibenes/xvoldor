@@ -391,6 +391,19 @@ Eigen::Matrix<polynomial<_scalar, _n>, _output_rows, _output_cols> matrix_to_pol
     return E;
 }
 
+template <typename _vector_scalar, typename _scalar, int _n>
+std::vector<_vector_scalar> vector_from_polynomial_grevlex(polynomial<_scalar, _n> const& src)
+{
+    std::vector<_vector_scalar> dst;
+    auto f = [&](_scalar const& element, monomial_indices_t const& indices)
+    {
+        int i = grevlex_generator<_n>::ravel(indices);
+        if (i >= dst.size()) { dst.resize(i + 1); }
+        dst[i] = element;
+    };
+    return dst;
+}
+
 template <typename _vector_scalar, int _rows, int _cols, typename _scalar, int _n>
 Eigen::Matrix<_vector_scalar, _rows, _cols> vector_from_polynomial_grevlex(polynomial<_scalar, _n> const& src, int rows = _rows, int cols = _cols)
 {
@@ -404,18 +417,8 @@ Eigen::Matrix<_vector_scalar, _rows, _cols> vector_from_polynomial_grevlex(polyn
     return dst;
 }
 
-template <typename _vector_scalar, typename _scalar, int _n>
-std::vector<_vector_scalar> vector_from_polynomial_grevlex(polynomial<_scalar, _n> const& src)
-{
-    std::vector<_vector_scalar> dst;
-    auto f = [&](_scalar const& element, monomial_indices_t const& indices)
-    {
-        int i = grevlex_generator<_n>::ravel(indices);
-        if (i >= dst.size()) { dst.resize(i + 1); }
-        dst[i] = element;
-    };
-    return dst;
-}
+
+
 
 
 
