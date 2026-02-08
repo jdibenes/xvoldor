@@ -375,58 +375,31 @@ Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> ma
     return E;
 }
 
-
-
-
-
-
-// vector_from_polynomial_grevlex()
-
-// matrix_from_polynomial_grevlex()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
-for 3 variables
- 0 [0,0,0] 1
+grevlex example for 3 variables (x, y, z) up to total degree 3
 
- 1 [1,0,0] x
- 2 [0,1,0] y
- 3 [0,0,1] z
+index indices monomial
+    0 [0,0,0] 1
 
- 4 [2,0,0] x^2
- 5 [1,1,0] xy
- 6 [1,0,1] xz
- 7 [0,2,0] y^2
- 8 [0,1,1] yz
- 9 [0,0,2] z^2
+    1 [1,0,0] x
+    2 [0,1,0] y
+    3 [0,0,1] z
 
-10 [3,0,0] x^3
-11 [2,1,0] x^2y
-12 [2,0,1] x^2z
-13 [1,2,0] xy^2
-14 [1,1,1] xyz
-15 [1,0,2] xz^2
-16 [0,3,0] y^3
-17 [0,2,1] y^2z
-18 [0,1,2] yz^2
-19 [0,0,3] z^3
+    4 [2,0,0] x^2
+    5 [1,1,0] x*y
+    6 [1,0,1] x*z
+    7 [0,2,0] y^2
+    8 [0,1,1] y*z
+    9 [0,0,2] z^2
+
+   10 [3,0,0] x^3
+   11 [2,1,0] x^2*y
+   12 [2,0,1] x^2*z
+   13 [1,2,0] x*y^2
+   14 [1,1,1] x*y*z
+   15 [1,0,2] x*z^2
+   16 [0,3,0] y^3
+   17 [0,2,1] y^2*z
+   18 [0,1,2] y*z^2
+   19 [0,0,3] z^3
 */
-
