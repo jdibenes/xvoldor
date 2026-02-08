@@ -3,7 +3,6 @@
 
 #include <Eigen/Eigen>
 #include <vector>
-#include <iostream>
 #include <type_traits>
 #include "helpers_traits.h"
 
