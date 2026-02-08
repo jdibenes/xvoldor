@@ -6,6 +6,7 @@
 #include <Eigen/Eigen>
 #include <opencv2/calib3d.hpp>
 //#include "../rolling_shutter/rnp.h"
+#include "polynomial.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 #include "solver_gpm_hpc0.h"
@@ -111,9 +112,33 @@ int main(int argc, char* argv[])
     std::cout << "p31" << std::endl;
     std::cout << p31 << std::endl;
 
+
+    std::cout << "unravel_grevlex test" << std::endl;
+    std::vector<int> indices;
+    int test_index = 19;
+    //unravel_grevlex<3>(test_index, indices);
+    grevlex_generator<3> gg = grevlex_generator<3>();
+    //while ((test_index--) >= 0) { indices = gg.next(); }
+
+
+    for (int i = 0; i <= test_index; ++i)
+    {
+        indices = gg.next();
+        std::cout << "index: " << i << " -> ";
+        for (auto index : indices)
+        {
+            std::cout << index << ", ";
+        }
+        std::cout << " | ravel: " << grevlex_generator<3>::ravel(indices);
+        std::cout << std::endl;
+    }
+
+    
+
+
     //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
-    //solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
-    solver_gpm_nm5(p11.data(), p31.data(), r.data(), t.data());
+    solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
+    //solver_gpm_nm5(p11.data(), p31.data(), r.data(), t.data());
 
     //solver_r6p1l(p11.data(), x31.data(), 0, 0, 2, r.data(), t.data());
     //solver_r6p2l(p11.data(), x31.data(), 0, 0, r.data(), t.data());
