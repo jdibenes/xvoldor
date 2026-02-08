@@ -363,7 +363,7 @@ public:
 };
 
 template <typename _scalar, int _n, typename _index_type, typename _array_type, typename _callback_size, typename _callback_read>
-static polynomial<_scalar, _n> vector_to_polynomial_grevlex(_array_type const& a, _callback_size size, _callback_read read)
+polynomial<_scalar, _n> vector_to_polynomial_grevlex(_array_type const& a, _callback_size size, _callback_read read)
 {
     polynomial<_scalar, _n> p;
     grevlex_generator<_n> gg;
@@ -372,7 +372,7 @@ static polynomial<_scalar, _n> vector_to_polynomial_grevlex(_array_type const& a
 }
 
 template <typename _scalar, int _n, typename A>
-static polynomial<_scalar, _n> vector_to_polynomial_grevlex(std::vector<A> const& grevlex_coefficients)
+polynomial<_scalar, _n> vector_to_polynomial_grevlex(std::vector<A> const& grevlex_coefficients)
 {
     return vector_to_polynomial_grevlex<_scalar, _n, size_t>(grevlex_coefficients, [](std::vector<A> const& a) { return a.size(); }, [](std::vector<A> const& a, size_t i) { return a[i]; });
 }
@@ -416,6 +416,32 @@ Eigen::Matrix<_vector_scalar, _rows, _cols> vector_from_polynomial_grevlex(polyn
     src.for_each(f);
     return dst;
 }
+
+
+/*
+Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(Eigen::MatrixBase<A> const& src, int rows = _rows, int cols = _cols)
+{
+    Eigen::Matrix<_matrix_scalar, _rows, _cols> dst(rows, cols);
+    for (int i = 0; i < src.cols(); ++i)
+    {
+        for (int j = 0; j < src.rows(); ++j)
+        {
+            dst() = 
+        }
+    }
+
+
+
+}
+*/
+
+
+
+
+
+
+
+
 
 
 
