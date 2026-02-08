@@ -240,6 +240,63 @@ public:
     }
 };
 
+template <int _n>
+int grevlex_ravel(std::vector<int> const& idx)
+{
+    std::vector<int> indices = idx;
+    int sum = 0;
+    for (int i = 0; i < _n; ++i) { sum += indices[i]; }
+    int power = sum;
+    int index = 0;
+
+    do
+    {
+        if (indices[0] < power)
+        {
+            int i;
+            for (i = _n - 1; (i >= 0) && (indices[i] >= power); --i)
+            {
+                indices[i] = 0;
+                sum -= power;
+            }
+            indices[i]++;
+            sum++;
+        }
+        else
+        {
+            indices[0] = 0;
+            sum = 0;
+            power--;
+        }
+        if (sum == power) { index++; }
+    } 
+    while (power >= 0);
+
+    return index;
+}
+
+template <int _n>
+std::vector<int> grevlex_unravel(int index)
+{
+    grevlex_generator<_n> gg;
+    std::vector<int> indices;
+    for (int i = 0; i < index; ++i) { gg.next(); }
+    return gg.next();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template <int _n, typename A>
 polynomial<typename A::Scalar, _n> vector_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M)
 {
