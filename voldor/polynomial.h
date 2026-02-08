@@ -350,22 +350,6 @@ public:
     }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 template <int _n, typename A>
 polynomial<typename A::Scalar, _n> vector_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M)
 {
@@ -390,6 +374,32 @@ Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> ma
 
     return E;
 }
+
+
+
+
+
+
+// vector_from_polynomial_grevlex()
+
+// matrix_from_polynomial_grevlex()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
