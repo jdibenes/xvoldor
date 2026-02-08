@@ -182,6 +182,12 @@ public:
         return x * other;
     }
 
+    polynomial_t operator/(_scalar const& other) const
+    {
+        polynomial_t result = *this;
+        return result /= other;
+    }
+
     polynomial_t& operator+=(polynomial_t const& other)
     {
         auto f = [&](_scalar const& element, monomial_indices_t const& indices) { (*this)[indices] += element; };
@@ -205,6 +211,13 @@ public:
     polynomial_t& operator*=(_scalar const& other)
     {
         auto f = [&](_scalar& element, monomial_indices_t const&) { element *= other; };
+        for_each(f);
+        return *this;
+    }
+
+    polynomial_t& operator/=(_scalar const& other)
+    {
+        auto f = [&](_scalar& element, monomial_indices_t const&) { element /= other; };
         for_each(f);
         return *this;
     }
