@@ -25,7 +25,7 @@ private:
     template <typename _unpacked, typename _callback>
     void for_each(_unpacked& object, int level, monomial_indices_t& indices, _callback callback)
     {
-        if constexpr (std::is_arithmetic_v<_unpacked>)
+        if constexpr (std::is_same_v<_unpacked, _scalar>)
         {
             callback(object, indices);
         }
@@ -42,7 +42,7 @@ private:
     template <typename _unpacked, typename _callback>
     void for_each(_unpacked const& object, int level, monomial_indices_t& indices, _callback callback) const
     {
-        if constexpr (std::is_arithmetic_v<_unpacked>)
+        if constexpr (std::is_same_v<_unpacked, _scalar>)
         {
             callback(object, indices);
         }
@@ -59,7 +59,7 @@ private:
     template <typename _unpacked>
     auto& at(_unpacked& object, int level, monomial_indices_t const& indices)
     {
-        if constexpr (std::is_arithmetic_v<_unpacked>)
+        if constexpr (std::is_same_v<_unpacked, _scalar>)
         {
             return object;
         }
@@ -74,7 +74,7 @@ private:
     template <typename _unpacked>
     auto const& at(_unpacked const& object, int level, monomial_indices_t const& indices) const
     {
-        if constexpr (std::is_arithmetic_v<_unpacked>)
+        if constexpr (std::is_same_v<_unpacked, _scalar>)
         {
             return object;
         }
@@ -362,6 +362,18 @@ public:
     }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
 template <int _n, typename A>
 polynomial<typename A::Scalar, _n> vector_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M)
 {
@@ -386,6 +398,24 @@ Eigen::Matrix<polynomial<typename A::Scalar, _n>, _output_rows, _output_cols> ma
 
     return E;
 }
+
+/*
+template <typename _scalar, int _rows, int _cols, int _n>
+void polynomial_transfer(Eigen::Ref<Eigen::Matrix<_scalar, _rows, _cols>> dst, polynomial<_scalar, _n> const& src, int row)
+{
+    auto f = [&](_scalar const& element, monomial_indices_t const& indices) { dst(row, grevlex_generator<_n>::ravel(indices)) = element; };
+    src.for_each(f);
+}
+*/
+
+
+
+
+
+
+
+
+
 
 /*
 grevlex example for 3 variables (x, y, z) up to total degree 3
