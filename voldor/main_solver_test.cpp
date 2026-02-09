@@ -133,12 +133,26 @@ int main(int argc, char* argv[])
         std::cout << std::endl;
     }
 
-    
+    polynomial<float, 2> pp = polynomial<float, 2>(5);
+    polynomial<float, 2> ppo3 = pp / 3;
+    std::cout << ppo3[monomial_indices_t(2)] << std::endl;
 
+
+    polynomial<polynomial<float, 2>, 3> ppin1;
+    polynomial<polynomial<float, 2>, 3> ppin2;
+    polynomial<polynomial<float, 2>, 3> ppin3;
+
+    ppin3 = ppin1 * ppin2;
+
+
+    //R_gt.size()
+    //grevlex_generator<3>::vector_to_polynomial<float, size_t>(std::vector<float>{ 1, 2, 3 }, [](std::vector<float> const& a) {return a.size(); }, [](std::vector<float> const& a, int i) { return a[i]; });
+    //grevlex_generator<3>::vector_to_polynomial<float>(std::vector<float>{ 0, 1, 2 });
+    //vector_to_polynomial_grevlex<float, 2>(std::vector<int>{0, 1, 2, 3});
 
     //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
-    solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
-    //solver_gpm_nm5(p11.data(), p31.data(), r.data(), t.data());
+    //solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
+    solver_gpm_nm5(p11.data(), p31.data(), r.data(), t.data());
 
     //solver_r6p1l(p11.data(), x31.data(), 0, 0, 2, r.data(), t.data());
     //solver_r6p2l(p11.data(), x31.data(), 0, 0, r.data(), t.data());
