@@ -25,25 +25,18 @@ bool solver_gpm_nm5(float const* p1, float const* p2, float* r01, float* t01)
 
     e << (-(k(3, Eigen::all) + k(7, Eigen::all))), k;
 
-    Eigen::Matrix<polynomial<float, 2>, 3, 3> E = matrix_to_polynomial_grevlex<2, 3, 3>(e); // OK
+    Eigen::Matrix<polynomial<float, 2>, 3, 3> E = matrix_to_polynomial_grevlex<float, 2, 3, 3>(e); // OK
 
     polynomial<float, 2> E_determinant = E.determinant();
 
     Eigen::Matrix<polynomial<float, 2>, 3, 3> EEt = E * E.transpose();
     Eigen::Matrix<polynomial<float, 2>, 3, 3> E_singular_values = (EEt * E) - ((0.5 * EEt.trace()) * E);
 
-    Eigen::Matrix<float, 10, 10> S = Eigen::Matrix<float, 10, 10>::Zero();
+    Eigen::Matrix<float, 10, 10> S;
 
-    for (int i = 0; i < 3; ++i)
-    {
-    for (int j = 0; j < 3; ++j)
-    {
-    E_singular_values(j, i).for_each([&](float const& element, monomial_indices_t const& indices) { S((i * 3) + j, grevlex_generator<2>::ravel(indices)) = element; });
-    }
-    }
+    S << matrix_from_polynomial_grevlex<float, 9, 10>(E_singular_values),
+         matrix_from_polynomial_grevlex<float, 1, 10>(E_determinant);
 
-    E_determinant.for_each([&](float const& element, monomial_indices_t const& indices) { S(9, grevlex_generator<2>::ravel(indices)) = element; });
-    
     Eigen::Matrix<float, 10, 1> solution = S.bdcSvd(Eigen::ComputeThinV).matrixV().col(9);
 
     Eigen::Matrix<float, 3, 3> fake_E = (e(Eigen::all, 0) + ((solution(1) / solution(0)) * e(Eigen::all, 1)) + ((solution(2) / solution(0)) * e(Eigen::all, 2))).reshaped(3, 3);
