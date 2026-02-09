@@ -30,13 +30,7 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> vector_multipl
 
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> rv = Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic>::Zero(sz1 + sz2 - 1, 1);
 
-    for (int i1 = 0; i1 < sz1; ++i1)
-    {
-    for (int i2 = 0; i2 < sz2; ++i2)
-    {
-    rv(i1 + i2) += o2(i2) * o1(i1);
-    }
-    }
+    for (int i1 = 0; i1 < sz1; ++i1) { for (int i2 = 0; i2 < sz2; ++i2) { rv(i1 + i2) += o2(i2) * o1(i1); } }
 
     return rv;
 }
