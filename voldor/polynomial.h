@@ -9,6 +9,18 @@
 using monomial_index_t = int;
 using monomial_indices_t = std::vector<monomial_index_t>;
 
+template <typename T>
+struct remove_polynomial
+{
+    typedef T type;
+};
+
+template <template<typename T, int N> class P, typename S, int V>
+struct remove_polynomial<P<S, V>>
+{
+    typedef typename remove_polynomial<S>::type type;
+};
+
 template <typename _scalar, int _n>
 class polynomial
 {
@@ -17,6 +29,9 @@ public:
     using callback_t = void(_scalar&, monomial_indices_t const&);
     using const_callback_t = void(_scalar const&, monomial_indices_t const&);
     using polynomial_t = polynomial<_scalar, _n>;
+    using scalar_t = _scalar;
+    using arithmetic_t = typename remove_polynomial<polynomial_t>::type;
+    enum { variables_n = _n };
 
 private:
     data_t data;
@@ -96,6 +111,13 @@ public:
         (*this)[monomial_indices_t(_n)] = bias;
     }
 
+    template <typename _other_scalar>
+    polynomial(polynomial<_other_scalar, _n> const& other)
+    {
+        auto f = [&](_other_scalar const& element, monomial_indices_t const& indices) { (*this)[indices] = _scalar(element); };
+        other.for_each(f);
+    }
+
     template <typename _callback>
     void for_each(_callback callback)
     {
@@ -108,15 +130,6 @@ public:
     {
         monomial_indices_t scratch(_n);
         for_each(data, 0, scratch, callback);
-    }
-
-    template <typename _other_scalar>
-    polynomial<_other_scalar, _n> cast() const
-    {
-        polynomial<_other_scalar, _n> result;
-        auto f = [&](_scalar const& element, monomial_indices_t const& indices) { result[indices] = static_cast<_other_scalar>(element); };
-        for_each(f);
-        return result;
     }
 
     auto& operator[](monomial_indices_t const& indices)
@@ -140,6 +153,17 @@ public:
         return result += other;
     }
 
+    polynomial_t operator+(_scalar const& other) const
+    {
+        polynomial_t result = *this;
+        return result += other;
+    }
+
+    friend polynomial<_scalar, _n> operator+(_scalar const& other, polynomial<_scalar, _n> const& x)
+    {
+        return x + other;
+    }
+
     polynomial_t operator-() const
     {
         polynomial_t result;
@@ -150,6 +174,17 @@ public:
     {
         polynomial_t result = *this;
         return result -= other;
+    }
+
+    polynomial_t operator-(_scalar const& other) const
+    {
+        polynomial_t result = *this;
+        return result -= other;
+    }
+
+    friend polynomial<_scalar, _n> operator-(_scalar const& other, polynomial<_scalar, _n> const& x)
+    {
+        return -x + other;
     }
 
     polynomial_t operator*(polynomial_t const& other) const
@@ -188,6 +223,12 @@ public:
         return result /= other;
     }
 
+    polynomial_t operator%(_scalar const& other) const
+    {
+        polynomial_t result = *this;
+        return result %= other;
+    }
+
     polynomial_t& operator+=(polynomial_t const& other)
     {
         auto f = [&](_scalar const& element, monomial_indices_t const& indices) { (*this)[indices] += element; };
@@ -195,10 +236,22 @@ public:
         return *this;
     }
 
+    polynomial_t& operator+=(_scalar const& other)
+    {
+        (*this)[monomial_indices_t(_n)] += other;
+        return *this;
+    }
+
     polynomial_t& operator-=(polynomial_t const& other)
     {
         auto f = [&](_scalar const& element, monomial_indices_t const& indices) { (*this)[indices] -= element; };
         other.for_each(f);
+        return *this;
+    }
+
+    polynomial_t& operator-=(_scalar const& other)
+    {
+        (*this)[monomial_indices_t(_n)] -= other;
         return *this;
     }
 
@@ -221,11 +274,21 @@ public:
         for_each(f);
         return *this;
     }
+
+    polynomial_t& operator%=(_scalar const other)
+    {
+        auto f = [&](_scalar& element, monomial_indices_t const&) { element %= other; };
+        for_each(f);
+        return *this;
+    }
 };
 
 template <int _n>
 class grevlex_generator
 {
+public:
+    enum { variables_n = _n };
+
 private:
     monomial_indices_t indices;
     monomial_index_t power;
