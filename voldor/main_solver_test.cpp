@@ -17,6 +17,8 @@
 #include "trifocal.h"
 #include "lock.h"
 
+bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01);
+
 bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01);
 bool solver_gpm_nm6(float const* p1, float const* p2, float* r01, float* t01);
 bool solver_gpm_nm5(float const* p1, float const* p2, float* r01, float* t01);
@@ -137,18 +139,72 @@ int main(int argc, char* argv[])
     polynomial<float, 2> ppo3 = pp / 3;
     std::cout << ppo3[monomial_indices_t(2)] << std::endl;
 
+    float sum_of_coeff = 0;
+    pp.for_each_arithmetic<1>([&](float const& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
+    pp.for_each_arithmetic<1>([&](float& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
 
-    polynomial<polynomial<float, 2>, 3> ppin1;
+    pp.at_arithmetic(monomial_indices_layered_t{ {0, 0} });
+
+    polynomial<polynomial<polynomial<float, 7>, 2>, 3> ppin1;
     polynomial<polynomial<float, 2>, 3> ppin2;
     polynomial<polynomial<float, 2>, 3> ppin3;
 
-    ppin3 = ppin1 * ppin2;
+    ppin1.at_arithmetic(monomial_indices_layered_t{ {0, 0, 0}, {0,0}, {0,0,0,0,0,0,0} });
+
+    //ppin1.for_each_arithmetic<3>([&](float& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
+    //ppin1.for_each_arithmetic<2>([&](polynomial<float, 7>& e, monomial_indices_layered_t const& indices) { sum_of_coeff += 1; });
+    //ppin1.for_each_arithmetic<1>([&](polynomial<polynomial<float, 7>, 2>& e, monomial_indices_layered_t const& indices) { sum_of_coeff += 1; });
+    //ppin1.for_each_arithmetic<0>([&](polynomial<polynomial<polynomial<float, 7>, 2>, 3>& e, monomial_indices_layered_t const& indices) { sum_of_coeff += 1; });
+
+
+    pp.variables_n;
+    pp.variables_arithmetic_n;
+
+    ppin1.variables_n;
+    ppin1.variables_arithmetic_n;
+    ppin1.layers_n;
+
+    //polynomial<polynomial<float, 2>, 3>::
+
+    polynomial<polynomial<float, 2>, 3> ppcast = polynomial<polynomial<double, 2>, 3>();
+
+    pp.variables_n;
+
+    //grevlex_generator<5>
+    //gg.
+
+    //polynomial<float, 2>::arithmetic_t x2y;
+    //polynomial<polynomial<float, 2>, 2>::arithmetic_t x23y;
+    //is_instance_of_v<std::vector<int>, polynomial>;
+    //is_instance_of_v<float, std::vector>;
+    //is_instance_of_v<polynomial<float, 2>>::value;
+    //polynomial<float, 2>::remove_polynomial<float>::type;
+    //polynomial<float, 2>::variables;
+    //Eigen::Matrix<float, 2, 3> b;
+
+    //auto magnitude = abs(ppcast);
+
+    float a = 0;
+    //a += pp;
+    pp += a;
+
+
+    ppcast -= polynomial<float, 2>();
+    pp -= 2;
+    2 - pp;
+    2 + pp;
+    2 * pp;
+    //polynomial<float, 2>::polynomial(0);
+
+    //ppin3 = ppin1 * ppin2;
 
 
     //R_gt.size()
     //grevlex_generator<3>::vector_to_polynomial<float, size_t>(std::vector<float>{ 1, 2, 3 }, [](std::vector<float> const& a) {return a.size(); }, [](std::vector<float> const& a, int i) { return a[i]; });
     //grevlex_generator<3>::vector_to_polynomial<float>(std::vector<float>{ 0, 1, 2 });
     //vector_to_polynomial_grevlex<float, 2>(std::vector<int>{0, 1, 2, 3});
+
+    solver_rpe_easy(p11.data(), p31.data(), r.data(), t.data());
 
     //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
     //solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
