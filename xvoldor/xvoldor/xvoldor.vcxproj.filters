@@ -165,9 +165,6 @@
     <ClInclude Include="..\..\voldor\polynomial.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\helpers_traits.h">
-      <Filter>Header Files\helpers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
@@ -433,6 +430,9 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_nm5.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
