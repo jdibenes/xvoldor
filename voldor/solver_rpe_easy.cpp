@@ -32,8 +32,54 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     S << matrix_from_polynomial_grevlex<float, 9, 20>(E_singular_values),
          matrix_from_polynomial_grevlex<float, 1, 20>(E_determinant);
 
+    Eigen::Matrix<polynomial<float, 1>, 10, 10> H;
 
-    
+    H << matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all,   16)),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all,   13)),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all,   11)),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all,   10)),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  7, 17 })),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  5, 14 })),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  4, 12 })),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  2,  8, 18 })),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  1,  6, 15 })),
+         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  0,  3,  9, 19 }));
+
+    for (int i = 0; i < 10; ++i)
+    {
+        float max_v = 0;
+        int k = i;
+        for (int j = i; j < 10; ++j)
+        {
+            H(j, i).for_each
+            (
+                [&](float const& element, monomial_indices_t const& indices)
+                {
+                    float v = abs(element);
+                    if (v > max_v)
+                    {
+                        max_v = v;
+                        k = j;
+                    }
+                }
+            );
+        }
+        if (max_v <= 0) { return false; } // TODO:
+        for (int j = i; j < 10; ++j)
+        {
+            H(k,j) /= max_v;
+        }
+        if (i != k) { H.row(i).swap(H.row(k)); }
+        for (int j = i + 1; j < 10; ++j)
+        {
+            H.row(j) = (H(i, i) * H.row(j)) - (H(j, i) * H.row(i));
+        }
+    }
+
+
+
+
+
 
 
 
@@ -67,26 +113,10 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
 
 
-    Eigen::Matrix<polynomial<float, 1>, 10, 10> H;
 
-    H << matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, 16)),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, 13)),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, 11)),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, 10)),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, { 7, 17 })),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, { 5, 14 })),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, { 4, 12 })),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, { 2,  8, 18 })),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, { 1,  6, 15 })),
-         matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, { 0,  3,  9, 19 }));
+    
 
-    for (int i = 0; i < 10; ++i)
-    {
-        for (int j = i + 1; j < 10; ++j)
-        {
-            H.row(j) = (H(i, i) * H.row(j)) - (H(j, i) * H.row(i));
-        }
-    }
+    
 
     for (int i = 0; i < 10; ++i)
     {
