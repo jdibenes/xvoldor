@@ -164,6 +164,32 @@ private:
         }
     }
 
+    template <int _stop, typename _unpacked>
+    auto& at_arithmetic(_unpacked& object, int level, monomial_indices_layered_t const& indices)
+    {
+        if constexpr (_stop <= 0)
+        {
+            return object;
+        }
+        else
+        {
+            return at_arithmetic<_stop - 1>(object[indices[level]], level + 1, indices);
+        }
+    }
+
+    template <int _stop, typename _unpacked>
+    auto const& at_arithmetic(_unpacked const& object, int level, monomial_indices_layered_t const& indices) const
+    {
+        if constexpr (_stop <= 0)
+        {
+            return object;
+        }
+        else
+        {
+            return at_arithmetic<_stop - 1>(object[indices[level]], level + 1, indices);
+        }
+    }
+
 public:
     polynomial()
     {
@@ -206,6 +232,18 @@ public:
     {
         monomial_indices_layered_t scratch(_stop);
         for_each_arithmetic<_stop>(*this, 0, scratch, callback);
+    }
+
+    template <int _stop = layers_n>
+    auto& at_arithmetic(monomial_indices_layered_t const& indices)
+    {
+        return at_arithmetic<_stop>(*this, 0, indices);
+    }
+
+    template <int _stop = layers_n>
+    auto const& at_arithmetic(monomial_indices_layered_t const& indices) const
+    {
+        return at_arithmetic<_stop>(*this, 0, indices);
     }
 
     auto& operator[](monomial_indices_t const& indices)
@@ -357,6 +395,8 @@ public:
         return *this;
     }
 };
+
+
 
 
 
