@@ -197,14 +197,14 @@ public:
     template <int _stop = layers_n, typename _callback_arithmetic = void>
     void for_each_arithmetic(_callback_arithmetic callback)
     {
-        monomial_indices_layered_t scratch(layers_n);
+        monomial_indices_layered_t scratch(_stop);
         for_each_arithmetic<_stop>(*this, 0, scratch, callback);
     }
 
     template <int _stop = layers_n, typename _callback_arithmetic = void>
     void for_each_arithmetic(_callback_arithmetic callback) const
     {
-        monomial_indices_layered_t scratch(layers_n);
+        monomial_indices_layered_t scratch(_stop);
         for_each_arithmetic<_stop>(*this, 0, scratch, callback);
     }
 
@@ -357,6 +357,8 @@ public:
         return *this;
     }
 };
+
+
 
 
 
