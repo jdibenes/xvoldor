@@ -396,21 +396,6 @@ public:
     }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 template <int _n>
 class grevlex_generator
 {
@@ -574,12 +559,14 @@ template <typename _matrix_scalar, int _rows, int _cols, typename _scalar, int _
 Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polynomial<_scalar, _n> const& src, int rows = _rows, int cols = _cols)
 {
     Eigen::Matrix<_matrix_scalar, _rows, _cols> dst(rows, cols);
-    auto f = [&](_scalar const& element, monomial_indices_t const& indices)
-    {
-        int i = grevlex_generator<_n>::ravel(indices);
-        if (i < dst.size()) { dst(i) = element; }
-    };
-    src.for_each(f);
+    src.for_each
+    (
+        [&](_scalar const& element, monomial_indices_t const& indices)
+        {
+            int i = grevlex_generator<_n>::ravel(indices);
+            if (i < dst.size()) { dst(i) = element; }
+        }
+    );
     return dst;
 }
 
