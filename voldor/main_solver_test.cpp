@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i <= test_index; ++i)
     {
-        indices = gg.next();
+        indices = gg.next().current_indices();
         std::cout << "index: " << i << " -> ";
         for (auto index : indices)
         {
