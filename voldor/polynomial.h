@@ -389,7 +389,7 @@ public:
         return *this;
     }
 
-    polynomial_t& operator%=(_scalar const other)
+    polynomial_t& operator%=(_scalar const& other)
     {
         for_each([&](_scalar& element, monomial_indices_t const&) { element %= other; });
         return *this;
