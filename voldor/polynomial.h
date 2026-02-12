@@ -561,8 +561,8 @@ public:
         return gg.current_index();
     }
 
-    template <typename _scalar>
-    static polynomial<_scalar, _n> create_polynomial(std::initializer_list<_scalar> coefficients)
+    template <typename _scalar, typename _iterable>
+    static polynomial<_scalar, _n> create_polynomial(_iterable const& coefficients)
     {
         grevlex_generator<_n> gg;
         polynomial<_scalar, _n> p;
