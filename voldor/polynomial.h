@@ -560,16 +560,16 @@ public:
         while (!is_equal(indices, gg.next().current_indices()));
         return gg.current_index();
     }
-
-    template <typename _scalar, typename _iterable>
-    static polynomial<_scalar, _n> create_polynomial(_iterable const& coefficients)
-    {
-        grevlex_generator<_n> gg;
-        polynomial<_scalar, _n> p;
-        for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
-        return p;
-    }
 };
+
+template <typename _scalar, int _n, typename _iterable>
+static polynomial<_scalar, _n> create_polynomial_grevlex(_iterable const& coefficients)
+{
+    grevlex_generator<_n> gg;
+    polynomial<_scalar, _n> p;
+    for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
+    return p;
+}
 
 template <typename _scalar, int _n, typename A>
 polynomial<_scalar, _n> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
