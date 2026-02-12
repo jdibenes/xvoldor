@@ -477,7 +477,7 @@ public:
         }
         while (sum != power);
         index++;
-        return indices;
+        return *this;
     }
 
     grevlex_generator& previous()
@@ -505,7 +505,7 @@ public:
         }
         while (sum != power);
         index--;
-        return indices;
+        return *this;
     }
 
     monomial_indices_t const& current_indices() const
@@ -560,6 +560,15 @@ public:
         while (!is_equal(indices, gg.next().current_indices()));
         return gg.current_index();
     }
+
+    template <typename _scalar>
+    static polynomial<_scalar, _n> create_polynomial(std::initializer_list<_scalar> coefficients)
+    {
+        grevlex_generator<_n> gg;
+        polynomial<_scalar, _n> p;
+        for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
+        return p;
+    }
 };
 
 template <typename _scalar, int _n, typename A>
@@ -567,7 +576,7 @@ polynomial<_scalar, _n> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& 
 {
     polynomial<_scalar, _n> dst;
     grevlex_generator<_n> gg;
-    for (int i = 0; i < src.size(); ++i) { dst[gg.next()] = src(i); }
+    for (int i = 0; i < src.size(); ++i) { dst[gg.next().current_indices()] = src(i); }
     return dst;
 }
 
