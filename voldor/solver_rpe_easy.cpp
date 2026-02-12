@@ -115,7 +115,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     polynomial_row_echelon_step(D, 4, 2, std::vector{ 1 }, true);
     polynomial_row_echelon_step(D, 5, 2, std::vector{ 0 }, true);
 
-    polynomial<float, 1> z = grevlex_generator<1>::create_polynomial<float>(std::vector<float>{0, 1});
+    polynomial<float, 1> z = create_polynomial_grevlex<float, 1>(std::vector<float>{0, 1});
 
     D.row(1) = (D.row(1) * z) - D.row(0);
     D.row(3) = (D.row(3) * z) - D.row(2);
@@ -125,6 +125,13 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     D.row(2).swap(D.row(4));
 
     Eigen::Matrix<polynomial<float, 1>, 3, 3> Z = D(Eigen::seqN(3, 3), Eigen::seqN(3, 3));
+
+    //for (auto vv : D)
+   // {
+    //    std::cout << vv << ", ";
+   // }
+    //std::cout << std::endl;
+
 
     polynomial<float, 1> z_poly = Z.determinant();
 
