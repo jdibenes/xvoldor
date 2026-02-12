@@ -453,7 +453,7 @@ public:
     {
     }
 
-    monomial_indices_t const& next()
+    grevlex_generator& next()
     {
         do
         {
@@ -480,7 +480,7 @@ public:
         return indices;
     }
 
-    monomial_indices_t const& previous()
+    grevlex_generator& previous()
     {
         if (power <= 0) { return indices; }
         do
@@ -508,17 +508,17 @@ public:
         return indices;
     }
 
-    monomial_indices_t const& current_indices()
+    monomial_indices_t const& current_indices() const
     {
         return indices;
     }
 
-    monomial_index_t current_power()
+    monomial_index_t current_power() const
     {
         return power;
     }
 
-    int current_index()
+    int current_index() const
     {
         return index;
     }
@@ -551,13 +551,13 @@ public:
     {
         grevlex_generator<_n> gg;
         for (int i = 0; i < index; ++i) { gg.next(); }
-        return gg.next();
+        return gg.next().current_indices();
     }
 
     static int ravel(monomial_indices_t const& indices)
     {
         grevlex_generator<_n> gg;
-        while (!is_equal(indices, gg.next()));
+        while (!is_equal(indices, gg.next().current_indices()));
         return gg.current_index();
     }
 };
