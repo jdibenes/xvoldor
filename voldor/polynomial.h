@@ -394,6 +394,30 @@ public:
         for_each([&](_scalar& element, monomial_indices_t const&) { element %= other; });
         return *this;
     }
+
+    // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
+    polynomial_t operator/(polynomial_t const& other) const
+    {
+        return (*this) / other[monomial_indices_t(_n)];
+    }
+
+    // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
+    polynomial_t operator%(polynomial_t const& other) const
+    {
+        return (*this) % other[monomial_indices_t(_n)];
+    }
+
+    // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
+    polynomial_t& operator/=(polynomial_t const& other)
+    {
+        return (*this) /= other[monomial_indices_t(_n)];
+    }
+
+    // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
+    polynomial_t& operator%=(polynomial_t const& other)
+    {
+        return (*this) %= other[monomial_indices_t(_n)];
+    }
 };
 
 template <int _n>
