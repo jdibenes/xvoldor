@@ -10,6 +10,19 @@ using monomial_indices_t = std::vector<monomial_index_t>;
 using monomial_indices_layered_t = std::vector<monomial_indices_t>;
 
 template <typename _scalar, int _n>
+struct monomial
+{
+    using scalar_t = _scalar;
+    enum { variables_n = _n };
+
+    monomial_indices_t indices = monomial_indices_t(_n);
+    _scalar value = _scalar(0);
+};
+
+template <typename _scalar, int _n>
+using monomial_vector = std::vector<monomial<_scalar, _n>>;
+
+template <typename _scalar, int _n>
 class polynomial
 {
 private:
@@ -53,8 +66,8 @@ public:
     
     using callback_t = void(_scalar&, monomial_indices_t const&);
     using const_callback_t = void(_scalar const&, monomial_indices_t const&);
-    using callback_arithmetic_t = void(arithmetic_t&, monomial_indices_t const&);
-    using const_callback_arithmetic_t = void(arithmetic_t const&, monomial_indices_t const&);
+    using callback_arithmetic_t = void(arithmetic_t&, monomial_indices_layered_t const&);
+    using const_callback_arithmetic_t = void(arithmetic_t const&, monomial_indices_layered_t const&);
 
 private:
     data_t data;
@@ -200,6 +213,11 @@ public:
         (*this)[monomial_indices_t(_n)] = bias;
     }
 
+    polynomial(monomial_vector<_scalar, _n> const& v)
+    {
+        for (auto const& m : v) { (*this)[m.indices] = m.value; }
+    }
+
     template <typename _other_scalar>
     polynomial(polynomial<_other_scalar, _n> const& other)
     {
@@ -244,6 +262,14 @@ public:
     auto const& at_arithmetic(monomial_indices_layered_t const& indices) const
     {
         return at_arithmetic<_stop>(*this, 0, indices);
+    }
+
+
+    monomial_vector<_scalar, _n> flatten() const
+    {
+        monomial_vector<_scalar, _n> c;
+        for_each([&](_scalar const& element, monomial_indices_t const& indices) { c.push_back({ indices, element }); });
+        return c;
     }
 
     auto& operator[](monomial_indices_t const& indices)
@@ -379,19 +405,19 @@ public:
 
     polynomial_t& operator*=(_scalar const& other)
     {
-        for_each([&](_scalar& element, monomial_indices_t const&) { element *= other; });
+        for_each([&](_scalar& element, monomial_indices_t const& indices) { element *= other; });
         return *this;
     }
 
     polynomial_t& operator/=(_scalar const& other)
     {
-        for_each([&](_scalar& element, monomial_indices_t const&) { element /= other; });
+        for_each([&](_scalar& element, monomial_indices_t const& indices) { element /= other; });
         return *this;
     }
 
     polynomial_t& operator%=(_scalar const& other)
     {
-        for_each([&](_scalar& element, monomial_indices_t const&) { element %= other; });
+        for_each([&](_scalar& element, monomial_indices_t const& indices) { element %= other; });
         return *this;
     }
 
@@ -560,6 +586,14 @@ public:
         while (!is_equal(indices, gg.next().current_indices()));
         return gg.current_index();
     }
+
+    static monomial<bool, _n> is_multiple(monomial_indices_t const& num, monomial_indices_t const& den)
+    {
+        monomial<bool, _n> m;
+        m.value = true;
+        for (int i = 0; i < _n; ++i) { m.value = ((m.indices[i] = num[i] - den[i]) >= 0) && m.value; }
+        return m;
+    }
 };
 
 template <typename _scalar, int _n, typename _iterable>
@@ -570,6 +604,16 @@ static polynomial<_scalar, _n> create_polynomial_grevlex(_iterable const& coeffi
     for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
     return p;
 }
+
+template <typename _scalar, int _n>
+static polynomial<_scalar, _n> create_polynomial_grevlex(std::initializer_list<_scalar> coefficients)
+{
+    grevlex_generator<_n> gg;
+    polynomial<_scalar, _n> p;
+    for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
+    return p;
+}
+
 
 template <typename _scalar, int _n, typename A>
 polynomial<_scalar, _n> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
