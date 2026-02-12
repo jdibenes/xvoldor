@@ -129,6 +129,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     polynomial<float, 1> z_poly = Z.determinant();
 
 
+
     /*
     for (int i = 0; i < 10; ++i)
     {
