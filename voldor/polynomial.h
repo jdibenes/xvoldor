@@ -548,6 +548,35 @@ public:
         for_each([&](scalar& coefficient, monomial_indices_type const& indices) { coefficient %= other; });
         return *this;
     }
+
+    //-----------------------------------------------------------------------------
+    // compare
+    //-----------------------------------------------------------------------------
+
+    explicit operator bool() const
+    {
+        bool set = false;
+        for_each([&](scalar const& coefficient, monomial_indices_type const& indices) { set = true; });
+        return set;
+    }
+
+    bool operator!() const
+    {
+        return !(*this);
+    }
+
+    bool operator==(polynomial_type const& other) const
+    {
+        bool set = true;
+        for_each([&](scalar const& coefficient, monomial_indices_type const& indices) { set = set && (other[indices] == coefficient); });
+        other.for_each([&](scalar const& coefficient, monomial_indices_type const& indices) { set = set && ((*this)[indices] == coefficient); });
+        return set;
+    }
+
+    bool operator!=(polynomial_type const& other) const
+    {
+        return !((*this) == other);
+    }
 };
 
 template <typename T>
@@ -702,6 +731,8 @@ public:
 //=============================================================================
 // conversions
 //=============================================================================
+
+
 
 
 
