@@ -5,201 +5,160 @@
 #include <vector>
 #include <type_traits>
 
-using monomial_index_t = int;
-using monomial_indices_t = std::vector<monomial_index_t>;
-using monomial_indices_layered_t = std::vector<monomial_indices_t>;
+//-----------------------------------------------------------------------------
+// traits
+//-----------------------------------------------------------------------------
 
-template <typename _scalar, int _n>
-struct monomial
+template <typename T, int n>
+struct add_vector
 {
-    using scalar_t = _scalar;
-    enum { variables_n = _n };
-
-    monomial_indices_t indices = monomial_indices_t(_n);
-    _scalar value = _scalar(0);
+    typedef typename add_vector<std::vector<T>, n - 1>::type type;
 };
 
-template <typename _scalar, int _n>
-using monomial_vector = std::vector<monomial<_scalar, _n>>;
+template <typename T>
+struct add_vector<T, 0>
+{
+    typedef T type;
+};
 
-template <typename _scalar, int _n>
+template <typename T, int n>
+using add_vector_type = typename add_vector<T, n>::type;
+
+//-----------------------------------------------------------------------------
+// monomial_indices
+//-----------------------------------------------------------------------------
+
+template <int variables>
+using monomial_indices = std::array<int, variables>;
+
+template <int variables>
+monomial_indices<variables> operator+(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
+{
+    monomial_indices<variables> result{};
+    for (int i = 0; i < variables; ++i) { result[i] = lhs[i] + rhs[i]; }
+    return result;
+}
+
+template <int variables>
+monomial_indices<variables> operator-(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
+{
+    monomial_indices<variables> result{};
+    for (int i = 0; i < variables; ++i) { result[i] = lhs[i] - rhs[i]; }
+    return result;
+}
+
+template <int variables>
+bool is_integral(monomial_indices<variables> const& indices)
+{
+    for (int i = 0; i < variables; ++i) { if (indices[i] < 0) { return false; } };
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+// monomial
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int variables>
+struct monomial
+{
+    using scalar_type = scalar;
+    enum { variables_length = variables };
+    using monomial_indices_type = monomial_indices<variables>;
+
+    scalar coefficient;
+    monomial_indices_type indices;
+};
+
+template <typename scalar, int variables>
+using monomial_vector = std::vector<monomial<scalar, variables>>;
+
+//-----------------------------------------------------------------------------
+// polynomial
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int variables>
 class polynomial
 {
-private:
-    template <typename T>
-    struct remove_polynomial
-    {
-        typedef T type;
-        enum { level = 0 };
-        enum { count = 0 };        
-    };
-
-    template <typename S, int V>
-    struct remove_polynomial<polynomial<S, V>>
-    {
-        typedef typename remove_polynomial<S>::type type;
-        enum { level = 1 + remove_polynomial<S>::level };
-        enum { count = V + remove_polynomial<S>::count };        
-    };
-
-    template <typename T, int n>
-    struct add_vector 
-    {
-        typedef typename add_vector<std::vector<T>, n - 1>::type type;
-    };
-
-    template <typename T>
-    struct add_vector<T, 0>
-    {
-        typedef T type;
-    };
-
 public:
-    using scalar_t = _scalar;
-    enum { variables_n = _n };
-
-    using data_t = typename add_vector<_scalar, _n>::type;
-    using polynomial_t = polynomial<_scalar, _n>;
-    using arithmetic_t = typename remove_polynomial<polynomial_t>::type;
-    enum { layers_n = remove_polynomial<polynomial_t>::level };
-    enum { variables_arithmetic_n = remove_polynomial<polynomial_t>::count };
-    
-    using callback_t = void(_scalar&, monomial_indices_t const&);
-    using const_callback_t = void(_scalar const&, monomial_indices_t const&);
-    using callback_arithmetic_t = void(arithmetic_t&, monomial_indices_layered_t const&);
-    using const_callback_arithmetic_t = void(arithmetic_t const&, monomial_indices_layered_t const&);
+    using scalar_type = scalar;
+    enum { variables_length = variables };
+    using monomial_indices_type = monomial_indices<variables>;
+    using data_type = add_vector_type<scalar, variables>;
+    using monomial_type = monomial<scalar, variables>;
+    using monomial_vector_type = monomial_vector<scalar, variables>;
+    using polynomial_type = polynomial<scalar, variables>;
+    using callback_type = bool(scalar&, monomial_indices_type const&);
+    using const_callback_type = bool(scalar const&, monomial_indices_type const&);
 
 private:
-    data_t data;
-    _scalar zero = _scalar(0);
+    data_type data;
+    scalar zero = scalar(0);
 
-    template <typename _unpacked, typename _callback>
-    void for_each(_unpacked& object, int level, monomial_indices_t& indices, _callback callback)
+    template <typename unpacked, typename callback_auto>
+    bool for_each(unpacked& object, int level, monomial_indices_type& indices, callback_auto callback)
     {
-        if constexpr (std::is_same_v<_unpacked, _scalar>)
+        if constexpr (std::is_same_v<unpacked, scalar>)
         {
-            callback(object, static_cast<monomial_indices_t const&>(indices));
+            //if (object == scalar(0)) { return true; }
+            return callback(object, static_cast<monomial_indices_type const&>(indices));
         }
         else
         {
-            for (monomial_index_t i = 0; i < object.size(); ++i)
+            for (int i = 0; i < object.size(); ++i)
             {
                 indices[level] = i;
-                for_each(object[i], level + 1, indices, callback);
+                if (!for_each(object[i], level + 1, indices, callback)) { return false; }
             }
+            return true;
         }
     }
 
-    template <typename _unpacked, typename _callback>
-    void for_each(_unpacked const& object, int level, monomial_indices_t& indices, _callback callback) const
+    template <typename unpacked, typename callback_auto>
+    bool for_each(unpacked const& object, int level, monomial_indices_type& indices, callback_auto callback) const
     {
-        if constexpr (std::is_same_v<_unpacked, _scalar>)
+        if constexpr (std::is_same_v<unpacked, scalar>)
         {
-            callback(object, static_cast<monomial_indices_t const&>(indices));
+            //if (object == scalar(0)) { return true; }
+            return callback(object, static_cast<monomial_indices_type const&>(indices));
         }
         else
         {
-            for (monomial_index_t i = 0; i < object.size(); ++i)
+            for (int i = 0; i < object.size(); ++i)
             {
                 indices[level] = i;
-                for_each(object[i], level + 1, indices, callback);
+                if (!for_each(object[i], level + 1, indices, callback)) { return false; }
             }
+            return true;
         }
     }
 
-    template <int _stop, typename _unpacked, typename _callback_arithmetic>
-    void for_each_arithmetic(_unpacked& object, int level, monomial_indices_layered_t& indices, _callback_arithmetic callback)
+    template <typename unpacked>
+    auto& at(unpacked& object, int level, monomial_indices_type const& indices)
     {
-        if constexpr (_stop <= 0)
-        {
-            callback(object, static_cast<monomial_indices_layered_t const&>(indices));
-        }
-        else
-        {
-            object.for_each
-            (
-                [&](auto& element, monomial_indices_t const& layer_indices)
-                {
-                    indices[level] = layer_indices;
-                    for_each_arithmetic<_stop - 1>(element, level + 1, indices, callback);
-                }
-            );
-        }
-    }
-
-    template <int _stop, typename _unpacked, typename _callback_arithmetic>
-    void for_each_arithmetic(_unpacked const& object, int level, monomial_indices_layered_t& indices, _callback_arithmetic callback) const
-    {
-        if constexpr (_stop <= 0)
-        {
-            callback(object, static_cast<monomial_indices_layered_t const&>(indices));
-        }
-        else
-        {
-            object.for_each
-            (
-                [&](auto const& element, monomial_indices_t const& layer_indices)
-                {
-                    indices[level] = layer_indices;
-                    for_each_arithmetic<_stop - 1>(element, level + 1, indices, callback);
-                }
-            );
-        }
-    }
-
-    template <typename _unpacked>
-    auto& at(_unpacked& object, int level, monomial_indices_t const& indices)
-    {
-        if constexpr (std::is_same_v<_unpacked, _scalar>)
+        if constexpr (std::is_same_v<unpacked, scalar>)
         {
             return object;
         }
         else
         {
-            monomial_index_t index = indices[level];
+            int index = indices[level];
             if (index >= object.size()) { object.resize(index + 1); }
             return at(object[index], level + 1, indices);
         }
     }
 
-    template <typename _unpacked>
-    auto const& at(_unpacked const& object, int level, monomial_indices_t const& indices) const
+    template <typename unpacked>
+    auto const& at(unpacked const& object, int level, monomial_indices_type const& indices) const
     {
-        if constexpr (std::is_same_v<_unpacked, _scalar>)
+        if constexpr (std::is_same_v<unpacked, scalar>)
         {
             return object;
         }
         else
         {
-            monomial_index_t index = indices[level];
+            int index = indices[level];
             if (index >= object.size()) { return zero; }
             return at(object[index], level + 1, indices);
-        }
-    }
-
-    template <int _stop, typename _unpacked>
-    auto& at_arithmetic(_unpacked& object, int level, monomial_indices_layered_t const& indices)
-    {
-        if constexpr (_stop <= 0)
-        {
-            return object;
-        }
-        else
-        {
-            return at_arithmetic<_stop - 1>(object[indices[level]], level + 1, indices);
-        }
-    }
-
-    template <int _stop, typename _unpacked>
-    auto const& at_arithmetic(_unpacked const& object, int level, monomial_indices_layered_t const& indices) const
-    {
-        if constexpr (_stop <= 0)
-        {
-            return object;
-        }
-        else
-        {
-            return at_arithmetic<_stop - 1>(object[indices[level]], level + 1, indices);
         }
     }
 
@@ -208,266 +167,298 @@ public:
     {
     }
 
-    polynomial(_scalar const& bias)
+    polynomial(scalar const& bias)
     {
-        (*this)[monomial_indices_t(_n)] = bias;
+        (*this)[{}] = bias;
     }
 
-    polynomial(monomial_vector<_scalar, _n> const& v)
+    polynomial(monomial_type const& m)
     {
-        for (auto const& m : v) { (*this)[m.indices] = m.value; }
-    }
-
-    template <typename _other_scalar>
-    polynomial(polynomial<_other_scalar, _n> const& other)
-    {
-        other.for_each([&](_other_scalar const& element, monomial_indices_t const& indices) { (*this)[indices] = _scalar(element); });
-    }
-
-    template <typename _callback>
-    void for_each(_callback callback)
-    {
-        monomial_indices_t scratch(_n);
-        for_each(data, 0, scratch, callback);
-    }
-
-    template <typename _callback>
-    void for_each(_callback callback) const
-    {
-        monomial_indices_t scratch(_n);
-        for_each(data, 0, scratch, callback);
-    }
-
-    template <int _stop = layers_n, typename _callback_arithmetic = void>
-    void for_each_arithmetic(_callback_arithmetic callback)
-    {
-        monomial_indices_layered_t scratch(_stop);
-        for_each_arithmetic<_stop>(*this, 0, scratch, callback);
-    }
-
-    template <int _stop = layers_n, typename _callback_arithmetic = void>
-    void for_each_arithmetic(_callback_arithmetic callback) const
-    {
-        monomial_indices_layered_t scratch(_stop);
-        for_each_arithmetic<_stop>(*this, 0, scratch, callback);
-    }
-
-    template <int _stop = layers_n>
-    auto& at_arithmetic(monomial_indices_layered_t const& indices)
-    {
-        return at_arithmetic<_stop>(*this, 0, indices);
-    }
-
-    template <int _stop = layers_n>
-    auto const& at_arithmetic(monomial_indices_layered_t const& indices) const
-    {
-        return at_arithmetic<_stop>(*this, 0, indices);
+        (*this)[m.indices] = m.coefficient;
     }
 
 
-    monomial_vector<_scalar, _n> flatten() const
+
+
+
+
+
+
+
+
+    
+    
+    template <typename callback_auto>
+    bool for_each(callback_auto callback)
     {
-        monomial_vector<_scalar, _n> c;
-        for_each([&](_scalar const& element, monomial_indices_t const& indices) { c.push_back({ indices, element }); });
-        return c;
+        monomial_indices_type scratch{};
+        return for_each(data, 0, scratch, callback);
     }
 
-    auto& operator[](monomial_indices_t const& indices)
+    template <typename callback_auto>
+    bool for_each(callback_auto callback) const
+    {
+        monomial_indices_type scratch{};
+        return for_each(data, 0, scratch, callback);
+    }
+
+    
+
+    auto& operator[](monomial_indices_type const& indices)
     {
         return at(data, 0, indices);
     }
 
-    auto const& operator[](monomial_indices_t const& indices) const
+    auto const& operator[](monomial_indices_type const& indices) const
     {
         return at(data, 0, indices);
     }
 
-    polynomial_t operator+() const
+    polynomial_type operator+() const
     {
         return *this;
     }
 
-    polynomial_t operator+(polynomial_t const& other) const
+    polynomial_type operator+(polynomial_type const& other) const
     {
-        polynomial_t result = *this;
+        polynomial_type result = *this;
         return result += other;
     }
+    
+    
 
-    polynomial_t operator+(_scalar const& other) const
-    {
-        polynomial_t result = *this;
-        return result += other;
-    }
+    
 
-    friend polynomial<_scalar, _n> operator+(_scalar const& other, polynomial<_scalar, _n> const& x)
+    
+
+    friend polynomial_type operator+(scalar const& other, polynomial_type const& x)
     {
         return x + other;
     }
 
-    polynomial_t operator-() const
+    polynomial_type operator-() const
     {
-        polynomial_t result;
+        polynomial_type result;
         return result -= *this;
     }
 
-    polynomial_t operator-(polynomial_t const& other) const
+    polynomial_type operator-(polynomial_type const& other) const
     {
-        polynomial_t result = *this;
+        polynomial_type result = *this;
         return result -= other;
     }
+    
 
-    polynomial_t operator-(_scalar const& other) const
-    {
-        polynomial_t result = *this;
-        return result -= other;
-    }
+    
 
-    friend polynomial<_scalar, _n> operator-(_scalar const& other, polynomial<_scalar, _n> const& x)
+    
+
+    friend polynomial_type operator-(scalar const& other, polynomial_type const& x)
     {
         return -x + other;
     }
 
-    polynomial_t operator*(polynomial_t const& other) const
+    polynomial_type operator*(polynomial_type const& other) const
     {
-        polynomial_t result;
-        monomial_indices_t indices_c(_n);
+        polynomial_type result;
 
         for_each
         (
-            [&](_scalar const& element_a, monomial_indices_t const& indices_a)
+            [&](scalar const& coefficient_a, monomial_indices_type const& indices_a)
             {
                 other.for_each
                 (
-                    [&](_scalar const& element_b, monomial_indices_t const& indices_b)
+                    [&](scalar const& coefficient_b, monomial_indices_type const& indices_b)
                     {
-                        for (int i = 0; i < _n; ++i) { indices_c[i] = indices_a[i] + indices_b[i]; }
-                        result[indices_c] += element_a * element_b;
+                        result[indices_a + indices_b] += coefficient_a * coefficient_b;
+                        return true;
                     }
                 );
+                return true;
             }
         );
 
         return result;
     }
 
-    polynomial_t operator*(_scalar const& other) const
-    {
-        polynomial_t result = *this;
-        return result *= other;
-    }
+    
 
-    friend polynomial<_scalar, _n> operator*(_scalar const& other, polynomial<_scalar, _n> const& x)
+    
+
+    
+
+    friend polynomial_type operator*(scalar const& other, polynomial_type const& x)
     {
         return x * other;
     }
 
-    polynomial_t operator/(_scalar const& other) const
+    polynomial_type operator/(scalar const& other) const
     {
-        polynomial_t result = *this;
+        polynomial_type result = *this;
         return result /= other;
     }
 
-    polynomial_t operator%(_scalar const& other) const
+    polynomial_type operator%(scalar const& other) const
     {
-        polynomial_t result = *this;
+        polynomial_type result = *this;
         return result %= other;
     }
 
-    polynomial_t& operator+=(polynomial_t const& other)
+    polynomial_type& operator+=(polynomial_type const& other)
     {
-        other.for_each([&](_scalar const& element, monomial_indices_t const& indices) { (*this)[indices] += element; });
+        other.for_each
+        (
+            [&](scalar const& coefficient, monomial_indices_type const& indices)
+            {
+                (*this)[indices] += coefficient;
+                return true;
+            }
+        );
         return *this;
     }
 
-    polynomial_t& operator+=(_scalar const& other)
+    
+
+    polynomial_type& operator+=(scalar const& other)
     {
-        (*this)[monomial_indices_t(_n)] += other;
+        (*this)[monomial_indices_type{}] += other;
         return *this;
     }
 
-    polynomial_t& operator-=(polynomial_t const& other)
+    polynomial_type& operator-=(polynomial_type const& other)
     {
-        other.for_each([&](_scalar const& element, monomial_indices_t const& indices) { (*this)[indices] -= element; });
+        other.for_each
+        (
+            [&](scalar const& coefficient, monomial_indices_type const& indices)
+            {
+                (*this)[indices] -= coefficient;
+                return true;
+            }        
+        );
         return *this;
     }
 
-    polynomial_t& operator-=(_scalar const& other)
+    
+
+    polynomial_type& operator-=(scalar const& other)
     {
-        (*this)[monomial_indices_t(_n)] -= other;
+        (*this)[monomial_indices_type{}] -= other;
         return *this;
     }
 
-    polynomial_t& operator*=(polynomial_t const& other)
+    polynomial_type& operator*=(polynomial_type const& other)
     {
         *this = *this * other; // true *= has aliasing issues
         return *this;
     }
 
-    polynomial_t& operator*=(_scalar const& other)
+    
+
+    polynomial_type& operator*=(scalar const& other)
     {
-        for_each([&](_scalar& element, monomial_indices_t const& indices) { element *= other; });
+        for_each
+        (
+            [&](scalar& coefficient, monomial_indices_type const& indices)
+            {
+                coefficient *= other;
+                return true;
+            }
+        );
         return *this;
     }
 
-    polynomial_t& operator/=(_scalar const& other)
+    polynomial_type& operator/=(scalar const& other)
     {
-        for_each([&](_scalar& element, monomial_indices_t const& indices) { element /= other; });
+        for_each
+        (
+            [&](scalar& coefficient, monomial_indices_type const& indices)
+            {
+                coefficient /= other;
+                return true;
+            }
+        );
         return *this;
     }
 
-    polynomial_t& operator%=(_scalar const& other)
+    polynomial_type& operator%=(scalar const& other)
     {
-        for_each([&](_scalar& element, monomial_indices_t const& indices) { element %= other; });
+        for_each
+        (
+            [&](scalar& coefficient, monomial_indices_type const& indices)
+            {
+                coefficient %= other;
+                return true;
+            }
+        );
         return *this;
     }
 
+
+
+
+
+
+
+
+
     // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
-    polynomial_t operator/(polynomial_t const& other) const
+    polynomial_type operator/(polynomial_type const& other) const
     {
-        return (*this) / other[monomial_indices_t(_n)];
+        return (*this) / other[monomial_indices_type{}];
     }
 
     // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
-    polynomial_t operator%(polynomial_t const& other) const
+    polynomial_type operator%(polynomial_type const& other) const
     {
-        return (*this) % other[monomial_indices_t(_n)];
+        return (*this) % other[monomial_indices_type{}];
     }
 
     // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
-    polynomial_t& operator/=(polynomial_t const& other)
+    polynomial_type& operator/=(polynomial_type const& other)
     {
-        return (*this) /= other[monomial_indices_t(_n)];
+        return (*this) /= other[monomial_indices_type{}];
     }
 
     // DIVISION BY COEFFICIENT OF '1' NOT POLYNOMIAL DIVISION
-    polynomial_t& operator%=(polynomial_t const& other)
+    polynomial_type& operator%=(polynomial_type const& other)
     {
-        return (*this) %= other[monomial_indices_t(_n)];
+        return (*this) %= other[monomial_indices_type{}];
     }
 };
 
-template <int _n>
+// polynomial operations (+,-,*,/,%)
+// polynomial operands   (polynomial, monomial, scalar)
+
+
+
+
+
+
+
+template <int variables>
 class grevlex_generator
 {
 public:
-    enum { variables_n = _n };
+    enum { variables_length = variables};
+
+    using monomial_indices_type = monomial_indices<variables>;
 
 private:
-    monomial_indices_t indices;
-    monomial_index_t power;
-    monomial_index_t sum;
+    monomial_indices_type indices;
+    int power;
+    int sum;
     int index;
 
-    grevlex_generator(monomial_indices_t const& start_indices, int start_index) : indices(_n)
+    grevlex_generator(monomial_indices_type const& start_indices, int start_index) : indices{}
     {
         sum = 0;
-        for (int i = 0; i < _n; ++i) { sum += (indices[i] = start_indices[i]); }
+        for (int i = 0; i < variables; ++i) { sum += (indices[i] = start_indices[i]); }
         power = sum;
         index = start_index;
     }
 
 public:
-    grevlex_generator() : indices(_n), power{ -1 }, sum{ 0 }, index{ -1 }
+    grevlex_generator() : indices{}, power{ -1 }, sum{ 0 }, index{ -1 }
     {
     }
 
@@ -475,7 +466,7 @@ public:
     {
     }
 
-    grevlex_generator(monomial_indices_t const& start_indices) : grevlex_generator(start_indices, ravel(start_indices))
+    grevlex_generator(monomial_indices_type const& start_indices) : grevlex_generator(start_indices, ravel(start_indices))
     {
     }
 
@@ -486,7 +477,7 @@ public:
             if (sum > 0)
             {
                 int i;
-                for (i = _n - 1; (i >= 0) && (indices[i] <= 0); --i)
+                for (i = variables - 1; (i >= 0) && (indices[i] <= 0); --i)
                 {
                     indices[i] = power;
                     sum += power;
@@ -514,7 +505,7 @@ public:
             if (indices[0] < power)
             {
                 int i;
-                for (i = _n - 1; (i >= 0) && (indices[i] >= power); --i)
+                for (i = variables - 1; (i >= 0) && (indices[i] >= power); --i)
                 {
                     indices[i] = 0;
                     sum -= power;
@@ -534,12 +525,12 @@ public:
         return *this;
     }
 
-    monomial_indices_t const& current_indices() const
+    monomial_indices_type const& current_indices() const
     {
         return indices;
     }
 
-    monomial_index_t current_power() const
+    int current_power() const
     {
         return power;
     }
@@ -549,99 +540,107 @@ public:
         return index;
     }
 
-    static monomial_index_t total_degree(monomial_indices_t const& a)
+    static int total_degree(monomial_indices_type const& a)
     {
         int sum = 0;
-        for (int i = 0; i < _n; ++i) { sum += a[i]; }
+        for (int i = 0; i < variables; ++i) { sum += a[i]; }
         return sum;
     }
 
-    static bool is_equal(monomial_indices_t const& a, monomial_indices_t const& b)
+    static bool is_equal(monomial_indices_type const& a, monomial_indices_type const& b)
     {
         int i;
-        for (i = 0; (i < _n) && (a[i] == b[i]); ++i);
-        return i >= _n;
+        for (i = 0; (i < variables) && (a[i] == b[i]); ++i);
+        return i >= variables;
     }
 
-    static bool compare(monomial_indices_t const& a, monomial_indices_t const& b)
+    static bool compare(monomial_indices_type const& a, monomial_indices_type const& b)
     {
-        monomial_index_t ap = total_degree(a);
-        monomial_index_t bp = total_degree(b);
+        int ap = total_degree(a);
+        int bp = total_degree(b);
 
         if (ap != bp) { return ap < bp; }
-        for (int i = 0; i < _n; ++i) { if (a[i] > b[i]) { return true; } }
+        for (int i = 0; i < variables; ++i) { if (a[i] > b[i]) { return true; } }
         return false;
     }
 
-    static monomial_indices_t unravel(int index)
+    static monomial_indices_type unravel(int index)
     {
-        grevlex_generator<_n> gg;
+        grevlex_generator<variables> gg;
         for (int i = 0; i < index; ++i) { gg.next(); }
         return gg.next().current_indices();
     }
 
-    static int ravel(monomial_indices_t const& indices)
+    static int ravel(monomial_indices_type const& indices)
     {
-        grevlex_generator<_n> gg;
+        grevlex_generator<variables> gg;
         while (!is_equal(indices, gg.next().current_indices()));
         return gg.current_index();
     }
 
-    static monomial<bool, _n> is_multiple(monomial_indices_t const& num, monomial_indices_t const& den)
+    static monomial<bool, variables> is_multiple(monomial_indices_type const& num, monomial_indices_type const& den)
     {
-        monomial<bool, _n> m;
-        m.value = true;
-        for (int i = 0; i < _n; ++i) { m.value = ((m.indices[i] = num[i] - den[i]) >= 0) && m.value; }
+        monomial<bool, variables> m;
+        m.coefficient = true;
+        for (int i = 0; i < variables; ++i) { m.coefficient = ((m.indices[i] = num[i] - den[i]) >= 0) && m.coefficient; }
         return m;
     }
 };
 
-template <typename _scalar, int _n, typename _iterable>
-static polynomial<_scalar, _n> create_polynomial_grevlex(_iterable const& coefficients)
+
+
+
+
+
+
+
+template <typename _scalar, int variables, typename _iterable>
+static polynomial<_scalar, variables> create_polynomial_grevlex(_iterable const& coefficients)
 {
-    grevlex_generator<_n> gg;
-    polynomial<_scalar, _n> p;
+    grevlex_generator<variables> gg;
+    polynomial<_scalar, variables> p;
     for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
     return p;
 }
 
-template <typename _scalar, int _n>
-static polynomial<_scalar, _n> create_polynomial_grevlex(std::initializer_list<_scalar> coefficients)
+template <typename _scalar, int variables>
+static polynomial<_scalar, variables> create_polynomial_grevlex(std::initializer_list<_scalar> coefficients)
 {
-    grevlex_generator<_n> gg;
-    polynomial<_scalar, _n> p;
+    grevlex_generator<variables> gg;
+    polynomial<_scalar, variables> p;
     for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
     return p;
 }
 
 
-template <typename _scalar, int _n, typename A>
-polynomial<_scalar, _n> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
+template <typename _scalar, int variables, typename A>
+polynomial<_scalar, variables> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
 {
-    polynomial<_scalar, _n> dst;
-    grevlex_generator<_n> gg;
+    polynomial<_scalar, variables> dst;
+    grevlex_generator<variables> gg;
     for (int i = 0; i < src.size(); ++i) { dst[gg.next().current_indices()] = src(i); }
     return dst;
 }
 
-template <typename _scalar, int _n, int _rows, int _cols, typename A>
-Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int rows = _rows, int cols = _cols)
+template <typename _scalar, int variables, int _rows, int _cols, typename A>
+Eigen::Matrix<polynomial<_scalar, variables>, _rows, _cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int rows = _rows, int cols = _cols)
 {
-    Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols> dst(rows, cols);
-    for (int i = 0; i < cols; ++i) { for (int j = 0; j < rows; ++j) { dst(j, i) = matrix_to_polynomial_grevlex<_scalar, _n>(M.row((i * rows) + j)); } }
+    Eigen::Matrix<polynomial<_scalar, variables>, _rows, _cols> dst(rows, cols);
+    for (int i = 0; i < cols; ++i) { for (int j = 0; j < rows; ++j) { dst(j, i) = matrix_to_polynomial_grevlex<_scalar, variables>(M.row((i * rows) + j)); } }
     return dst;
 }
 
-template <typename _matrix_scalar, int _rows, int _cols, typename _scalar, int _n>
-Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polynomial<_scalar, _n> const& src, int rows = _rows, int cols = _cols)
+template <typename _matrix_scalar, int _rows, int _cols, typename _scalar, int variables>
+Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polynomial<_scalar, variables> const& src, int rows = _rows, int cols = _cols)
 {
     Eigen::Matrix<_matrix_scalar, _rows, _cols> dst(rows, cols);
     src.for_each
     (
-        [&](_scalar const& element, monomial_indices_t const& indices)
+        [&](_scalar const& element, monomial_indices<variables> const& indices)
         {
-            int i = grevlex_generator<_n>::ravel(indices);
+            int i = grevlex_generator<variables>::ravel(indices);
             if (i < dst.size()) { dst(i) = element; }
+            return true;
         }
     );
     return dst;
