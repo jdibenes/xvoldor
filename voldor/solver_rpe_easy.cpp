@@ -4,9 +4,21 @@
 #include "polynomial.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
+#include "../thirdparty/rnp/sturm.h"
+/*
+//NO
+template <typename kind, int count>
+struct objkindn
+{
+    using kind = kind;
+    enum { count = count };
+};
+*/
+
+
 
 template <typename _scalar, int _rows, int _cols, int _n>
-void polynomial_row_echelon_sort(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices_t const& monomial)
+void polynomial_row_echelon_sort(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices<_n> const& monomial)
 {
     _scalar max_s = _scalar(0);
     int max_r = row;
@@ -23,7 +35,7 @@ void polynomial_row_echelon_sort(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _
 }
 
 template <typename _scalar, int _rows, int _cols, int _n>
-bool polynomial_row_echelon_eliminate(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices_t const& monomial, bool all)
+bool polynomial_row_echelon_eliminate(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices<_n> const& monomial, bool all)
 {
     _scalar a = M(row, col)[monomial];
     if (abs(a) <= 0) { return false; }
@@ -41,7 +53,7 @@ bool polynomial_row_echelon_eliminate(Eigen::Matrix<polynomial<_scalar, _n>, _ro
 }
 
 template <typename _scalar, int _rows, int _cols, int _n>
-bool polynomial_row_echelon_step(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices_t const& monomial, bool all)
+bool polynomial_row_echelon_step(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices<_n> const& monomial, bool all)
 {
     polynomial_row_echelon_sort(M, row, col, monomial);
     return polynomial_row_echelon_eliminate(M, row, col, monomial, all);
@@ -74,6 +86,9 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     S << matrix_from_polynomial_grevlex<float, 9, 20>(E_singular_values),
          matrix_from_polynomial_grevlex<float, 1, 20>(E_determinant);
 
+    std::cout << "S" << std::endl;
+    std::cout << S << std::endl;
+
     /*
     * hide z
     *
@@ -102,21 +117,21 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
          matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  1,  6, 15 })),
          matrix_to_polynomial_grevlex<float, 1, 10, 1>(S(Eigen::all, {  0,  3,  9, 19 }));
 
-    for (int i = 0; i < 4; ++i) { polynomial_row_echelon_step(H, i, i, std::vector{ 0 }, false); }
+    for (int i = 0; i < 4; ++i) { polynomial_row_echelon_step(H, i, i, { 0 }, false); }
 
     Eigen::Matrix<polynomial<float, 1>, 6, 6> D = H(Eigen::seqN(4, 6), Eigen::seqN(4, 6));
 
-    polynomial_row_echelon_step(D, 0, 0, std::vector{ 1 }, true);
-    polynomial_row_echelon_step(D, 1, 0, std::vector{ 0 }, true);
+    polynomial_row_echelon_step(D, 0, 0, { 1 }, true);
+    polynomial_row_echelon_step(D, 1, 0, { 0 }, true);
 
-    polynomial_row_echelon_step(D, 2, 1, std::vector{ 1 }, true);
-    polynomial_row_echelon_step(D, 3, 1, std::vector{ 0 }, true);
+    polynomial_row_echelon_step(D, 2, 1, { 1 }, true);
+    polynomial_row_echelon_step(D, 3, 1, { 0 }, true);
 
-    polynomial_row_echelon_step(D, 4, 2, std::vector{ 1 }, true);
-    polynomial_row_echelon_step(D, 5, 2, std::vector{ 0 }, true);
+    polynomial_row_echelon_step(D, 4, 2, { 1 }, true);
+    polynomial_row_echelon_step(D, 5, 2, { 0 }, true);
 
-    polynomial<float, 1> z = create_polynomial_grevlex<float, 1>(std::vector<float>{0, 1});
-
+    polynomial<float, 1> z = create_polynomial_grevlex<float, 1>({0, 1});
+    
     D.row(1) = (D.row(1) * z) - D.row(0);
     D.row(3) = (D.row(3) * z) - D.row(2);
     D.row(5) = (D.row(5) * z) - D.row(4);
@@ -126,41 +141,95 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<polynomial<float, 1>, 3, 3> Z = D(Eigen::seqN(3, 3), Eigen::seqN(3, 3));
 
-    //for (auto vv : D)
-   // {
-    //    std::cout << vv << ", ";
-   // }
-    //std::cout << std::endl;
-
-
     polynomial<float, 1> z_poly = Z.determinant();
 
+    Eigen::Matrix<double, 1, 11> z_poly_coef = matrix_from_polynomial_grevlex<float, 1, 11>(z_poly).cast<double>().eval();
 
+    std::cout << "z_poly_coef" << std::endl;
+    std::cout << z_poly_coef << std::endl;
+
+    double z_roots[10];
+    int n_roots = 0;
+
+    if (!find_real_roots_sturm(z_poly_coef.data(), 10, z_roots, &n_roots, 10, 0))
+    {
+        return false;
+    }
+
+    Eigen::Matrix<float, 10, 10> FINAL;
+    Eigen::Matrix<float, 10, 1> solution;
+    Eigen::Matrix<float, 3, 3> fake_E;
+
+    std::cout << "roots: " << std::endl;
+    for (int i = 0; i < n_roots; ++i)
+    {
+        
+
+        float z = z_roots[i];
+        float z2 = z_roots[i] * z_roots[i];
+        float z3 = z_roots[i] * z_roots[i] * z_roots[i];
+
+        FINAL <<  S(Eigen::all, 16),
+              S(Eigen::all, 13),
+              S(Eigen::all, 11),
+              S(Eigen::all, 10),
+             (S(Eigen::all,  7) + z * S(Eigen::all, 17)),
+             (S(Eigen::all,  5) + z * S(Eigen::all, 14)),
+             (S(Eigen::all,  4) + z * S(Eigen::all, 12)),
+             (S(Eigen::all,  2) + z * S(Eigen::all,  8) + z2 * S(Eigen::all, 18)),
+             (S(Eigen::all,  1) + z * S(Eigen::all,  6) + z2 * S(Eigen::all, 15)),
+             (S(Eigen::all,  0) + z * S(Eigen::all,  3) + z2 * S(Eigen::all,  9) + z3 * S(Eigen::all, 19));
+
+        solution = FINAL.bdcSvd(Eigen::ComputeFullV).matrixV().col(9);
+        float x = solution(8) / solution(9);
+        float y = solution(7) / solution(9);
+
+        std::cout << "(" << x << ", " << y << ", " << z_roots[i] << ")" << std::endl;
+
+        fake_E = (e(Eigen::all, 0) + x * e(Eigen::all, 1) + y * e(Eigen::all, 2) + z * e(Eigen::all, 3)).reshaped(3, 3);
+    
+        result_R_t_from_E result = R_t_from_E(fake_E, q1, q2);
+
+        Eigen::Matrix<float, 3, 3> R = result.P(Eigen::all, Eigen::seqN(0, 3));
+        Eigen::Matrix<float, 3, 1> v = result.P.col(3);
+
+        Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
+        Eigen::Matrix<float, 3, 1> t = (P2.col(0) - R * P1.col(0)).norm() * v;
+    
+        std::cout << "R" << std::endl;
+        std::cout << R << std::endl;
+        std::cout << "t" << std::endl;
+        std::cout << t << std::endl;
+    
+    
+    }
+    std::cout << std::endl;
+
+
+    
+
+    
+
+
+
+
+    
+    
 
     /*
-    for (int i = 0; i < 10; ++i)
-    {
-        for (int j = 0; j < 10; ++j)
-        {
-            H(i, j).for_each([](float const& element, monomial_indices_t const& indices) {std::cout << element << "*z^" << indices[0] << " + "; });
-            std::cout << " || ";
-        }
-        std::cout << std::endl;
-    }
-    */
-
     for (int i = 0; i < 6; ++i)
     {
         for (int j = 0; j < 6; ++j)
         {
             D(i, j).for_each
             (
-                [](float const& element, monomial_indices_t const& indices)
+                [](float const& element, monomial_indices<1> const& indices)
                 {
                     if (element != 0)
                     {
                         std::cout << element << "*z^" << indices[0] << " + ";
                     }
+                    return true;
                 }
             );
             std::cout << " || ";
@@ -170,97 +239,19 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
     z_poly.for_each
     (
-        [](float const& element, monomial_indices_t const& indices)
+        [](float const& element, monomial_indices<1> const& indices)
         {
             if (element != 0)
             {
                 std::cout << element << "*z^" << indices[0] << " + ";
             }
+            return true;
         }
     );
     std::cout << std::endl;
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //S.rowwise().reverseInPlace();
-
-
-
-    
-
-
-
-
-
-    
-
-    
-
-    
-
-
-
-
-    
-
-
-
-    /*
-    polynomial<float, 1> H_determinant = H(4,4);
-    for (int i = 5; i < 10; ++i)
-    {
-        H_determinant *= H(i, i);
-    }
-
-    H_determinant.for_each([](float const& element, monomial_indices_t const& indices) { std::cout << element << "*z^" << indices[0] << ","; });
-    std::cout << std::endl;
     */
-         
+
     return false;
-         
-         
-         
-
-    //Eigen::Matrix<float, 10, 1> p_z = matrix_from_polynomial_grevlex<float, 10, 1>(H.determinant());
-
-
-    //H(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
-
-
-
-
-
-
-
-
-
-
-    //Eigen::Matrix<float, 9, 3> yx1 = e(Eigen::all, Eigen::seqN(0, 3));
-    //Eigen::Matrix<float, 9, 2> z0;
-
-
-
-
-
 
     /*
     0 [0,0,0] 1
@@ -303,10 +294,58 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
    13 [1,2,0] x*y^2
    16 [0,3,0] y^3
     */
-
-
-
-
-
-
 }
+
+
+
+/*
+polynomial<float, 1> H_determinant = H(4,4);
+for (int i = 5; i < 10; ++i)
+{
+    H_determinant *= H(i, i);
+}
+
+H_determinant.for_each([](float const& element, monomial_indices_t const& indices) { std::cout << element << "*z^" << indices[0] << ","; });
+std::cout << std::endl;
+*/
+
+
+//Eigen::Matrix<float, 10, 1> p_z = matrix_from_polynomial_grevlex<float, 10, 1>(H.determinant());
+
+
+//H(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
+
+
+
+
+
+
+
+
+
+
+//Eigen::Matrix<float, 9, 3> yx1 = e(Eigen::all, Eigen::seqN(0, 3));
+//Eigen::Matrix<float, 9, 2> z0;
+
+/*
+    for (int i = 0; i < 10; ++i)
+    {
+        for (int j = 0; j < 10; ++j)
+        {
+            H(i, j).for_each([](float const& element, monomial_indices_t const& indices) {std::cout << element << "*z^" << indices[0] << " + "; });
+            std::cout << " || ";
+        }
+        std::cout << std::endl;
+    }
+    */
+
+    //for (auto vv : D)
+       // {
+        //    std::cout << vv << ", ";
+       // }
+        //std::cout << std::endl;
+        //polynomial<float, 1> a_1;
+        //polynomial<float, 1> b_1;
+
+
+        //std::array<int, 3> b = std::array<int, 3>{0};
