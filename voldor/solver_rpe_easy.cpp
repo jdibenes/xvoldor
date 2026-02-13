@@ -86,8 +86,27 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     S << matrix_from_polynomial_grevlex<float, 9, 20>(E_singular_values),
          matrix_from_polynomial_grevlex<float, 1, 20>(E_determinant);
 
-    std::cout << "S" << std::endl;
-    std::cout << S << std::endl;
+    //std::cout << "S" << std::endl;
+    //std::cout << S << std::endl;
+
+    monomial_vector<float, 3> edet_vector = E_determinant;
+    grevlex_generator<3>::sort(edet_vector);
+    std::cout << "edet_vector" << std::endl;
+    for (auto const& m : edet_vector)
+    {
+        std::cout << m.coefficient << "*x^" << m.indices[0] << "*y^" << m.indices[1] << "*z^" << m.indices[2] << " + ";
+    }
+    std::cout << std::endl;
+
+    result_polynomial_division<float, 3> poly_div = polynomial_divide<grevlex_generator>(E_determinant, polynomial<float, 3>(monomial_vector<float, 3>{ {1, { 0, 0, 1 }}, { 1, {0,0,2} }   }));
+    std::cout << "poly_div" << std::endl;
+    std::cout << "Q" << std::endl;
+    poly_div.quotient.for_each([&](float const& c, monomial_indices<3> const& i) {std::cout << c << "*x^" << i[0] << "*y^" << i[1] << "*z^" << i[2] << " + "; });
+    std::cout << std::endl;
+    std::cout << "R" << std::endl;
+    poly_div.remainder.for_each([&](float const& c, monomial_indices<3> const& i) {std::cout << c << "*x^" << i[0] << "*y^" << i[1] << "*z^" << i[2] << " + "; });
+
+
 
     /*
     * hide z
@@ -250,6 +269,20 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     );
     std::cout << std::endl;
     */
+
+    polynomial<float, 1> vv;
+    polynomial<float, 1> vc;
+
+    vv == vc;
+    if (vv) { std::cout << "EQUAL" << std::endl; }
+
+    monomial<float, 2>(1.0, { 0, 1 });
+
+    std::array<int, 3>pa{};
+    std::array<int, 3>pb{};
+
+    pa = pb;
+    pa == pb;
 
     return false;
 
