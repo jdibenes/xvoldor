@@ -595,6 +595,9 @@ struct remove_polynomial<polynomial<S, V>>
     enum { count = V + remove_polynomial<S>::count };
 };
 
+template <typename scalar>
+using coefficient_vector = std::vector<scalar>;
+
 //=============================================================================
 // grevlex_generator
 //=============================================================================
@@ -726,11 +729,21 @@ public:
         while (indices != gg.next().current_indices());
         return gg.current_index();
     }
+
+    template <typename scalar>
+    static void sort(monomial_vector<scalar, variables>& monomials)
+    {
+        std::sort(monomials.begin(), monomials.end(), [](monomial<scalar, variables> const& a, monomial<scalar, variables> const& b) { return compare(a.indices, b.indices); });
+    }
 };
 
 //=============================================================================
 // conversions
 //=============================================================================
+
+
+
+
 
 
 
@@ -759,6 +772,7 @@ polynomial<_scalar, variables> create_polynomial_grevlex(std::initializer_list<_
     for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
     return p;
 }
+
 
 
 
