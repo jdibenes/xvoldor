@@ -211,11 +211,11 @@ int main(int argc, char* argv[])
     //grevlex_generator<3>::vector_to_polynomial<float>(std::vector<float>{ 0, 1, 2 });
     //vector_to_polynomial_grevlex<float, 2>(std::vector<int>{0, 1, 2, 3});
 
-    solver_rpe_easy(p11.data(), p31.data(), r.data(), t.data());
+    solver_rpe_easy(p11.data(), p21.data(), r.data(), t.data());
 
     //solver_gpm_nm7(p11.data(), p31.data(), r.data(), t.data());
     //solver_gpm_nm6(p11.data(), p31.data(), r.data(), t.data());
-    solver_gpm_nm5(p11.data(), p31.data(), r.data(), t.data());
+    solver_gpm_nm5(p11.data(), p21.data(), r.data(), t.data());
 
     //solver_r6p1l(p11.data(), x31.data(), 0, 0, 2, r.data(), t.data());
     //solver_r6p2l(p11.data(), x31.data(), 0, 0, r.data(), t.data());
@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
     std::cout << "E " << std::endl;
     std::cout << E_gt << std::endl;
     
-    //std::cout << pose01 << std::endl;
+    std::cout << pose01 << std::endl;
     //std::cout << pose12 << std::endl;
     std::cout << pose02 << std::endl;
     std::cout << "POSE" << std::endl;
