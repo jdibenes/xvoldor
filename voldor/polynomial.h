@@ -609,6 +609,12 @@ public:
     enum { variables_length = variables};
     using monomial_indices_type = monomial_indices<variables>;
 
+    template <typename scalar>
+    using monomial_type = monomial<scalar, variables>;
+
+    template <typename scalar>
+    using monomial_vector_type = monomial_vector<scalar, variables>;
+
 private:
     monomial_indices_type indices;
     int power;
@@ -731,15 +737,55 @@ public:
     }
 
     template <typename scalar>
-    static void sort(monomial_vector<scalar, variables>& monomials)
+    static void sort(monomial_vector_type<scalar>& monomials)
     {
-        std::sort(monomials.begin(), monomials.end(), [](monomial<scalar, variables> const& a, monomial<scalar, variables> const& b) { return compare(a.indices, b.indices); });
+        std::sort(monomials.begin(), monomials.end(), [](monomial_type<scalar> const& a, monomial_type<scalar> const& b) { return compare(a.indices, b.indices); });
     }
 };
 
 //=============================================================================
+// division
+//=============================================================================
+
+template <typename scalar, int variables>
+struct result_polynomial_division
+{
+    polynomial<scalar, variables> quotient;
+    polynomial<scalar, variables> remainder;
+};
+
+template <template <int variables> class generator, typename scalar, int variables>
+result_polynomial_division<scalar, variables> polynomial_divide(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
+{
+    result_polynomial_division<scalar, variables> result;
+    result.remainder = dividend;
+
+    monomial_vector<scalar, variables> v_b = divisor;
+    if (v_b.size() <= 0) { return result; }
+    generator<variables>::sort(v_b);
+    monomial<scalar, variables> m_b = v_b.back();
+
+    for (monomial_vector<scalar, variables> v_a = result.remainder; v_a.size() > 0; v_a = result.remainder)
+    {
+        generator<variables>::sort(v_a);
+        monomial<scalar, variables> m_a = v_a.back();
+        
+        monomial_indices<variables> exponent = m_a.indices - m_b.indices;
+        if (!is_integral(exponent)) { break; }
+        monomial<scalar, variables> q = monomial<scalar, variables>(m_a.coefficient / m_b.coefficient, exponent);
+
+        result.quotient += q;
+        result.remainder -= q * divisor;
+        result.remainder[m_a.indices] = scalar(0);
+    }
+
+    return result;
+}
+
+//=============================================================================
 // conversions
 //=============================================================================
+
 
 
 
