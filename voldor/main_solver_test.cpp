@@ -114,9 +114,16 @@ int main(int argc, char* argv[])
     std::cout << "p31" << std::endl;
     std::cout << p31 << std::endl;
 
+    std::cout << "indices_test" << std::endl;
+    monomial_indices<5> xindicestest{};
+    for (int i = 0; i < xindicestest.size(); ++i) {
+        std::cout << "(" << i << "): " << xindicestest[i] << " | ";
+    }
+    std::cout << std::endl;
 
     std::cout << "unravel_grevlex test" << std::endl;
-    std::vector<int> indices;
+    
+    monomial_indices<3> indices;
     int test_index = 19;
     //unravel_grevlex<3>(test_index, indices);
     grevlex_generator<3> gg = grevlex_generator<3>();
@@ -137,19 +144,19 @@ int main(int argc, char* argv[])
 
     polynomial<float, 2> pp = polynomial<float, 2>(5);
     polynomial<float, 2> ppo3 = pp / 3;
-    std::cout << ppo3[monomial_indices_t(2)] << std::endl;
+    std::cout << ppo3[monomial_indices<2>{}] << std::endl;
 
     float sum_of_coeff = 0;
-    pp.for_each_arithmetic<1>([&](float const& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
-    pp.for_each_arithmetic<1>([&](float& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
+    //pp.for_each_arithmetic<1>([&](float const& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
+    //pp.for_each_arithmetic<1>([&](float& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
 
-    pp.at_arithmetic(monomial_indices_layered_t{ {0, 0} });
+    //pp.at_arithmetic(monomial_indices_layered_t{ {0, 0} });
 
     polynomial<polynomial<polynomial<float, 7>, 2>, 3> ppin1;
     polynomial<polynomial<float, 2>, 3> ppin2;
     polynomial<polynomial<float, 2>, 3> ppin3;
 
-    ppin1.at_arithmetic(monomial_indices_layered_t{ {0, 0, 0}, {0,0}, {0,0,0,0,0,0,0} });
+    //ppin1.at_arithmetic(monomial_indices_layered_t{ {0, 0, 0}, {0,0}, {0,0,0,0,0,0,0} });
 
     //ppin1.for_each_arithmetic<3>([&](float& e, monomial_indices_layered_t const& indices) { sum_of_coeff += e; });
     //ppin1.for_each_arithmetic<2>([&](polynomial<float, 7>& e, monomial_indices_layered_t const& indices) { sum_of_coeff += 1; });
@@ -157,18 +164,18 @@ int main(int argc, char* argv[])
     //ppin1.for_each_arithmetic<0>([&](polynomial<polynomial<polynomial<float, 7>, 2>, 3>& e, monomial_indices_layered_t const& indices) { sum_of_coeff += 1; });
 
 
-    pp.variables_n;
-    pp.variables_arithmetic_n;
+    pp.variables_length;
+    //pp.variables_arithmetic_n;
 
-    ppin1.variables_n;
-    ppin1.variables_arithmetic_n;
-    ppin1.layers_n;
+    ppin1.variables_length;
+    //ppin1.variables_arithmetic_n;
+    //ppin1.layers_n;
 
     //polynomial<polynomial<float, 2>, 3>::
 
-    polynomial<polynomial<float, 2>, 3> ppcast = polynomial<polynomial<double, 2>, 3>();
+    //polynomial<polynomial<float, 2>, 3> ppcast = polynomial<polynomial<double, 2>, 3>().cast<polynomial<float, 2>>();
 
-    pp.variables_n;
+    pp.variables_length;
 
     //grevlex_generator<5>
     //gg.
@@ -189,7 +196,7 @@ int main(int argc, char* argv[])
     pp += a;
 
 
-    ppcast -= polynomial<float, 2>();
+    //ppcast -= polynomial<float, 2>();
     pp -= 2;
     2 - pp;
     2 + pp;
