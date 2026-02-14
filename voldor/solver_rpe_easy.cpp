@@ -149,7 +149,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     polynomial_row_echelon_step(D, 4, 2, { 1 }, true);
     polynomial_row_echelon_step(D, 5, 2, { 0 }, true);
 
-    polynomial<float, 1> z = create_polynomial_grevlex<float, 1>({0, 1});
+    polynomial<float, 1> z = monomial<float, 1>{ 1, { 1 } }; //create_polynomial_grevlex<float, 1>({0, 1});
     
     D.row(1) = (D.row(1) * z) - D.row(0);
     D.row(3) = (D.row(3) * z) - D.row(2);
