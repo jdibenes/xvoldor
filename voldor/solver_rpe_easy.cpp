@@ -90,7 +90,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     //std::cout << S << std::endl;
 
     monomial_vector<float, 3> edet_vector = E_determinant;
-    grevlex_generator<3>::sort(edet_vector);
+    sort<grevlex_generator<3>>(edet_vector);
     std::cout << "edet_vector" << std::endl;
     for (auto const& m : edet_vector)
     {
@@ -98,7 +98,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     }
     std::cout << std::endl;
 
-    result_polynomial_division<float, 3> poly_div = polynomial_divide<grevlex_generator>(E_determinant, polynomial<float, 3>(monomial_vector<float, 3>{ {1, { 0, 0, 1 }}, { 1, {0,0,2} }   }));
+    result_polynomial_division<float, 3> poly_div = polynomial_divide<grevlex_generator<3>>(E_determinant, polynomial<float, 3>(monomial_vector<float, 3>{ {1, { 0, 0, 1 }}, { 1, {0,0,2} }   }));
     std::cout << "poly_div" << std::endl;
     std::cout << "Q" << std::endl;
     poly_div.quotient.for_each([&](float const& c, monomial_indices<3> const& i) {std::cout << c << "*x^" << i[0] << "*y^" << i[1] << "*z^" << i[2] << " + "; });
@@ -270,13 +270,39 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     std::cout << std::endl;
     */
 
+
+    monomial_indices<3> aind;
+    monomial_indices<3> bind;
+    bind += aind;
+
     polynomial<float, 1> vv;
     polynomial<float, 1> vc;
 
     vv == vc;
     if (vv) { std::cout << "EQUAL" << std::endl; }
 
-    monomial<float, 2>(1.0, { 0, 1 });
+    monomial<float, 2> monoa = monomial<float, 2>(1.0, { 0, 1 });
+    monomial<float, 2> monob = monomial<float, 2>(1.0, { 0, 1 });
+
+    monoa + monob;
+
+    monomial_vector<float, 3> monov{ 1 };
+    monomial_vector<float, 3> monov2{ {1, {1, 1, 1}} };
+
+    monov + monov2;
+
+    monov = { monomial<float, 3>(0, { 1, 1, 1 }) };
+    monov = { 5 };
+
+
+
+    //std::vector<int>{ 1 } != std::vector<int>{1};
+    //const bool truvec = !std::vector<int>{ 1 } != std::vector<int>{1};
+    //if (truvec)
+    //{
+
+    //}
+
 
     std::array<int, 3>pa{};
     std::array<int, 3>pb{};
