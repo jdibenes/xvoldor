@@ -763,6 +763,28 @@ public:
 };
 
 //=============================================================================
+// coefficient operations
+//=============================================================================
+
+template <typename scalar, int variables>
+void flush_to_zero(polynomial<scalar, variables>& v, scalar const& tolerance)
+{
+    v.for_each([&](scalar& coefficient, monomial_indices<variables> const& indices) { if (abs(coefficient) < tolerance) { coefficient = scalar(0); } });
+}
+
+template <typename scalar, int variables>
+void flush_to_zero(monomial_vector<scalar, variables>& v, scalar const& tolerance)
+{
+    for (auto& m : v) { if (abs(m.coefficient) < tolerance) { m.coefficient = scalar(0); } }
+}
+
+template <typename scalar, int variables>
+void flush_to_zero(monomial<scalar, variables>& m, scalar const& tolerance)
+{
+    if (abs(m.coefficient) < tolerance) { m.coefficient = scalar(0); }
+}
+
+//=============================================================================
 // monomial to polynomial operations
 //=============================================================================
 
@@ -1257,23 +1279,7 @@ void sort(monomial_vector<scalar, variables>& monomials)
 
 
 
-template <typename _scalar, int variables, typename _iterable>
-polynomial<_scalar, variables> create_polynomial_grevlex(_iterable const& coefficients)
-{
-    grevlex_generator<variables> gg;
-    polynomial<_scalar, variables> p;
-    for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
-    return p;
-}
 
-template <typename _scalar, int variables>
-polynomial<_scalar, variables> create_polynomial_grevlex(std::initializer_list<_scalar> coefficients)
-{
-    grevlex_generator<variables> gg;
-    polynomial<_scalar, variables> p;
-    for (auto const& c : coefficients) { p[gg.next().current_indices()] = c; }
-    return p;
-}
 
 
 
