@@ -31,6 +31,10 @@ using add_vector_type = typename add_vector<T, n>::type;
 template <int variables>
 using monomial_indices = std::array<int, variables>;
 
+//-----------------------------------------------------------------------------
+// +
+//-----------------------------------------------------------------------------
+
 template <int variables>
 monomial_indices<variables> operator+(monomial_indices<variables> const& x)
 {
@@ -45,12 +49,20 @@ monomial_indices<variables> operator+(monomial_indices<variables> const& lhs, mo
     return result;
 }
 
+//-----------------------------------------------------------------------------
+// +=
+//-----------------------------------------------------------------------------
+
 template <int variables>
 monomial_indices<variables>& operator+=(monomial_indices<variables>& lhs, monomial_indices<variables> const& rhs)
 {
     for (int i = 0; i < variables; ++i) { lhs[i] += rhs[i]; }
     return lhs;
 }
+
+//-----------------------------------------------------------------------------
+// -
+//-----------------------------------------------------------------------------
 
 template <int variables>
 monomial_indices<variables> operator-(monomial_indices<variables> const& x)
@@ -68,12 +80,20 @@ monomial_indices<variables> operator-(monomial_indices<variables> const& lhs, mo
     return result;
 }
 
+//-----------------------------------------------------------------------------
+// -=
+//-----------------------------------------------------------------------------
+
 template <int variables>
 monomial_indices<variables>& operator-=(monomial_indices<variables>& lhs, monomial_indices<variables> const& rhs)
 {
     for (int i = 0; i < variables; ++i) { lhs[i] -= rhs[i]; }
     return lhs;
 }
+
+//-----------------------------------------------------------------------------
+// compare
+//-----------------------------------------------------------------------------
 
 template <int variables>
 bool is_integral(monomial_indices<variables> const& indices)
@@ -392,7 +412,7 @@ public:
 
     polynomial(monomial_vector_type const& v)
     {
-        for (auto const& m : v) { (*this)[m.indices] = m.coefficient; }
+        for (auto const& m : v) { (*this)[m.indices] += m.coefficient; }
     }
 
     template <typename other_scalar>
@@ -766,77 +786,35 @@ public:
 // coefficient operations
 //=============================================================================
 
+template <typename scalar>
+void flush_to_zero(scalar& v, scalar const& tolerance)
+{
+    if (abs(v) < tolerance) { v = scalar(0); }
+}
+
 template <typename scalar, int variables>
 void flush_to_zero(polynomial<scalar, variables>& v, scalar const& tolerance)
 {
-    v.for_each([&](scalar& coefficient, monomial_indices<variables> const& indices) { if (abs(coefficient) < tolerance) { coefficient = scalar(0); } });
+    v.for_each([&](scalar& coefficient, monomial_indices<variables> const& indices) { flush_to_zero(coefficient, tolerance); });
 }
 
 template <typename scalar, int variables>
 void flush_to_zero(monomial_vector<scalar, variables>& v, scalar const& tolerance)
 {
-    for (auto& m : v) { if (abs(m.coefficient) < tolerance) { m.coefficient = scalar(0); } }
+    for (auto& m : v) { flush_to_zero(m, tolerance); }
 }
 
 template <typename scalar, int variables>
-void flush_to_zero(monomial<scalar, variables>& m, scalar const& tolerance)
+void flush_to_zero(monomial<scalar, variables>& v, scalar const& tolerance)
 {
-    if (abs(m.coefficient) < tolerance) { m.coefficient = scalar(0); }
+    flush_to_zero(v.coefficient, tolerance);
 }
 
 //=============================================================================
 // monomial to polynomial operations
 //=============================================================================
 
-//-----------------------------------------------------------------------------
-// +
-//-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
-polynomial<scalar, variables> operator+(monomial<scalar, variables> const& lhs, monomial<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-template <typename scalar, int variables>
-polynomial<scalar, variables> operator+(monomial<scalar, variables> const& lhs, scalar const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-template <typename scalar, int variables>
-polynomial<scalar, variables> operator+(scalar const& lhs, monomial<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-//-----------------------------------------------------------------------------
-// -
-//-----------------------------------------------------------------------------
-
-template <typename scalar, int variables>
-polynomial<scalar, variables> operator-(monomial<scalar, variables> const& lhs, monomial<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
-
-template <typename scalar, int variables>
-polynomial<scalar, variables> operator-(monomial<scalar, variables> const& lhs, scalar const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
-
-template <typename scalar, int variables>
-polynomial<scalar, variables> operator-(scalar const& lhs, monomial<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
 
 //=============================================================================
 // monomial_vector operations
@@ -852,66 +830,6 @@ monomial_vector<scalar, variables> operator+(monomial_vector<scalar, variables> 
     return x;
 }
 
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator+(monomial_vector<scalar, variables> const& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator+(monomial_vector<scalar, variables> const& lhs, monomial<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator+(monomial<scalar, variables> const& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator+(monomial_vector<scalar, variables> const& lhs, scalar const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator+(scalar const& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result += rhs;
-}
-
-//-----------------------------------------------------------------------------
-// +=
-//-----------------------------------------------------------------------------
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables>& operator+=(monomial_vector<scalar, variables>& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    lhs = lhs + rhs;
-    return lhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables>& operator+=(monomial_vector<scalar, variables>& lhs, monomial<scalar, variables> const& rhs)
-{
-    lhs = lhs + rhs;
-    return lhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables>& operator+=(monomial_vector<scalar, variables>& lhs, scalar const& rhs)
-{
-    lhs = lhs + rhs;
-    return lhs;
-}
-
 //-----------------------------------------------------------------------------
 // -
 //-----------------------------------------------------------------------------
@@ -924,76 +842,9 @@ monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> 
     return x;
 }
 
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> const& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> const& lhs, monomial<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator-(monomial<scalar, variables> const& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> const& lhs, scalar const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator-(scalar const& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result -= rhs;
-}
-
-//-----------------------------------------------------------------------------
-// -=
-//-----------------------------------------------------------------------------
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables>& operator-=(monomial_vector<scalar, variables>& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    lhs = lhs - rhs;
-    return lhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables>& operator-=(monomial_vector<scalar, variables>& lhs, monomial<scalar, variables> const& rhs)
-{
-    lhs = lhs - rhs;
-    return lhs;
-}
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables>& operator-=(monomial_vector<scalar, variables>& lhs, scalar const& rhs)
-{
-    lhs = lhs - rhs;
-    return lhs;
-}
-
 //-----------------------------------------------------------------------------
 // *=
 //-----------------------------------------------------------------------------
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables>& operator*=(monomial_vector<scalar, variables>& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    lhs = lhs * rhs;
-    return lhs;
-}
 
 template <typename scalar, int variables>
 monomial_vector<scalar, variables>& operator*=(monomial_vector<scalar, variables>& lhs, monomial<scalar, variables> const& rhs)
@@ -1012,13 +863,6 @@ monomial_vector<scalar, variables>& operator*=(monomial_vector<scalar, variables
 //-----------------------------------------------------------------------------
 // *
 //-----------------------------------------------------------------------------
-
-template <typename scalar, int variables>
-monomial_vector<scalar, variables> operator*(monomial_vector<scalar, variables> const& lhs, monomial_vector<scalar, variables> const& rhs)
-{
-    polynomial<scalar, variables> result = lhs;
-    return result *= rhs;
-}
 
 template <typename scalar, int variables>
 monomial_vector<scalar, variables> operator*(monomial_vector<scalar, variables> const& lhs, monomial<scalar, variables> const& rhs)
@@ -1276,51 +1120,53 @@ void sort(monomial_vector<scalar, variables>& monomials)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
 template <typename scalar, int variables>
-struct result_polynomial_division
+struct result_polynomial_reduce
 {
     polynomial<scalar, variables> quotient;
     polynomial<scalar, variables> remainder;
+    bool zero_divisor;
+    bool no_change;
 };
 
+template <typename generator, typename scalar, int variables>
+result_polynomial_reduce<scalar, variables> polynomial_reduce(monomial_vector<scalar, variables> const& sorted_dividend, monomial_vector<scalar, variables> const& sorted_divisor)
+{
+    result_polynomial_division<scalar, variables> result;
+    result.zero_divisor = true;
+    result.no_change = true;
+
+    if (sorted_divisor.size() <= 0) { return result; }
+    result.zero_divisor = false;
+
+    if (sorted_dividend() <= 0) { return result; }
+
+    monomial<scalar, variables> lm_a = sorted_dividend.back();
+    monomial<scalar, variables> lm_b = sorted_divisor.back();
+
+    monomial_indices<variables> exponent = lm_a.indices - lm_b.indices;
+    if (!is_integral(exponent)) { return result; }
+
+    monomial<scalar, variables> q = monomial<scalar, variables>(lm_a.coefficient / lm_b.coefficient, exponent);
+
+    result.quotient = q;
+    result.remainder = dividend - (q * divisor);
+    result.remainder[m_a.indices] = scalar(0);
+    result.no_change = false;
+
+    return result;
+}
+*/
+
+
+
+
+
+
+
+
+/*
 template <typename generator, typename scalar, int variables>
 result_polynomial_division<scalar, variables> polynomial_divide(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
 {
@@ -1336,7 +1182,7 @@ result_polynomial_division<scalar, variables> polynomial_divide(polynomial<scala
     {
         sort<generator>(v_a);
         monomial<scalar, variables> m_a = v_a.back();
-        
+
         monomial_indices<variables> exponent = m_a.indices - m_b.indices;
         if (!is_integral(exponent)) { break; }
         monomial<scalar, variables> q = monomial<scalar, variables>(m_a.coefficient / m_b.coefficient, exponent);
@@ -1348,6 +1194,60 @@ result_polynomial_division<scalar, variables> polynomial_divide(polynomial<scala
 
     return result;
 }
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //=============================================================================
 // conversions
