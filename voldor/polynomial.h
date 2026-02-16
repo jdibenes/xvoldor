@@ -3,7 +3,6 @@
 
 #include <Eigen/Eigen>
 #include <vector>
-#include <type_traits>
 
 //=============================================================================
 // add_vector
@@ -909,141 +908,6 @@ public:
     }
 };
 
-
-
-
-
-
-
-
-//=============================================================================
-// monomial_powers
-//=============================================================================
-
-
-
-
-
-/*
-
-    //-------------------------------------------------------------------------
-    // substitution
-    //-------------------------------------------------------------------------
-
-    polynomial_type substitute(std::array<bool, variables> unknowns, std::array<scalar, variables> values)
-    {
-        polynomial_type result;
-
-        std::array<std::vector<scalar>, variables> powers;
-        for (int i = 0; i < variables; ++i) { powers[i].push_back(1); }
-
-
-
-
-
-
-
-
-
-        for_each
-        (
-            [&](scalar const& coefficent, monomial_indices_type const& indices)
-            {
-                //monomial_indices_type target;
-                scalar v = scalar(1);
-                for (int i = 0; i < variables; ++i)
-                {
-                    if (unknowns[i]) {
-                        if (indices[i] >= powers[i].size())
-                        {
-                            for (int j = powers[i].size() - 1; j < indices[i]; ++j)
-                            {
-                                powers[i].push_back(powers[i][j] * values[i]);
-                            }
-                        }
-                        v *= powers[i][indices[i]];
-                    }
-                }
-                result[select(indices, unknowns, true)] += coefficent * v;
-            }
-        );
-        return result;
-
-
-
-    }
-
-
-
-*/
-
-template <typename scalar, int variables>
-class monomial_powers
-{
-public:
-    //-------------------------------------------------------------------------
-    // type
-    //-------------------------------------------------------------------------
-
-    using scalar_type = scalar;
-    enum { variables_length = variables };
-    using monomial_indices_type = monomial_indices<variables>;
-    using powers_type = std::array<std::vector<scalar>, variables>;
-    using values_type = std::array<scalar, variables>;
-    using cached_type = add_vector_type<std::tuple<scalar, bool>, variables>;
-    using monomial_powers_type = monomial_powers<scalar, variables>;
-
-private:
-    //-------------------------------------------------------------------------
-    // data
-    //-------------------------------------------------------------------------
-
-    powers_type powers;
-    values_type values;
-    cached_type cached;
-
-
-
-public:
-    //-------------------------------------------------------------------------
-    // constructors
-    //-------------------------------------------------------------------------
-    monomial_powers(values_type const& values) : values{ values }
-    {
-        for (int i = 0; i < variables; ++i) { powers[i].push_back(scalar(1)); }
-    }
-
-    scalar get(monomial_indices_type const& indices)
-    {
-        /*
-        for (int i = 0; i < variables; ++i) { if (indices[i] >= powers[i].size()) { for (int j = powers[i].size() - 1; j < indices[i]; ++j) { powers[i].push_back(powers[i][j] * values[i]); } } }
-        bool created = false;
-        scalar& c = at<0>(data, indices);
-        if (!created) { return c; }
-        c = scalar(1);
-        for (int i = 0; i < variables; ++i) { c *= powers[i][indices[i]]; }
-
-
-
-
-
-        return p;
-        */
-    }
-
-
-
-
-
-
-};
-
-
-
-
-
-
-
 //=============================================================================
 // remove_polynomial
 //=============================================================================
@@ -1068,93 +932,6 @@ using remove_polynomial_type = typename remove_polynomial<T>::type;
 template <typename T>
 using remove_polynomial_indices = typename remove_polynomial<T>::indices;
 
-//=============================================================================
-// flat access
-//=============================================================================
-
-
-
-
-
-/*
-polynomial<scalar, variables - 1> hide()
-    {
-
-    }
-
-    polynomial<scalar, variables + 1> unhide()
-    {
-
-    }
-*/
-
-
-
-
-
-
-
-
-
-
-
-//=============================================================================
-// coefficient operations
-//=============================================================================
-/*
-template <typename scalar, int variables>
-void flush_to_zero(polynomial<scalar, variables>& v, scalar const& tolerance)
-{
-    v.for_each([&](scalar& coefficient, monomial_indices<variables> const& indices) { flush_to_zero(coefficient, tolerance); });
-}
-
-template <typename scalar, int variables>
-void flush_to_zero(monomial_vector<scalar, variables>& v, scalar const& tolerance)
-{
-    for (auto& m : v) { flush_to_zero(m, tolerance); }
-}
-
-template <typename scalar, int variables>
-void flush_to_zero(monomial<scalar, variables>& v, scalar const& tolerance)
-{
-    flush_to_zero(v.coefficient, tolerance);
-}
-
-template <typename scalar>
-void flush_to_zero(scalar& v, scalar const& tolerance)
-{
-    if (abs(v) < tolerance) { v = scalar(0); }
-}
-
-template <typename scalar, int variables>
-auto norm(polynomial<scalar, variables> const& v)
-{
-    remove_polynomial_type<scalar> sos = remove_polynomial_type<scalar>(0);
-    v.for_each([&](scalar const& coefficient, monomial_indices<variables> const& indices) { sos += norm(coefficient); });
-    return sos;
-}
-
-template <typename scalar, int variables>
-auto norm(monomial_vector<scalar, variables> const& v)
-{
-    remove_polynomial_type<scalar> sos = remove_polynomial_type<scalar>(0);
-    for (auto const& m : v) { sos += norm(m); }
-    return sos;
-}
-
-template <typename scalar, int variables>
-auto norm(monomial<scalar, variables> const& v)
-{
-    remove_polynomial_type<scalar> sos = norm(v.coefficient);
-    return sos;
-}
-
-template <typename T>
-auto norm(T const& v)
-{
-    return T(std::norm(v));
-}
-*/
 //=============================================================================
 // grevlex_generator
 //=============================================================================
@@ -1293,6 +1070,14 @@ public:
 //=============================================================================
 
 template <typename generator, typename scalar, int variables>
+monomial<scalar, variables> leading_term(polynomial<scalar, variables> const& p)
+{
+    monomial<scalar, variables> result = p[{}];
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { if (generator::compare(result.indices, indices)) { result = monomial<scalar, variables>(coefficent, indices); } });
+    return result;
+}
+
+template <typename generator, typename scalar, int variables>
 bool compare(monomial<scalar, variables> const& a, monomial<scalar, variables> const& b)
 {
     return generator::compare(a.indices, b.indices);
@@ -1303,6 +1088,48 @@ void sort(monomial_vector<scalar, variables>& monomials)
 {
     std::sort(monomials.begin(), monomials.end(), compare<generator, scalar, variables>);
 }
+
+template <typename scalar, int variables>
+struct result_polynomial_reduce
+{
+    polynomial<scalar, variables> quotient;
+    polynomial<scalar, variables> remainder;
+    bool zero_divisor;
+    bool no_change;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1320,14 +1147,7 @@ void sort(monomial_vector<scalar, variables>& monomials)
 
 
 /*
-template <typename scalar, int variables>
-struct result_polynomial_reduce
-{
-    polynomial<scalar, variables> quotient;
-    polynomial<scalar, variables> remainder;
-    bool zero_divisor;
-    bool no_change;
-};
+
 
 template <typename generator, typename scalar, int variables>
 result_polynomial_reduce<scalar, variables> polynomial_reduce(monomial_vector<scalar, variables> const& sorted_dividend, monomial_vector<scalar, variables> const& sorted_divisor)
