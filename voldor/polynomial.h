@@ -302,12 +302,12 @@ public:
 
     bool is_constant() const
     {
-        return indices == monomial_indices_type{};
+        return !coefficient || indices == monomial_indices_type{};
     }
 
     bool is_homogeneous() const
     {
-        return !coefficient || !is_constant();
+        return !coefficient || indices != monomial_indices_type{};
     }
 };
 
