@@ -31,6 +31,9 @@ using add_vector_type = typename add_vector<T, n>::type;
 template <int variables>
 using monomial_indices = std::array<int, variables>;
 
+template <int variables>
+using monomial_mask = std::array<bool, variables>;
+
 //-----------------------------------------------------------------------------
 // +
 //-----------------------------------------------------------------------------
@@ -123,6 +126,22 @@ monomial_indices<variables> lcm(monomial_indices<variables> const& lhs, monomial
 {
     monomial_indices<variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = std::max(lhs[i], rhs[i]); }
+    return result;
+}
+
+template <int variables>
+monomial_mask<variables> complement(monomial_mask<variables> const& mask)
+{
+    monomial_mask<variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = !mask[i]; }
+    return result;
+}
+
+template <int variables>
+monomial_indices<variables> select(monomial_indices<variables> const indices, monomial_mask<variables> const& mask, bool complement)
+{
+    monomial_indices<variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = (mask[i] - complement) ? indices[i] : 0; }
     return result;
 }
 
@@ -441,37 +460,29 @@ private:
     // for_each
     //-------------------------------------------------------------------------
 
-    template <typename unpacked, typename callback_auto>
-    void for_each(unpacked& object, int level, monomial_indices_type& indices, callback_auto callback)
+    template <int level, typename unpacked, typename callback_auto>
+    void for_each(unpacked& object, monomial_indices_type& indices, callback_auto callback)
     {
-        if constexpr (std::is_same_v<unpacked, scalar>)
+        if constexpr (level >= variables)
         {
             if (object) { callback(object, static_cast<monomial_indices_type const&>(indices)); }
         }
         else
         {
-            for (int i = 0; i < object.size(); ++i)
-            {
-                indices[level] = i;
-                for_each(object[i], level + 1, indices, callback);
-            }
+            for (indices[level] = 0; indices[level] < object.size(); ++indices[level]) { for_each<level + 1>(object[indices[level]], indices, callback); }
         }
     }
 
-    template <typename unpacked, typename callback_auto>
-    void for_each(unpacked const& object, int level, monomial_indices_type& indices, callback_auto callback) const
+    template <int level, typename unpacked, typename callback_auto>
+    void for_each(unpacked const& object, monomial_indices_type& indices, callback_auto callback) const
     {
-        if constexpr (std::is_same_v<unpacked, scalar>)
+        if constexpr (level >= variables)
         {
             if (object) { callback(object, static_cast<monomial_indices_type const&>(indices)); }
         }
         else
         {
-            for (int i = 0; i < object.size(); ++i)
-            {
-                indices[level] = i;
-                for_each(object[i], level + 1, indices, callback);
-            }
+            for (indices[level] = 0; indices[level] < object.size(); ++indices[level]) { for_each<level + 1>(object[indices[level]], indices, callback); }
         }
     }
 
@@ -479,33 +490,31 @@ private:
     // at
     //-------------------------------------------------------------------------
 
-    template <typename unpacked>
-    auto& at(unpacked& object, int level, monomial_indices_type const& indices)
+    template <int level, typename unpacked>
+    auto& at(unpacked& object, monomial_indices_type const& indices)
     {
-        if constexpr (std::is_same_v<unpacked, scalar>)
+        if constexpr (level >= variables)
         {
             return object;
         }
         else
         {
-            int index = indices[level];
-            if (index >= object.size()) { object.resize(index + 1); }
-            return at(object[index], level + 1, indices);
+            if (indices[level] >= object.size()) { if constexpr (level == (variables - 1)) { object.resize(indices[level] + 1, zero); } else { object.resize(indices[level] + 1); } }
+            return at<level + 1>(object[indices[level]], indices);
         }
     }
 
-    template <typename unpacked>
-    auto const& at(unpacked const& object, int level, monomial_indices_type const& indices) const
+    template <int level, typename unpacked>
+    auto const& at(unpacked const& object, monomial_indices_type const& indices) const
     {
-        if constexpr (std::is_same_v<unpacked, scalar>)
+        if constexpr (level >= variables)
         {
             return object;
         }
         else
         {
-            int index = indices[level];
-            if (index >= object.size()) { return zero; }
-            return at(object[index], level + 1, indices);
+            if (indices[level] >= object.size()) { return zero; }
+            return at<level + 1>(object[indices[level]], indices);
         }
     }
 
@@ -547,24 +556,24 @@ public:
     void for_each(callback_auto callback)
     {
         monomial_indices_type scratch;
-        for_each(data, 0, scratch, callback);
+        for_each<0>(data, scratch, callback);
     }
 
     template <typename callback_auto>
     void for_each(callback_auto callback) const
     {
         monomial_indices_type scratch;
-        for_each(data, 0, scratch, callback);
+        for_each<0>(data, scratch, callback);
     }
 
     auto& operator[](monomial_indices_type const& indices)
     {
-        return at(data, 0, indices);
+        return at<0>(data, indices);
     }
 
     auto const& operator[](monomial_indices_type const& indices) const
     {
-        return at(data, 0, indices);
+        return at<0>(data, indices);
     }
 
     operator monomial_vector_type() const
@@ -900,33 +909,199 @@ public:
     }
 };
 
+
+
+
+
+
+
+
+//=============================================================================
+// monomial_powers
+//=============================================================================
+
+
+
+
+
+/*
+
+    //-------------------------------------------------------------------------
+    // substitution
+    //-------------------------------------------------------------------------
+
+    polynomial_type substitute(std::array<bool, variables> unknowns, std::array<scalar, variables> values)
+    {
+        polynomial_type result;
+
+        std::array<std::vector<scalar>, variables> powers;
+        for (int i = 0; i < variables; ++i) { powers[i].push_back(1); }
+
+
+
+
+
+
+
+
+
+        for_each
+        (
+            [&](scalar const& coefficent, monomial_indices_type const& indices)
+            {
+                //monomial_indices_type target;
+                scalar v = scalar(1);
+                for (int i = 0; i < variables; ++i)
+                {
+                    if (unknowns[i]) {
+                        if (indices[i] >= powers[i].size())
+                        {
+                            for (int j = powers[i].size() - 1; j < indices[i]; ++j)
+                            {
+                                powers[i].push_back(powers[i][j] * values[i]);
+                            }
+                        }
+                        v *= powers[i][indices[i]];
+                    }
+                }
+                result[select(indices, unknowns, true)] += coefficent * v;
+            }
+        );
+        return result;
+
+
+
+    }
+
+
+
+*/
+
+template <typename scalar, int variables>
+class monomial_powers
+{
+public:
+    //-------------------------------------------------------------------------
+    // type
+    //-------------------------------------------------------------------------
+
+    using scalar_type = scalar;
+    enum { variables_length = variables };
+    using monomial_indices_type = monomial_indices<variables>;
+    using powers_type = std::array<std::vector<scalar>, variables>;
+    using values_type = std::array<scalar, variables>;
+    using cached_type = add_vector_type<std::tuple<scalar, bool>, variables>;
+    using monomial_powers_type = monomial_powers<scalar, variables>;
+
+private:
+    //-------------------------------------------------------------------------
+    // data
+    //-------------------------------------------------------------------------
+
+    powers_type powers;
+    values_type values;
+    cached_type cached;
+
+
+
+public:
+    //-------------------------------------------------------------------------
+    // constructors
+    //-------------------------------------------------------------------------
+    monomial_powers(values_type const& values) : values{ values }
+    {
+        for (int i = 0; i < variables; ++i) { powers[i].push_back(scalar(1)); }
+    }
+
+    scalar get(monomial_indices_type const& indices)
+    {
+        /*
+        for (int i = 0; i < variables; ++i) { if (indices[i] >= powers[i].size()) { for (int j = powers[i].size() - 1; j < indices[i]; ++j) { powers[i].push_back(powers[i][j] * values[i]); } } }
+        bool created = false;
+        scalar& c = at<0>(data, indices);
+        if (!created) { return c; }
+        c = scalar(1);
+        for (int i = 0; i < variables; ++i) { c *= powers[i][indices[i]]; }
+
+
+
+
+
+        return p;
+        */
+    }
+
+
+
+
+
+
+};
+
+
+
+
+
+
+
 //=============================================================================
 // remove_polynomial
 //=============================================================================
 
-template <typename scalar>
+template <typename scalar, typename... Args>
 struct remove_polynomial
 {
     typedef scalar type;
-    enum { level = 0 };
-    enum { count = 0 };
+    typedef std::tuple<Args...> indices;
 };
 
-template <typename scalar, int variables>
-struct remove_polynomial<polynomial<scalar, variables>>
+template <typename scalar, int variables, typename... Args>
+struct remove_polynomial<polynomial<scalar, variables>, Args...>
 {
-    typedef typename remove_polynomial<scalar>::type type;
-    enum { level = 1 + remove_polynomial<scalar>::level };
-    enum { count = variables + remove_polynomial<scalar>::count };
+    typedef typename remove_polynomial<scalar, Args..., monomial_indices<variables>>::type type;
+    typedef typename remove_polynomial<scalar, Args..., monomial_indices<variables>>::indices indices;
 };
 
 template <typename T>
 using remove_polynomial_type = typename remove_polynomial<T>::type;
 
+template <typename T>
+using remove_polynomial_indices = typename remove_polynomial<T>::indices;
+
+//=============================================================================
+// flat access
+//=============================================================================
+
+
+
+
+
+/*
+polynomial<scalar, variables - 1> hide()
+    {
+
+    }
+
+    polynomial<scalar, variables + 1> unhide()
+    {
+
+    }
+*/
+
+
+
+
+
+
+
+
+
+
+
 //=============================================================================
 // coefficient operations
 //=============================================================================
-
+/*
 template <typename scalar, int variables>
 void flush_to_zero(polynomial<scalar, variables>& v, scalar const& tolerance)
 {
@@ -951,6 +1126,35 @@ void flush_to_zero(scalar& v, scalar const& tolerance)
     if (abs(v) < tolerance) { v = scalar(0); }
 }
 
+template <typename scalar, int variables>
+auto norm(polynomial<scalar, variables> const& v)
+{
+    remove_polynomial_type<scalar> sos = remove_polynomial_type<scalar>(0);
+    v.for_each([&](scalar const& coefficient, monomial_indices<variables> const& indices) { sos += norm(coefficient); });
+    return sos;
+}
+
+template <typename scalar, int variables>
+auto norm(monomial_vector<scalar, variables> const& v)
+{
+    remove_polynomial_type<scalar> sos = remove_polynomial_type<scalar>(0);
+    for (auto const& m : v) { sos += norm(m); }
+    return sos;
+}
+
+template <typename scalar, int variables>
+auto norm(monomial<scalar, variables> const& v)
+{
+    remove_polynomial_type<scalar> sos = norm(v.coefficient);
+    return sos;
+}
+
+template <typename T>
+auto norm(T const& v)
+{
+    return T(std::norm(v));
+}
+*/
 //=============================================================================
 // grevlex_generator
 //=============================================================================
