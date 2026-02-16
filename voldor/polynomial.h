@@ -299,6 +299,16 @@ public:
     {
         return !((*this) == other);
     }
+
+    bool is_constant() const
+    {
+        return indices == monomial_indices_type{};
+    }
+
+    bool is_homogeneous() const
+    {
+        return !coefficient || !is_constant();
+    }
 };
 
 //=============================================================================
@@ -486,6 +496,38 @@ private:
     }
 
     //-------------------------------------------------------------------------
+    // do_while
+    //-------------------------------------------------------------------------
+
+    template <int level, typename unpacked, typename callback_auto>
+    bool do_while(unpacked& object, monomial_indices_type& indices, callback_auto callback)
+    {
+        if constexpr (level >= variables)
+        {
+            if (object) { return callback(object, static_cast<monomial_indices_type const&>(indices)); }
+        }
+        else
+        {
+            for (indices[level] = 0; indices[level] < object.size(); ++indices[level]) { if (!do_while<level + 1>(object[indices[level]], indices, callback)) { return false; } }
+        }
+        return true;
+    }
+
+    template <int level, typename unpacked, typename callback_auto>
+    bool do_while(unpacked const& object, monomial_indices_type& indices, callback_auto callback) const
+    {
+        if constexpr (level >= variables)
+        {
+            if (object) { return callback(object, static_cast<monomial_indices_type const&>(indices)); }
+        }
+        else
+        {
+            for (indices[level] = 0; indices[level] < object.size(); ++indices[level]) { if (!do_while<level + 1>(object[indices[level]], indices, callback)) { return false; } }
+        }
+        return true;
+    }
+
+    //-------------------------------------------------------------------------
     // at
     //-------------------------------------------------------------------------
 
@@ -498,7 +540,17 @@ private:
         }
         else
         {
-            if (indices[level] >= object.size()) { if constexpr (level == (variables - 1)) { object.resize(indices[level] + 1, zero); } else { object.resize(indices[level] + 1); } }
+            if (indices[level] >= object.size())
+            {
+                if constexpr (level == (variables - 1))
+                {
+                    object.resize(indices[level] + 1, zero); 
+                }
+                else
+                {
+                    object.resize(indices[level] + 1);
+                }
+            }
             return at<level + 1>(object[indices[level]], indices);
         }
     }
@@ -563,6 +615,20 @@ public:
     {
         monomial_indices_type scratch;
         for_each<0>(data, scratch, callback);
+    }
+
+    template <typename callback_auto>
+    bool do_while(callback_auto callback)
+    {
+        monomial_indices_type scratch;
+        return do_while<0>(data, scratch, callback);
+    }
+
+    template <typename callback_auto>
+    bool do_while(callback_auto callback) const
+    {
+        monomial_indices_type scratch;
+        return do_while<0>(data, scratch, callback);
     }
 
     auto& operator[](monomial_indices_type const& indices)
@@ -884,9 +950,7 @@ public:
 
     explicit operator bool() const
     {
-        bool set = false;
-        for_each([&](scalar const& coefficient, monomial_indices_type const& indices) { set = true; });
-        return set;
+        return !do_while([&](scalar const& coefficient, monomial_indices_type const& indices) { return false; });
     }
 
     bool operator!() const
@@ -905,6 +969,16 @@ public:
     bool operator!=(polynomial_type const& other) const
     {
         return !((*this) == other);
+    }
+
+    bool is_constant() const
+    {
+        return do_while([&](scalar const& coefficient, monomial_indices_type const& indices) { return indices == monomial_indices_type{}; });
+    }
+
+    bool is_homogeneous() const
+    {
+        return !(*this)[{}];
     }
 };
 
@@ -1089,216 +1163,65 @@ void sort(monomial_vector<scalar, variables>& monomials)
     std::sort(monomials.begin(), monomials.end(), compare<generator, scalar, variables>);
 }
 
+template <typename generator, typename scalar, int variables>
+polynomial<scalar, variables> s_polynomial(polynomial<scalar, variables> const& f, polynomial<scalar, variables> const& g)
+{
+    monomial_indices<variables> gcd_fg = gcd(f, g);
+
+    monomial<scalar, variables> lt_f = leading_term<generator>(f);
+    monomial<scalar, variables> lt_g = leading_term<generator>(g);
+
+    return (monomial<scalar, variables>(lt_g.coefficient, lt_g.indices - gcd_fg) * f) - (monomial<scalar, variables>(lt_f.coefficient, lt_f.indices - gcd_fg) * g);
+}
+
 template <typename scalar, int variables>
 struct result_polynomial_reduce
 {
     polynomial<scalar, variables> quotient;
     polynomial<scalar, variables> remainder;
     bool zero_divisor;
-    bool no_change;
+    bool zero_dividend;
+    bool no_multiples;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
 template <typename generator, typename scalar, int variables>
-result_polynomial_reduce<scalar, variables> polynomial_reduce(monomial_vector<scalar, variables> const& sorted_dividend, monomial_vector<scalar, variables> const& sorted_divisor)
+result_polynomial_reduce<scalar, variables> polynomial_lead_reduce(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
 {
-    result_polynomial_division<scalar, variables> result;
-    result.zero_divisor = true;
-    result.no_change = true;
+    monomial<scalar, variables> lt_b = leading_term<generator>(divisor);
+    if (!lt_b) { return { 0, 0, true, false, false }; }
 
-    if (sorted_divisor.size() <= 0) { return result; }
-    result.zero_divisor = false;
+    monomial<scalar, variables> lt_a = leading_term<generator>(dividend);
+    if (!lt_a) { return { 0, 0, false, true, false }; }
 
-    if (sorted_dividend() <= 0) { return result; }
+    monomial<scalar, variables> q = monomial(lt_a.coefficient, lt_a.indices - lt_b.indices);
+    if (!is_integral(q.indices)) { return { 0, dividend, false, false, true }; }
 
-    monomial<scalar, variables> lm_a = sorted_dividend.back();
-    monomial<scalar, variables> lm_b = sorted_divisor.back();
-
-    monomial_indices<variables> exponent = lm_a.indices - lm_b.indices;
-    if (!is_integral(exponent)) { return result; }
-
-    monomial<scalar, variables> q = monomial<scalar, variables>(lm_a.coefficient / lm_b.coefficient, exponent);
-
-    result.quotient = q;
-    result.remainder = dividend - (q * divisor);
-    result.remainder[m_a.indices] = scalar(0);
-    result.no_change = false;
-
-    return result;
+    return { q, (lt_b.coefficient * dividend) - (q * divisor), false, false, false };
 }
-*/
 
-
-
-
-
-
-
-
-/*
 template <typename generator, typename scalar, int variables>
-result_polynomial_division<scalar, variables> polynomial_divide(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
+result_polynomial_reduce<scalar, variables> polynomial_reduce(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
 {
-    result_polynomial_division<scalar, variables> result;
-    result.remainder = dividend;
+    monomial<scalar, variables> lt_b = leading_term<generator>(divisor);
+    if (!lt_b) { return { 0, 0, true, false, false }; }
 
-    monomial_vector<scalar, variables> v_b = divisor;
-    if (v_b.size() <= 0) { return result; }
-    sort<generator>(v_b);
-    monomial<scalar, variables> m_b = v_b.back();
+    monomial_vector<scalar, variables> v_a = dividend;
+    if (v_a.size() <= 0) { return { 0, 0, false, true, false }; }
 
-    for (monomial_vector<scalar, variables> v_a = result.remainder; v_a.size() > 0; v_a = result.remainder)
+    sort<generator>(v_a);
+
+    for (auto iterator = v_a.rbegin(); iterator != v_a.rend(); ++iterator)
     {
-        sort<generator>(v_a);
-        monomial<scalar, variables> m_a = v_a.back();
-
-        monomial_indices<variables> exponent = m_a.indices - m_b.indices;
-        if (!is_integral(exponent)) { break; }
-        monomial<scalar, variables> q = monomial<scalar, variables>(m_a.coefficient / m_b.coefficient, exponent);
-
-        result.quotient += q;
-        result.remainder -= q * divisor;
-        result.remainder[m_a.indices] = scalar(0);
+        monomial<scalar, variables> q = monomial((*iterator).coefficient, (*iterator).indices - lt_b.indices);
+        if (is_integral(q.indices)) { return { q, (lt_b.coefficient * dividend) - (q * divisor), false, false, false }; }
     }
 
-    return result;
+    return { 0, dividend, false, false, true };
 }
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //=============================================================================
 // conversions
 //=============================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
