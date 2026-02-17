@@ -129,7 +129,7 @@ monomial_indices<variables> lcm(monomial_indices<variables> const& lhs, monomial
 }
 
 template <int variables>
-monomial_mask<variables> complement(monomial_mask<variables> const& mask)
+monomial_mask<variables> complement(monomial_mask<variables> const& mask) // TODO: as operator
 {
     monomial_mask<variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = !mask[i]; }
@@ -141,6 +141,24 @@ monomial_indices<variables> select(monomial_indices<variables> const indices, mo
 {
     monomial_indices<variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = (mask[i] - complement) ? indices[i] : 0; }
+    return result;
+}
+
+template <int variables>
+monomial_indices<variables - 1> split(monomial_indices<variables> const& indices, int index)
+{
+    monomial_indices<variables - 1> result;
+    int j = 0;
+    for (int i = 0; i < variables; ++i) { if (i != index) { result[j++] = indices[i]; } }
+    return result;
+}
+
+template <int variables>
+monomial_indices<variables + 1> merge(monomial_indices<variables> const& indices, int index, monomial_indices<1> const& pick)
+{
+    monomial_indices<variables + 1> result;
+    int j = 0;
+    for (int i = 0; i < variables; ++i) { if (i != index) { result[i] = indices[j++]; } else { result[i] = pick[0]; } }
     return result;
 }
 
@@ -309,6 +327,11 @@ public:
     {
         return !coefficient || indices != monomial_indices_type{};
     }
+
+    bool is_multiple(monomial_indices_type const& f) const
+    {
+        return is_integral(indices - f);
+    }
 };
 
 //=============================================================================
@@ -430,6 +453,18 @@ monomial_vector<scalar, variables> operator%(monomial_vector<scalar, variables> 
 {
     monomial_vector<scalar, variables> result = lhs;
     return result %= rhs;
+}
+
+//-----------------------------------------------------------------------------
+// compare
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int variables>
+monomial_vector<scalar, variables> find_multiples(monomial_vector<scalar, variables> const& v, monomial_indices<variables> const& f)
+{
+    monomial_vector<scalar, variables> multiples;
+    for (auto const& m : v) { if (m.is_multiple(f)) { multiples.push_back(m); } }
+    return multiples;
 }
 
 //=============================================================================
@@ -960,10 +995,7 @@ public:
 
     bool operator==(polynomial_type const& other) const
     {
-        bool set = true;
-        for_each([&](scalar const& coefficient, monomial_indices_type const& indices) { set = set && (other[indices] == coefficient); });
-        other.for_each([&](scalar const& coefficient, monomial_indices_type const& indices) { set = set && ((*this)[indices] == coefficient); });
-        return set;
+        return do_while([&](scalar const& coefficient, monomial_indices_type const& indices) { return other[indices] == coefficient; }) && other.do_while([&](scalar const& coefficient, monomial_indices_type const& indices) { return (*this)[indices] == coefficient; });
     }
 
     bool operator!=(polynomial_type const& other) const
@@ -981,6 +1013,14 @@ public:
         return !(*this)[{}];
     }
 };
+
+template <typename scalar, int variables>
+monomial_vector<scalar, variables> find_multiples(polynomial<scalar, variables> const& p, monomial_indices<variables> const& f)
+{
+    monomial_vector<scalar, variables> multiples;
+    p.for_each([&](scalar const& coefficient, monomial_indices<variables> const& indices) { if (is_integral(indices - f)) { multiples.push_back({ coefficient, indices }); } });
+    return multiples;
+}
 
 //=============================================================================
 // remove_polynomial
@@ -1147,21 +1187,194 @@ template <typename generator, typename scalar, int variables>
 monomial<scalar, variables> leading_term(polynomial<scalar, variables> const& p)
 {
     monomial<scalar, variables> result = p[{}];
-    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { if (generator::compare(result.indices, indices)) { result = monomial<scalar, variables>(coefficent, indices); } });
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { if (generator::compare(result.indices, indices)) { result = { coefficent, indices }; } });
     return result;
 }
 
 template <typename generator, typename scalar, int variables>
-bool compare(monomial<scalar, variables> const& a, monomial<scalar, variables> const& b)
+bool compare(monomial<scalar, variables> const& a, monomial<scalar, variables> const& b) // TODO: REMOVE
 {
     return generator::compare(a.indices, b.indices);
 }
 
 template <typename generator, typename scalar, int variables>
-void sort(monomial_vector<scalar, variables>& monomials)
+void sort(monomial_vector<scalar, variables>& monomials, bool descending)
 {
-    std::sort(monomials.begin(), monomials.end(), compare<generator, scalar, variables>);
+    std::sort(monomials.begin(), monomials.end(), [&](monomial<scalar, variables> const& a, monomial<scalar, variables> const& b) { return generator::compare(a.indices, b.indices) - descending; });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+template <typename scalar, int variables>
+polynomial<polynomial<scalar, 1>, variables - 1> hide_in(polynomial<scalar, variables> const& p, int index)
+{
+    polynomial<polynomial<scalar, 1>, variables - 1> result;
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[split(indices, index)][indices[index]] += coefficent; });
+    return result;
+}
+
+template <typename scalar, int variables>
+polynomial<polynomial<scalar, variables - 1>, 1> hide_out(polynomial<scalar, variables> const& p, int index)
+{
+    polynomial<polynomial<scalar, variables - 1>, 1> result;
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[indices[index]][split(indices, index)] += coefficent; });
+    return result;
+}
+
+template <typename scalar, int variables>
+polynomial<scalar, variables + 1> unhide_in(polynomial<polynomial<scalar, 1>, variables> const& p, int index)
+{
+    polynomial<scalar, variables + 1> result;
+    p.for_each([&](polynomial<scalar, 1> const& coefficent_a, monomial_indices<variables> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<1> const& indices_b) { result[merge(indices_a, index, indices_b)] += coefficient_b; }); });
+    return result;
+}
+
+template <typename scalar, int variables>
+polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, variables>, 1> const& p, int index)
+{
+    polynomial<scalar, variables + 1> result;
+    p.for_each([&](polynomial<scalar, 1> const& coefficent_a, monomial_indices<1> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<variables> const& indices_b) { result[merge(indices_b, index, indices_a)] += coefficient_b; }); });
+    return result;
+}
+
+template<typename scalar, int variables>
+polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
+{
+    polynomial<scalar, variables> result;
+    monomial_powers<scalar, variables> powers(values);
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[select(indices, mask, true)] += coefficent * powers[select(indices, mask, false)]; });
+    return result;
+}
+
+
+
+template <typename scalar, int variables>
+class monomial_powers
+{
+public:
+    //-------------------------------------------------------------------------
+    // type
+    //-------------------------------------------------------------------------
+
+    using scalar_type = scalar;
+    enum { variables_length = variables };
+    using monomial_indices_type = monomial_indices<variables>;
+    using powers_type = std::array<std::vector<scalar>, variables>;
+    using values_type = std::array<scalar, variables>;
+    using cached_type = add_vector_type<std::tuple<scalar, bool>, variables>;
+    using monomial_powers_type = monomial_powers<scalar, variables>;
+
+private:
+    //-------------------------------------------------------------------------
+    // data
+    //-------------------------------------------------------------------------
+
+    powers_type powers;
+    values_type values;
+    cached_type cached;
+
+    //-------------------------------------------------------------------------
+    // at
+    //-------------------------------------------------------------------------
+
+    template <int level, typename unpacked>
+    auto& at(unpacked& object, monomial_indices_type const& indices)
+    {
+        if constexpr (level >= variables)
+        {
+            return object;
+        }
+        else
+        {
+            if (indices[level] >= object.size()) { object.resize(indices[level] + 1); }
+            return at<level + 1>(object[indices[level]], indices);
+        }
+    }
+
+public:
+    //-------------------------------------------------------------------------
+    // constructors
+    //-------------------------------------------------------------------------
+
+    monomial_powers(values_type const& values) : values{ values }
+    {
+        for (int i = 0; i < variables; ++i) { powers[i].push_back({ 1 }); }
+    }
+
+    auto const& operator[](monomial_indices_type const& indices)
+    {
+        std::tuple& stored = at<0>(cached, indices);
+        scalar& value = std::get<0>(stored);
+        bool& valid = std::get<1>(stored);
+        if (valid) { return value; }
+        value = 1;
+        for (int i = 0; i < variables; ++i)
+        {
+            if (indices[i] >= powers[i].size()) { for (int j = powers[i].size() - 1; j < indices[i]; ++j) { powers[i].push_back(powers[i][j] * values[i]); } }
+            if (indices[i] > 0) { value *= powers[i][indices[i]]; }
+        }
+        valid = true;
+        return value;
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 template <typename generator, typename scalar, int variables>
 polynomial<scalar, variables> s_polynomial(polynomial<scalar, variables> const& f, polynomial<scalar, variables> const& g)
@@ -1174,6 +1387,12 @@ polynomial<scalar, variables> s_polynomial(polynomial<scalar, variables> const& 
     return (monomial<scalar, variables>(lt_g.coefficient, lt_g.indices - gcd_fg) * f) - (monomial<scalar, variables>(lt_f.coefficient, lt_f.indices - gcd_fg) * g);
 }
 
+
+
+
+
+
+
 template <typename scalar, int variables>
 struct result_polynomial_reduce
 {
@@ -1185,7 +1404,7 @@ struct result_polynomial_reduce
 };
 
 template <typename generator, typename scalar, int variables>
-result_polynomial_reduce<scalar, variables> polynomial_lead_reduce(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
+result_polynomial_reduce<scalar, variables> polynomial_reduce_lead(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
 {
     monomial<scalar, variables> lt_b = leading_term<generator>(divisor);
     if (!lt_b) { return { 0, 0, true, false, false }; }
@@ -1210,18 +1429,20 @@ result_polynomial_reduce<scalar, variables> polynomial_reduce(polynomial<scalar,
 
     sort<generator>(v_a);
 
-    for (auto iterator = v_a.rbegin(); iterator != v_a.rend(); ++iterator)
-    {
-        monomial<scalar, variables> q = monomial((*iterator).coefficient, (*iterator).indices - lt_b.indices);
-        if (is_integral(q.indices)) { return { q, (lt_b.coefficient * dividend) - (q * divisor), false, false, false }; }
-    }
+    monomial_indices<variables> exponent;
+    int i;
+    for (i = v_a.size() - 1; (i >= 0) && !is_integral(exponent = v_a[i] - lt_b.indices); --i);
+    if (i < 0) { return { 0, dividend, false, false, true }; }
+    monomial<scalar, variables> q = monomial(v_a[i].coefficient, exponent);
 
-    return { 0, dividend, false, false, true };
+    return { q, (lt_b.coefficient * dividend) - (q * divisor), false, false, false };
 }
 
 //=============================================================================
 // conversions
 //=============================================================================
+
+
 
 
 
