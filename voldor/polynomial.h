@@ -1255,6 +1255,10 @@ public:
     }
 };
 
+//-----------------------------------------------------------------------------
+// process
+//-----------------------------------------------------------------------------
+
 template <typename scalar, int variables>
 monomial_vector<scalar, variables> find_multiples(polynomial<scalar, variables> const& p, monomial_indices<variables> const& f)
 {
@@ -1365,14 +1369,26 @@ template <int variables>
 class grevlex_generator
 {
 public:
+    //-------------------------------------------------------------------------
+    // type
+    //-------------------------------------------------------------------------
+
     enum { variables_length = variables};
     using monomial_indices_type = monomial_indices<variables>;
 
 private:
+    //-------------------------------------------------------------------------
+    // data
+    //-------------------------------------------------------------------------
+
     monomial_indices_type indices;
     int power;
     int sum;
     int index;
+
+    //-------------------------------------------------------------------------
+    // constructors
+    //-------------------------------------------------------------------------
 
     grevlex_generator(monomial_indices_type const& start_indices, int start_index)
     {
@@ -1394,6 +1410,10 @@ public:
     grevlex_generator(monomial_indices_type const& start_indices) : grevlex_generator(start_indices, ravel(start_indices))
     {
     }
+
+    //-------------------------------------------------------------------------
+    // sequence
+    //-------------------------------------------------------------------------
 
     grevlex_generator& next()
     {
@@ -1450,6 +1470,10 @@ public:
         return *this;
     }
 
+    //-------------------------------------------------------------------------
+    // status
+    //-------------------------------------------------------------------------
+
     monomial_indices_type const& current_indices() const
     {
         return indices;
@@ -1464,6 +1488,10 @@ public:
     {
         return index;
     }
+
+    //-------------------------------------------------------------------------
+    // compare
+    //-------------------------------------------------------------------------
 
     static bool compare(monomial_indices_type const& a, monomial_indices_type const& b)
     {
@@ -1581,3 +1609,10 @@ Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(Eigen
     for (int i = 0; i < input_cols; ++i) { for (int j = 0; j < input_rows; ++j) { dst.row((i * input_rows) + j) = matrix_from_polynomial_grevlex<_matrix_scalar, 1, _cols>(src(j, i), 1, cols); } }
     return dst;
 }
+
+//=============================================================================
+// matrix operations
+//=============================================================================
+
+
+
