@@ -266,6 +266,93 @@ monomial_indices<variables> select(monomial_indices<variables> const indices, mo
 }
 
 //=============================================================================
+// monomial_powers
+//=============================================================================
+
+template <typename scalar, int variables>
+class monomial_powers
+{
+public:
+    //-------------------------------------------------------------------------
+    // type
+    //-------------------------------------------------------------------------
+
+    using scalar_type = scalar;
+    enum { variables_length = variables };
+    using monomial_indices_type = monomial_indices<variables>;
+    using powers_type = std::array<std::vector<scalar>, variables>;
+    using values_type = std::array<scalar, variables>;
+    using cached_type = add_vector_type<std::tuple<scalar, bool>, variables>;
+    using monomial_powers_type = monomial_powers<scalar, variables>;
+
+private:
+    //-------------------------------------------------------------------------
+    // data
+    //-------------------------------------------------------------------------
+
+    powers_type powers;
+    values_type values;
+    cached_type cached;
+
+    //-------------------------------------------------------------------------
+    // at
+    //-------------------------------------------------------------------------
+
+    template <int level, typename unpacked>
+    auto& at(unpacked& object, monomial_indices_type const& indices)
+    {
+        if constexpr (level >= variables)
+        {
+            return object;
+        }
+        else
+        {
+            if (indices[level] >= object.size())
+            {
+                if constexpr (level == (variables - 1))
+                {
+                    object.resize(indices[level] + 1, std::make_tuple<scalar, bool>({ 1 }, false));
+                }
+                else
+                {
+                    object.resize(indices[level] + 1);
+                }
+            }
+            return at<level + 1>(object[indices[level]], indices);
+        }
+    }
+
+public:
+    //-------------------------------------------------------------------------
+    // constructors
+    //-------------------------------------------------------------------------
+
+    monomial_powers(values_type const& values) : values{ values }
+    {
+        for (int i = 0; i < variables; ++i) { powers[i].push_back({ 1 }); }
+    }
+
+    //-------------------------------------------------------------------------
+    // access
+    //-------------------------------------------------------------------------
+
+    auto const& operator[](monomial_indices_type const& indices)
+    {
+        std::tuple<scalar, bool>& stored = at<0>(cached, indices);
+        scalar& value = std::get<0>(stored);
+        bool& valid = std::get<1>(stored);
+        if (valid) { return value; }
+        for (int i = 0; i < variables; ++i)
+        {
+            if (indices[i] >= powers[i].size()) { for (int j = static_cast<int>(powers[i].size()) - 1; j < indices[i]; ++j) { powers[i].push_back(powers[i][j] * values[i]); } }
+            if (indices[i] > 0) { value *= powers[i][indices[i]]; }
+        }
+        valid = true;
+        return value;
+    }
+};
+
+//=============================================================================
 // monomial
 //=============================================================================
 
@@ -1208,6 +1295,15 @@ polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, varia
     return result;
 }
 
+template<typename scalar, int variables>
+polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
+{
+    polynomial<scalar, variables> result;
+    monomial_powers<scalar, variables> powers(values);
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[select(indices, mask, true)] += coefficent * powers[select(indices, mask, false)]; });
+    return result;
+}
+
 //=============================================================================
 // remove_polynomial
 //=============================================================================
@@ -1412,91 +1508,6 @@ void sort(monomial_vector<scalar, variables>& monomials, bool descending)
 
 
 
-
-
-/*
-
-template<typename scalar, int variables>
-polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
-{
-    polynomial<scalar, variables> result;
-    monomial_powers<scalar, variables> powers(values);
-    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[select(indices, mask, true)] += coefficent * powers[select(indices, mask, false)]; });
-    return result;
-}
-
-
-
-template <typename scalar, int variables>
-class monomial_powers
-{
-public:
-    //-------------------------------------------------------------------------
-    // type
-    //-------------------------------------------------------------------------
-
-    using scalar_type = scalar;
-    enum { variables_length = variables };
-    using monomial_indices_type = monomial_indices<variables>;
-    using powers_type = std::array<std::vector<scalar>, variables>;
-    using values_type = std::array<scalar, variables>;
-    using cached_type = add_vector_type<std::tuple<scalar, bool>, variables>;
-    using monomial_powers_type = monomial_powers<scalar, variables>;
-
-private:
-    //-------------------------------------------------------------------------
-    // data
-    //-------------------------------------------------------------------------
-
-    powers_type powers;
-    values_type values;
-    cached_type cached;
-
-    //-------------------------------------------------------------------------
-    // at
-    //-------------------------------------------------------------------------
-
-    template <int level, typename unpacked>
-    auto& at(unpacked& object, monomial_indices_type const& indices)
-    {
-        if constexpr (level >= variables)
-        {
-            return object;
-        }
-        else
-        {
-            if (indices[level] >= object.size()) { object.resize(indices[level] + 1); }
-            return at<level + 1>(object[indices[level]], indices);
-        }
-    }
-
-public:
-    //-------------------------------------------------------------------------
-    // constructors
-    //-------------------------------------------------------------------------
-
-    monomial_powers(values_type const& values) : values{ values }
-    {
-        for (int i = 0; i < variables; ++i) { powers[i].push_back({ 1 }); }
-    }
-
-    auto const& operator[](monomial_indices_type const& indices)
-    {
-        std::tuple& stored = at<0>(cached, indices);
-        scalar& value = std::get<0>(stored);
-        bool& valid = std::get<1>(stored);
-        if (valid) { return value; }
-        value = 1;
-        for (int i = 0; i < variables; ++i)
-        {
-            if (indices[i] >= powers[i].size()) { for (int j = powers[i].size() - 1; j < indices[i]; ++j) { powers[i].push_back(powers[i][j] * values[i]); } }
-            if (indices[i] > 0) { value *= powers[i][indices[i]]; }
-        }
-        valid = true;
-        return value;
-    }
-};
-*/
 
 
 
