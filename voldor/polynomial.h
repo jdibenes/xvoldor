@@ -1332,6 +1332,35 @@ using remove_polynomial_indices = typename remove_polynomial<T>::indices;
 // grevlex_generator
 //=============================================================================
 
+/*
+* grevlex example for 3 variables (x, y, z) up to total degree 3
+*
+*index indices monomial
+*    0 [0,0,0] 1
+*
+*    1 [1,0,0] x
+*    2 [0,1,0] y
+*    3 [0,0,1] z
+*
+*    4 [2,0,0] x^2
+*    5 [1,1,0] x*y
+*    6 [1,0,1] x*z
+*    7 [0,2,0] y^2
+*    8 [0,1,1] y*z
+*    9 [0,0,2] z^2
+*
+*   10 [3,0,0] x^3
+*   11 [2,1,0] x^2*y
+*   12 [2,0,1] x^2*z
+*   13 [1,2,0] x*y^2
+*   14 [1,1,1] x*y*z
+*   15 [1,0,2] x*z^2
+*   16 [0,3,0] y^3
+*   17 [0,2,1] y^2*z
+*   18 [0,1,2] y*z^2
+*   19 [0,0,3] z^3
+*/
+
 template <int variables>
 class grevlex_generator
 {
@@ -1508,37 +1537,33 @@ result_reduce<scalar, variables> reduce(polynomial<scalar, variables> const& div
 }
 
 //=============================================================================
-// conversions
+// matrix of polynomials
 //=============================================================================
 
-
-
-
-
-template <typename _scalar, int variables, typename A>
-polynomial<_scalar, variables> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
+template <typename scalar, int variables, typename A>
+polynomial<scalar, variables> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
 {
-    polynomial<_scalar, variables> dst;
+    polynomial<scalar, variables> dst;
     grevlex_generator<variables> gg;
     for (int i = 0; i < src.size(); ++i) { dst[gg.next().current_indices()] = src(i); }
     return dst;
 }
 
-template <typename _scalar, int variables, int _rows, int _cols, typename A>
-Eigen::Matrix<polynomial<_scalar, variables>, _rows, _cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int rows = _rows, int cols = _cols)
+template <typename scalar, int variables, int _rows, int _cols, typename A>
+Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int rows = _rows, int cols = _cols)
 {
-    Eigen::Matrix<polynomial<_scalar, variables>, _rows, _cols> dst(rows, cols);
-    for (int i = 0; i < cols; ++i) { for (int j = 0; j < rows; ++j) { dst(j, i) = matrix_to_polynomial_grevlex<_scalar, variables>(M.row((i * rows) + j)); } }
+    Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> dst(rows, cols);
+    for (int i = 0; i < cols; ++i) { for (int j = 0; j < rows; ++j) { dst(j, i) = matrix_to_polynomial_grevlex<scalar, variables>(M.row((i * rows) + j)); } }
     return dst;
 }
 
-template <typename _matrix_scalar, int _rows, int _cols, typename _scalar, int variables>
-Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polynomial<_scalar, variables> const& src, int rows = _rows, int cols = _cols)
+template <typename _matrix_scalar, int _rows, int _cols, typename scalar, int variables>
+Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polynomial<scalar, variables> const& src, int rows = _rows, int cols = _cols)
 {
-    Eigen::Matrix<_matrix_scalar, _rows, _cols> dst = Eigen::Matrix<_matrix_scalar, _rows, _cols>::Zero(rows, cols); // ZEROS!??? CHECK INITIALIZATIONS
+    Eigen::Matrix<_matrix_scalar, _rows, _cols> dst = Eigen::Matrix<_matrix_scalar, _rows, _cols>::Zero(rows, cols);
     src.for_each
     (
-        [&](_scalar const& element, monomial_indices<variables> const& indices)
+        [&](scalar const& element, monomial_indices<variables> const& indices)
         {
             int i = grevlex_generator<variables>::ravel(indices);
             if (i < dst.size()) { dst(i) = element; }
@@ -1556,32 +1581,3 @@ Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(Eigen
     for (int i = 0; i < input_cols; ++i) { for (int j = 0; j < input_rows; ++j) { dst.row((i * input_rows) + j) = matrix_from_polynomial_grevlex<_matrix_scalar, 1, _cols>(src(j, i), 1, cols); } }
     return dst;
 }
-
-/*
-grevlex example for 3 variables (x, y, z) up to total degree 3
-
-index indices monomial
-    0 [0,0,0] 1
-
-    1 [1,0,0] x
-    2 [0,1,0] y
-    3 [0,0,1] z
-
-    4 [2,0,0] x^2
-    5 [1,1,0] x*y
-    6 [1,0,1] x*z
-    7 [0,2,0] y^2
-    8 [0,1,1] y*z
-    9 [0,0,2] z^2
-
-   10 [3,0,0] x^3
-   11 [2,1,0] x^2*y
-   12 [2,0,1] x^2*z
-   13 [1,2,0] x*y^2
-   14 [1,1,1] x*y*z
-   15 [1,0,2] x*z^2
-   16 [0,3,0] y^3
-   17 [0,2,1] y^2*z
-   18 [0,1,2] y*z^2
-   19 [0,0,3] z^3
-*/
