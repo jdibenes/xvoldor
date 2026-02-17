@@ -155,7 +155,7 @@ using monomial_mask = std::array<bool, variables>;
 //-----------------------------------------------------------------------------
 
 template <int variables>
-monomial_mask<variables> operator~(monomial_mask<variables> const& x) 
+monomial_mask<variables> operator~(monomial_mask<variables> const& x)
 {
     monomial_mask<variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = !x[i]; }
@@ -1270,12 +1270,6 @@ monomial<scalar, variables> leading_term(polynomial<scalar, variables> const& p)
     monomial<scalar, variables> result = p[{}];
     p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { if (generator::compare(result.indices, indices)) { result = { coefficent, indices }; } });
     return result;
-}
-
-template <typename generator, typename scalar, int variables>
-bool compare(monomial<scalar, variables> const& a, monomial<scalar, variables> const& b) // TODO: REMOVE
-{
-    return generator::compare(a.indices, b.indices);
 }
 
 template <typename generator, typename scalar, int variables>
