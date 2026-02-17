@@ -30,9 +30,6 @@ using add_vector_type = typename add_vector<T, n>::type;
 template <int variables>
 using monomial_indices = std::array<int, variables>;
 
-template <int variables>
-using monomial_mask = std::array<bool, variables>;
-
 //-----------------------------------------------------------------------------
 // +
 //-----------------------------------------------------------------------------
@@ -129,22 +126,6 @@ monomial_indices<variables> lcm(monomial_indices<variables> const& lhs, monomial
 }
 
 template <int variables>
-monomial_mask<variables> complement(monomial_mask<variables> const& mask) // TODO: as operator
-{
-    monomial_mask<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = !mask[i]; }
-    return result;
-}
-
-template <int variables>
-monomial_indices<variables> select(monomial_indices<variables> const indices, monomial_mask<variables> const& mask, bool complement)
-{
-    monomial_indices<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = (mask[i] - complement) ? indices[i] : 0; }
-    return result;
-}
-
-template <int variables>
 monomial_indices<variables - 1> split(monomial_indices<variables> const& indices, int index)
 {
     monomial_indices<variables - 1> result;
@@ -159,6 +140,106 @@ monomial_indices<variables + 1> merge(monomial_indices<variables> const& indices
     monomial_indices<variables + 1> result;
     int j = 0;
     for (int i = 0; i < variables; ++i) { if (i != index) { result[i] = indices[j++]; } else { result[i] = pick[0]; } }
+    return result;
+}
+
+//=============================================================================
+// monomial_mask
+//=============================================================================
+
+template <int variables>
+using monomial_mask = std::array<bool, variables>;
+
+//-----------------------------------------------------------------------------
+// ~
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_mask<variables> operator~(monomial_mask<variables> const& x) 
+{
+    monomial_mask<variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = !x[i]; }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// |
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_mask<variables> operator|(monomial_mask<variables> const& lhs, monomial_mask<variables> const& rhs)
+{
+    monomial_mask<variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = lhs[i] || rhs[i]; }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// |=
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_mask<variables>& operator|=(monomial_mask<variables>& lhs, monomial_mask<variables> const& rhs)
+{
+    for (int i = 0; i < variables; ++i) { lhs[i] = lhs[i] || rhs[i]; }
+    return lhs;
+}
+
+//-----------------------------------------------------------------------------
+// &
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_mask<variables> operator&(monomial_mask<variables> const& lhs, monomial_mask<variables> const& rhs)
+{
+    monomial_mask<variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = lhs[i] && rhs[i]; }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// &=
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_mask<variables>& operator&=(monomial_mask<variables>& lhs, monomial_mask<variables> const& rhs)
+{
+    for (int i = 0; i < variables; ++i) { lhs[i] = lhs[i] && rhs[i]; }
+    return lhs;
+}
+
+//-----------------------------------------------------------------------------
+// ^
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_mask<variables> operator^(monomial_mask<variables> const& lhs, monomial_mask<variables> const& rhs)
+{
+    monomial_mask<variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = (!lhs[i] && rhs[i]) || (lhs[i] && !rhs[i]); }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// ^=
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_mask<variables>& operator^=(monomial_mask<variables>& lhs, monomial_mask<variables> const& rhs)
+{
+    for (int i = 0; i < variables; ++i) { lhs[i] = (!lhs[i] && rhs[i]) || (lhs[i] && !rhs[i]); }
+    return lhs;
+}
+
+//-----------------------------------------------------------------------------
+// compare
+//-----------------------------------------------------------------------------
+
+template <int variables>
+monomial_indices<variables> select(monomial_indices<variables> const indices, monomial_mask<variables> const& mask, bool complement)
+{
+    monomial_indices<variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = (mask[i] - complement) ? indices[i] : 0; }
     return result;
 }
 
@@ -320,12 +401,12 @@ public:
 
     bool is_constant() const
     {
-        return !coefficient || indices == monomial_indices_type{};
+        return !coefficient || (indices == monomial_indices_type{});
     }
 
     bool is_homogeneous() const
     {
-        return !coefficient || indices != monomial_indices_type{};
+        return !coefficient || (indices != monomial_indices_type{});
     }
 
     bool is_multiple(monomial_indices_type const& f) const
