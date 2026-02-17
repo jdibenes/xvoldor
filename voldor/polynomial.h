@@ -3,6 +3,7 @@
 
 #include <Eigen/Eigen>
 #include <vector>
+#include <sstream>
 
 //=============================================================================
 // add_vector
@@ -91,6 +92,27 @@ monomial_indices<variables>& operator-=(monomial_indices<variables>& lhs, monomi
 }
 
 //-----------------------------------------------------------------------------
+// <<
+//-----------------------------------------------------------------------------
+
+template <int variables>
+std::ostream& operator<<(std::ostream& os, monomial_indices<variables> const& indices)
+{
+    bool first = true;
+    for (int i = 0; i < variables; ++i)
+    {
+        if (indices[i] != 0)
+        {
+            if (!first) { os << "*"; }
+            first = false;
+            os << "x_" << i;
+            if (indices[i] != 1) { os << "^" << indices[i]; }
+        }
+    }
+    return os;
+}
+
+//-----------------------------------------------------------------------------
 // compare
 //-----------------------------------------------------------------------------
 
@@ -139,7 +161,7 @@ monomial_indices<variables + 1> merge(monomial_indices<variables> const& indices
 {
     monomial_indices<variables + 1> result;
     int j = 0;
-    for (int i = 0; i < variables; ++i) { if (i != index) { result[i] = indices[j++]; } else { result[i] = pick[0]; } }
+    for (int i = 0; i < (variables + 1); ++i) { if (i != index) { result[i] = indices[j++]; } else { result[i] = pick[0]; } }
     return result;
 }
 
@@ -376,6 +398,17 @@ public:
     }
 
     //-------------------------------------------------------------------------
+    // <<
+    //-------------------------------------------------------------------------
+
+    friend std::ostream& operator<<(std::ostream& os, monomial_type const& x)
+    {
+        os << "(" << x.coefficient << ")";
+        if (x.indices != monomial_indices_type{}) { os << "*" << x.indices; }
+        return os;
+    }
+
+    //-------------------------------------------------------------------------
     // compare
     //-------------------------------------------------------------------------
 
@@ -534,6 +567,25 @@ monomial_vector<scalar, variables> operator%(monomial_vector<scalar, variables> 
 {
     monomial_vector<scalar, variables> result = lhs;
     return result %= rhs;
+}
+
+//-----------------------------------------------------------------------------
+// <<
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int variables>
+std::ostream& operator<<(std::ostream& os, monomial_vector<scalar, variables> const& v)
+{
+    os << "[";
+    bool first = true;
+    for (auto const& m : v)
+    {
+        if (!first) { os << " , "; }
+        first = false;
+        os << m;
+    }
+    os << "]";
+    return os;
 }
 
 //-----------------------------------------------------------------------------
@@ -1061,6 +1113,27 @@ public:
     }
 
     //-------------------------------------------------------------------------
+    // <<
+    //-------------------------------------------------------------------------
+
+    friend std::ostream& operator<<(std::ostream& os, polynomial_type const& x)
+    {
+        bool first = true;
+        x.for_each
+        (
+            [&](scalar const& coefficient, monomial_indices_type const& indices)
+            {
+                if (!first) { os << " + "; }
+                first = false;
+                os << "(" << coefficient << ")";
+                if (indices != monomial_indices_type{}) { os << "*" << indices; }                
+            }
+        );
+        if (first) { os << "(0)"; }
+        return os;
+    }
+
+    //-------------------------------------------------------------------------
     // compare
     //-------------------------------------------------------------------------
 
@@ -1283,36 +1356,11 @@ void sort(monomial_vector<scalar, variables>& monomials, bool descending)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 template <typename scalar, int variables>
 polynomial<polynomial<scalar, 1>, variables - 1> hide_in(polynomial<scalar, variables> const& p, int index)
 {
     polynomial<polynomial<scalar, 1>, variables - 1> result;
-    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[split(indices, index)][indices[index]] += coefficent; });
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[split(indices, index)][{ indices[index] }] += coefficent; });
     return result;
 }
 
@@ -1320,7 +1368,7 @@ template <typename scalar, int variables>
 polynomial<polynomial<scalar, variables - 1>, 1> hide_out(polynomial<scalar, variables> const& p, int index)
 {
     polynomial<polynomial<scalar, variables - 1>, 1> result;
-    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[indices[index]][split(indices, index)] += coefficent; });
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[{ indices[index] }][split(indices, index)] += coefficent; });
     return result;
 }
 
@@ -1336,9 +1384,36 @@ template <typename scalar, int variables>
 polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, variables>, 1> const& p, int index)
 {
     polynomial<scalar, variables + 1> result;
-    p.for_each([&](polynomial<scalar, 1> const& coefficent_a, monomial_indices<1> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<variables> const& indices_b) { result[merge(indices_b, index, indices_a)] += coefficient_b; }); });
+    p.for_each([&](polynomial<scalar, variables> const& coefficent_a, monomial_indices<1> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<variables> const& indices_b) { result[merge(indices_b, index, indices_a)] += coefficient_b; }); });
     return result;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 
 template<typename scalar, int variables>
 polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
@@ -1420,7 +1495,7 @@ public:
         return value;
     }
 };
-
+*/
 
 
 
