@@ -266,6 +266,22 @@ monomial_indices<variables> select(monomial_indices<variables> const indices, mo
 }
 
 //=============================================================================
+// monomial_values
+//=============================================================================
+
+template <typename scalar, int variables>
+using monomial_values = std::array<scalar, variables>;
+
+template <typename scalar, int variables>
+monomial_values<scalar, variables + 1> merge(monomial_values<scalar, variables> const& indices, int index, monomial_values<scalar, 1> const& pick)
+{
+    monomial_values<scalar, variables + 1> result;
+    int j = 0;
+    for (int i = 0; i < (variables + 1); ++i) { if (i != index) { result[i] = indices[j++]; } else { result[i] = pick[0]; } }
+    return result;
+}
+
+//=============================================================================
 // monomial_powers
 //=============================================================================
 
@@ -848,11 +864,11 @@ public:
         for (auto const& m : v) { (*this)[m.indices] += m.coefficient; }
     }
 
-    template <typename other_scalar>
-    polynomial(polynomial_other_type<other_scalar> const& other)
-    {
-        other.for_each([&](other_scalar const& coefficient, monomial_indices_type const& indices) { (*this)[indices] = scalar(coefficient); });
-    }
+    //template <typename other_scalar>
+    //polynomial(polynomial_other_type<other_scalar> const& other)
+    //{
+    //    other.for_each([&](other_scalar const& coefficient, monomial_indices_type const& indices) { (*this)[indices] = scalar(coefficient); });
+    //}
 
     //-------------------------------------------------------------------------
     // access
@@ -1568,6 +1584,8 @@ result_reduce<scalar, variables> reduce(polynomial<scalar, variables> const& div
 // matrix of polynomials
 //=============================================================================
 
+// input: Matrix MxN, interpreted as vector of MxN monomials [A(0,0),A(1,0)...A(M-2,N-1),A(M-1,N-1)] in grevlex order
+// output: polynomial
 template <typename scalar, int variables, typename A>
 polynomial<scalar, variables> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
 {
@@ -1577,6 +1595,8 @@ polynomial<scalar, variables> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> c
     return dst;
 }
 
+// input: Matrix MxN for M equations with N monomials in grevlex order
+// output: Matrix of polynomial PxQ with PxQ=M filled in order A(0,0),A(1,0),A(2,0)...A(P-2,Q-1),A(P-1,Q-1)
 template <typename scalar, int variables, int _rows, int _cols, typename A>
 Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& M, int rows = _rows, int cols = _cols)
 {
@@ -1585,10 +1605,20 @@ Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> matrix_to_polynomial_
     return dst;
 }
 
+// input: polynomial
+// output: Matrix MxN filled as vector in grevlex order A(0,0),A(1,0)...A(M-2,N-1),A(M-1,N-1), intended for building 1xN or Mx1 monomial vectors
 template <typename _matrix_scalar, int _rows, int _cols, typename scalar, int variables>
 Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polynomial<scalar, variables> const& src, int rows = _rows, int cols = _cols)
 {
-    Eigen::Matrix<_matrix_scalar, _rows, _cols> dst = Eigen::Matrix<_matrix_scalar, _rows, _cols>::Zero(rows, cols);
+    Eigen::Matrix<_matrix_scalar, _rows, _cols> dst(rows, cols);// = Eigen::Matrix<_matrix_scalar, _rows, _cols>::Zero(rows, cols);
+    grevlex_generator<variables> gg;
+    for (int i = 0; i < dst.size(); ++i) { dst(i) = src[gg.next().current_indices()]; }
+    //for (int i = 0; i < cols; ++i) {
+    //    for (int j = 0; j < rows; ++j) {
+    //        dst(j, i) = src[gg.next().current_indices()];
+    //    }
+    //}
+    /*
     src.for_each
     (
         [&](scalar const& element, monomial_indices<variables> const& indices)
@@ -1597,9 +1627,12 @@ Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polyn
             if (i < dst.size()) { dst(i) = element; }
         }
     );
+    */
     return dst;
 }
 
+// input: Matrix MxN of polynomials
+// output: Matrix QxP of monomials with Q=MxN and P maximum monomials to extract from polynomials in grevlex order
 template <typename _matrix_scalar, int _rows, int _cols, typename A>
 Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(Eigen::MatrixBase<A> const& src, int rows = _rows, int cols = _cols)
 {
@@ -1614,5 +1647,59 @@ Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(Eigen
 // matrix operations
 //=============================================================================
 
+template <typename scalar, int variables, int _rows, int _cols>
+Eigen::Matrix<polynomial<polynomial<scalar, 1>, variables - 1>, _rows, _cols> hide_in(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src, int index)
+{
+    Eigen::Matrix<polynomial<polynomial<scalar, 1>, variables - 1>, _rows, _cols> dst(src.rows(), src.cols());
+    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = hide_in(src(j, i), index); } }
+    return dst;
+}
+
+template <typename scalar, int variables, int _rows, int _cols>
+Eigen::Matrix<polynomial<polynomial<scalar, variables - 1>, 1>, _rows, _cols> hide_out(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src, int index)
+{
+    Eigen::Matrix<polynomial<polynomial<scalar, variables - 1>, 1>, _rows, _cols> dst(src.rows(), src.cols());
+    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = hide_out(src(j, i), index); } }
+    return dst;
+}
+
+template <typename scalar, int variables, int _rows, int _cols>
+Eigen::Matrix<polynomial<scalar, variables + 1>, _rows, _cols> unhide_in(Eigen::Matrix<polynomial<polynomial<scalar, 1>, variables>, _rows, _cols> const& src, int index)
+{
+    Eigen::Matrix<polynomial<scalar, variables + 1>, _rows, _cols> dst(src.rows(), src.cols());
+    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = unhide_in(src(j, i), index); } }
+    return dst;
+}
+
+template <typename scalar, int variables, int _rows, int _cols>
+Eigen::Matrix<polynomial<scalar, variables + 1>, _rows, _cols> unhide_out(Eigen::Matrix<polynomial<polynomial<scalar, variables>, 1>, _rows, _cols> const& src, int index)
+{
+    Eigen::Matrix<polynomial<scalar, variables + 1>, _rows, _cols> dst(src.rows(), src.cols());
+    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = unhide_out(src(j, i), index); } }
+    return dst;
+}
+
+template <typename scalar, int _rows, int _cols, int variables>
+Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> substitute(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
+{
+    Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> dst(src.rows(), src.cols());
+    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = substitute(src(j, i), mask, values); } }
+    return dst;
+}
+
+template <typename scalar, int _rows, int _cols, int variables>
+void substitute_inplace(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols>& src, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
+{
+    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { src(j, i) = substitute(src(j, i), mask, values); } }
+}
 
 
+// TODO: functions for polynomial -> matrix of polynomials
+
+template <typename scalar, int _rows, int _cols, int variables>
+Eigen::Matrix<scalar, _rows, _cols> split(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src, monomial_indices<variables> const& indices)
+{
+    Eigen::Matrix<scalar, _rows, _cols> dst(src.rows(), src.cols());
+    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = src(j, i)[indices]; } }
+    return dst;
+}
