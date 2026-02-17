@@ -1442,7 +1442,7 @@ public:
         int bp = total_degree(b);
 
         if (ap != bp) { return ap < bp; }
-        for (int i = 0; i < variables; ++i) { if (a[i] > b[i]) { return true; } }
+        for (int i = 0; i < variables; ++i) { if (a[i] > b[i]) { return true; } else if (a[i] < b[i]) { return false; } }
         return false;
     }
 
@@ -1479,137 +1479,37 @@ void sort(monomial_vector<scalar, variables>& monomials, bool descending)
     std::sort(monomials.begin(), monomials.end(), [&](monomial<scalar, variables> const& a, monomial<scalar, variables> const& b) { return generator::compare(a.indices, b.indices) - descending; });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-template <typename generator, typename scalar, int variables>
-polynomial<scalar, variables> s_polynomial(polynomial<scalar, variables> const& f, polynomial<scalar, variables> const& g)
+template <typename scalar, int variables>
+polynomial<scalar, variables> simple_reduce(polynomial<scalar, variables> const& f, polynomial<scalar, variables> const& g, monomial<scalar, variables> const& mt_f, monomial<scalar, variables> const& mt_g)
 {
-    monomial_indices<variables> gcd_fg = gcd(f, g);
-
-    monomial<scalar, variables> lt_f = leading_term<generator>(f);
-    monomial<scalar, variables> lt_g = leading_term<generator>(g);
-
-    return (monomial<scalar, variables>(lt_g.coefficient, lt_g.indices - gcd_fg) * f) - (monomial<scalar, variables>(lt_f.coefficient, lt_f.indices - gcd_fg) * g);
+    return (mt_g * f) - (mt_f * g);
 }
 
-
-
-
-
-
+template <typename scalar, int variables>
+polynomial<scalar, variables> s_polynomial(polynomial<scalar, variables> const& f, polynomial<scalar, variables> const& g, monomial<scalar, variables> const& lt_f, monomial<scalar, variables> const& lt_g)
+{
+    monomial_indices<variables> gcd_fg = gcd(lt_f.indices, lt_g.indices);
+    return simple_reduce(f, g, { lt_f.coefficient, lt_f.indices - gcd_fg }, { lt_g.coefficient, lt_g.indices - gcd_fg });
+}
 
 template <typename scalar, int variables>
-struct result_polynomial_reduce
+struct result_reduce
 {
     polynomial<scalar, variables> quotient;
     polynomial<scalar, variables> remainder;
-    bool zero_divisor;
-    bool zero_dividend;
-    bool no_multiples;
+    bool irreducible;
 };
 
-template <typename generator, typename scalar, int variables>
-result_polynomial_reduce<scalar, variables> polynomial_reduce_lead(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
+template <typename scalar, int variables>
+result_reduce<scalar, variables> reduce(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor, monomial<scalar, variables> const& mt_dividend, monomial<scalar, variables> const& lt_divisor)
 {
-    monomial<scalar, variables> lt_b = leading_term<generator>(divisor);
-    if (!lt_b) { return { 0, 0, true, false, false }; }
-
-    monomial<scalar, variables> lt_a = leading_term<generator>(dividend);
-    if (!lt_a) { return { 0, 0, false, true, false }; }
-
-    monomial<scalar, variables> q = monomial(lt_a.coefficient, lt_a.indices - lt_b.indices);
-    if (!is_integral(q.indices)) { return { 0, dividend, false, false, true }; }
-
-    return { q, (lt_b.coefficient * dividend) - (q * divisor), false, false, false };
-}
-
-template <typename generator, typename scalar, int variables>
-result_polynomial_reduce<scalar, variables> polynomial_reduce(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor)
-{
-    monomial<scalar, variables> lt_b = leading_term<generator>(divisor);
-    if (!lt_b) { return { 0, 0, true, false, false }; }
-
-    monomial_vector<scalar, variables> v_a = dividend;
-    if (v_a.size() <= 0) { return { 0, 0, false, true, false }; }
-
-    sort<generator>(v_a);
-
-    monomial_indices<variables> exponent;
-    int i;
-    for (i = v_a.size() - 1; (i >= 0) && !is_integral(exponent = v_a[i] - lt_b.indices); --i);
-    if (i < 0) { return { 0, dividend, false, false, true }; }
-    monomial<scalar, variables> q = monomial(v_a[i].coefficient, exponent);
-
-    return { q, (lt_b.coefficient * dividend) - (q * divisor), false, false, false };
+    monomial<scalar, variables> q = monomial(mt_dividend.coefficient, mt_dividend.indices - lt_divisor.indices);
+    if (is_integral(q.indices)) { return { q, simple_reduce(dividend, divisor, q, { lt_divisor.coefficient, {} }), false }; } else { return { 0, dividend, true }; }
 }
 
 //=============================================================================
 // conversions
 //=============================================================================
-
-
-
-
-
-
-
 
 
 
