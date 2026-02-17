@@ -1176,6 +1176,38 @@ monomial_vector<scalar, variables> find_multiples(polynomial<scalar, variables> 
     return multiples;
 }
 
+template <typename scalar, int variables>
+polynomial<polynomial<scalar, 1>, variables - 1> hide_in(polynomial<scalar, variables> const& p, int index)
+{
+    polynomial<polynomial<scalar, 1>, variables - 1> result;
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[split(indices, index)][{ indices[index] }] += coefficent; });
+    return result;
+}
+
+template <typename scalar, int variables>
+polynomial<polynomial<scalar, variables - 1>, 1> hide_out(polynomial<scalar, variables> const& p, int index)
+{
+    polynomial<polynomial<scalar, variables - 1>, 1> result;
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[{ indices[index] }][split(indices, index)] += coefficent; });
+    return result;
+}
+
+template <typename scalar, int variables>
+polynomial<scalar, variables + 1> unhide_in(polynomial<polynomial<scalar, 1>, variables> const& p, int index)
+{
+    polynomial<scalar, variables + 1> result;
+    p.for_each([&](polynomial<scalar, 1> const& coefficent_a, monomial_indices<variables> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<1> const& indices_b) { result[merge(indices_a, index, indices_b)] += coefficient_b; }); });
+    return result;
+}
+
+template <typename scalar, int variables>
+polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, variables>, 1> const& p, int index)
+{
+    polynomial<scalar, variables + 1> result;
+    p.for_each([&](polynomial<scalar, variables> const& coefficent_a, monomial_indices<1> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<variables> const& indices_b) { result[merge(indices_b, index, indices_a)] += coefficient_b; }); });
+    return result;
+}
+
 //=============================================================================
 // remove_polynomial
 //=============================================================================
@@ -1356,37 +1388,6 @@ void sort(monomial_vector<scalar, variables>& monomials, bool descending)
 
 
 
-template <typename scalar, int variables>
-polynomial<polynomial<scalar, 1>, variables - 1> hide_in(polynomial<scalar, variables> const& p, int index)
-{
-    polynomial<polynomial<scalar, 1>, variables - 1> result;
-    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[split(indices, index)][{ indices[index] }] += coefficent; });
-    return result;
-}
-
-template <typename scalar, int variables>
-polynomial<polynomial<scalar, variables - 1>, 1> hide_out(polynomial<scalar, variables> const& p, int index)
-{
-    polynomial<polynomial<scalar, variables - 1>, 1> result;
-    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result[{ indices[index] }][split(indices, index)] += coefficent; });
-    return result;
-}
-
-template <typename scalar, int variables>
-polynomial<scalar, variables + 1> unhide_in(polynomial<polynomial<scalar, 1>, variables> const& p, int index)
-{
-    polynomial<scalar, variables + 1> result;
-    p.for_each([&](polynomial<scalar, 1> const& coefficent_a, monomial_indices<variables> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<1> const& indices_b) { result[merge(indices_a, index, indices_b)] += coefficient_b; }); });
-    return result;
-}
-
-template <typename scalar, int variables>
-polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, variables>, 1> const& p, int index)
-{
-    polynomial<scalar, variables + 1> result;
-    p.for_each([&](polynomial<scalar, variables> const& coefficent_a, monomial_indices<1> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<variables> const& indices_b) { result[merge(indices_b, index, indices_a)] += coefficient_b; }); });
-    return result;
-}
 
 
 
