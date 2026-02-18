@@ -1703,3 +1703,16 @@ Eigen::Matrix<scalar, _rows, _cols> split(Eigen::Matrix<polynomial<scalar, varia
     for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = src(j, i)[indices]; } }
     return dst;
 }
+
+
+
+template <typename scalar, int _rows, int _cols, int variables>
+std::ostream& operator<<(std::ostream& os, Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src)
+{
+    for (int i = 0; i < src.rows(); ++i) { 
+        os << " | ";
+        for (int j = 0; j < src.cols(); ++j) {os << src(i, j) << " | "; }
+        os << std::endl;
+    }
+    return os;
+}
