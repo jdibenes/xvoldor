@@ -72,6 +72,187 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Q = matrix_E_constraints(Q1, Q2);
 
+    Eigen::Matrix<float, 9, 4> e_full = Q.fullPivLu().kernel();
+
+    Eigen::Matrix<float, 1, 3> z = -e_full({ 0, 4, 8 }, Eigen::all).colwise().sum().rowwise().hnormalized();
+
+    std::cout << "ZZ: " << z << std::endl;
+
+    Eigen::Matrix<float, 9, 3> e;
+
+    e << (e_full(Eigen::all, 0) + z(0) * e_full(Eigen::all, 3)),
+        (e_full(Eigen::all, 1) + z(1) * e_full(Eigen::all, 3)),
+        (e_full(Eigen::all, 2) + z(2) * e_full(Eigen::all, 3));
+
+    Eigen::Matrix<polynomial<float, 2>, 3, 3> E = matrix_to_polynomial_grevlex<float, 2, 3, 3>(e); // OK
+
+    polynomial<float, 2> E_determinant = E.determinant();
+
+    Eigen::Matrix<polynomial<float, 2>, 3, 3> EEt = E * E.transpose();
+    Eigen::Matrix<polynomial<float, 2>, 3, 3> E_singular_values = (EEt * E) - ((0.5 * EEt.trace()) * E);
+
+    Eigen::Matrix<float, 10, 10> S;
+
+    S << matrix_from_polynomial_grevlex<float, 9, 10>(E_singular_values),
+         matrix_from_polynomial_grevlex<float, 1, 10>(E_determinant);
+
+    std::cout << "S SV: " << S.bdcSvd().singularValues() << std::endl;
+
+    Eigen::Matrix<float, 10, 1> solution = S.bdcSvd(Eigen::ComputeThinV).matrixV().col(9);
+
+    Eigen::Matrix<float, 3, 3> fake_E = (e(Eigen::all, 0) + ((solution(1) / solution(0)) * e(Eigen::all, 1)) + ((solution(2) / solution(0)) * e(Eigen::all, 2))).reshaped(3, 3);
+
+    result_R_t_from_E result = R_t_from_E(fake_E, q1, q2);
+
+    Eigen::Matrix<float, 3, 3> R = result.P(Eigen::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 1> v = result.P.col(3);
+
+    std::cout << "R " << std::endl;
+    std::cout << R << std::endl;
+
+
+    Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
+    Eigen::Matrix<float, 3, 1> t = (P2.col(0) - R * P1.col(0)).norm() * v;
+
+    matrix_to_buffer(r, r01);
+    matrix_to_buffer(t, t01);
+
+    float r_sum = r01[0] + r01[1] + r01[2];
+    float t_sum = t01[0] + t01[1] + t01[2];
+
+    float x_sum = r_sum + t_sum;
+
+    return std::isfinite(x_sum);
+
+
+
+    
+
+
+    //std::cout << "S det: " << S.determinant() << std::endl;
+    //std::cout << "S sv:  " << S.bdcSvd().singularValues() << std::endl;
+
+
+
+
+
+
+
+
+
+    /*
+    int hidden_variable_index = 2;
+
+    Eigen::Matrix<polynomial<polynomial<float, 1>, 2>, 3, 3> E_hidden = hide_in(E, hidden_variable_index);
+
+    polynomial<polynomial<float, 1>, 2> E_determinant = E_hidden.determinant();
+
+    Eigen::Matrix<polynomial<polynomial<float, 1>, 2>, 3, 3> EEt = E_hidden * E_hidden.transpose();
+    Eigen::Matrix<polynomial<polynomial<float, 1>, 2>, 3, 3> E_singular_values = (EEt * E_hidden) - ((0.5 * EEt.trace()) * E_hidden);
+
+    Eigen::Matrix<polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> S(10, 10);
+
+    S << matrix_from_polynomial_grevlex<polynomial<float, 1>, 9, 10>(E_singular_values).rowwise().reverse(),
+        matrix_from_polynomial_grevlex<polynomial<float, 1>, 1, 10>(E_determinant).rowwise().reverse();
+
+    for (int i = 0; i < 4; ++i) { polynomial_row_echelon_step(S, i, i, { 0 }, false); }
+
+    Eigen::Matrix<polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> S6 = S(Eigen::seqN(4, 6), Eigen::seqN(4, 6));
+
+    polynomial_row_echelon_step(S6, 0, 0, { 1 }, true);
+    polynomial_row_echelon_step(S6, 1, 0, { 0 }, true);
+
+    polynomial_row_echelon_step(S6, 2, 1, { 1 }, true);
+    polynomial_row_echelon_step(S6, 3, 1, { 0 }, true);
+
+    polynomial_row_echelon_step(S6, 4, 2, { 1 }, true);
+    polynomial_row_echelon_step(S6, 5, 2, { 0 }, true);
+
+    polynomial<float, 1> hidden_variable = monomial<float, 1>{ 1, { 1 } };
+
+    S6.row(1) = (S6.row(1) * hidden_variable) - S6.row(0);
+    S6.row(3) = (S6.row(3) * hidden_variable) - S6.row(2);
+    S6.row(5) = (S6.row(5) * hidden_variable) - S6.row(4);
+
+    S6.row(1).swap(S6.row(2));
+    S6.row(2).swap(S6.row(4));
+
+    Eigen::Matrix<polynomial<float, 1>, 3, 3> S3 = S6(Eigen::seqN(3, 3), Eigen::seqN(3, 3));
+
+    polynomial<float, 1> hidden_univariate = S3.determinant();
+
+    Eigen::Matrix<float, 1, 11> hidden_coefficients = matrix_from_polynomial_grevlex<float, 1, 11>(hidden_univariate);
+
+    double coefficients[11];
+    double z_roots[10];
+    int n_roots = 0;
+    for (int i = 0; i < 11; ++i) { coefficients[i] = hidden_coefficients(i); }
+    if (!find_real_roots_sturm(coefficients, 10, z_roots, &n_roots, 2, 0)) { return false; }
+
+    Eigen::Matrix<float, 10, 1> solution;
+    Eigen::Matrix<float, 3, 3> fake_E;
+
+    for (int i = 0; i < n_roots; ++i)
+    {
+        float z = z_roots[i];
+
+        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> FINAL = split(substitute(S, { true }, { z }), {});
+
+        solution = FINAL.bdcSvd(Eigen::ComputeFullV).matrixV().col(9);
+
+        float x = solution(8) / solution(9);
+        float y = solution(7) / solution(9);
+
+        fake_E = split(substitute(E, { true, true, true }, merge<float, 2>({ x, y }, hidden_variable_index, { z })), {});
+
+        result_R_t_from_E result = R_t_from_E(fake_E, q1, q2);
+
+        Eigen::Matrix<float, 3, 3> R = result.P(Eigen::all, Eigen::seqN(0, 3));
+        Eigen::Matrix<float, 3, 1> v = result.P.col(3);
+
+        Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
+        Eigen::Matrix<float, 3, 1> t = (P2.col(0) - R * P1.col(0)).norm() * v;
+
+        Eigen::Matrix<float, 3, 3> true_E = matrix_cross(t) * R;
+
+        std::cout << "R" << std::endl;
+        std::cout << R << std::endl;
+        std::cout << "t" << std::endl;
+        std::cout << t << std::endl;
+        std::cout << "tr(E) = " << true_E.trace() << std::endl;
+        std::cout << "DEMAZURE 1 tr: " << (true_E * true_E.transpose() * true_E).trace() << std::endl;
+        std::cout << "DEMAZURE 2 tr: " << -((0.5 * (true_E * true_E.transpose()).trace()) * true_E).trace() << std::endl;
+        std::cout << "tr(E^3) = " << (true_E * true_E * true_E).trace() << std::endl;
+        //(EEt * E_hidden) - ((0.5 * EEt.trace()) * E_hidden);
+
+    }
+    std::cout << std::endl;
+    */
+    return false;
+}
+
+
+
+
+
+
+
+
+
+
+bool solver_rpe_easy2(float const* p1, float const* p2, float* r01, float* t01)
+{
+    Eigen::Matrix<float, 3, 5> P1 = matrix_from_buffer<float, 3, 5>(p1);
+    Eigen::Matrix<float, 3, 5> P2 = matrix_from_buffer<float, 3, 5>(p2);
+
+    Eigen::Matrix<float, 2, 5> q1 = P1.colwise().hnormalized();
+    Eigen::Matrix<float, 2, 5> q2 = P2.colwise().hnormalized();
+
+    Eigen::Matrix<float, 3, 5> Q1 = q1.colwise().homogeneous();
+    Eigen::Matrix<float, 3, 5> Q2 = q2.colwise().homogeneous();
+
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Q = matrix_E_constraints(Q1, Q2);
+
     Eigen::Matrix<float, 9, 4> e = Q.fullPivLu().kernel();
 
     Eigen::Matrix<polynomial<float, 3>, 3, 3> E = matrix_to_polynomial_grevlex<float, 3, 3, 3>(e); // OK
@@ -148,10 +329,18 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
         Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
         Eigen::Matrix<float, 3, 1> t = (P2.col(0) - R * P1.col(0)).norm() * v;
 
+        Eigen::Matrix<float, 3, 3> true_E = matrix_cross(t) * R;
+
         std::cout << "R" << std::endl;
         std::cout << R << std::endl;
         std::cout << "t" << std::endl;
         std::cout << t << std::endl;
+        std::cout << "tr(E) = " << true_E.trace() << std::endl;
+        std::cout << "DEMAZURE 1 tr: " << (true_E * true_E.transpose() * true_E).trace() << std::endl;
+        std::cout << "DEMAZURE 2 tr: " << -((0.5 * (true_E * true_E.transpose()).trace()) * true_E).trace() << std::endl;
+        std::cout << "tr(E^3) = " << (true_E * true_E * true_E).trace() << std::endl;
+            //(EEt * E_hidden) - ((0.5 * EEt.trace()) * E_hidden);
+
     }
     std::cout << std::endl;
 
