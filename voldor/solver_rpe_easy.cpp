@@ -76,11 +76,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<polynomial<float, 3>, 3, 3> E = matrix_to_polynomial_grevlex<float, 3, 3, 3>(e); // OK
 
-
-
-
-
-    int hidden_variable_index = 1;
+    int hidden_variable_index = 2;
 
     Eigen::Matrix<polynomial<polynomial<float, 1>, 2>, 3, 3> E_hidden = hide_in(E, hidden_variable_index);
 
@@ -94,16 +90,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     S << matrix_from_polynomial_grevlex<polynomial<float, 1>, 9, 10>(E_singular_values).rowwise().reverse(),
          matrix_from_polynomial_grevlex<polynomial<float, 1>, 1, 10>(E_determinant).rowwise().reverse();
 
-    ///////
-    //S.row(3).swap(S.row(6));
-    //S.row(4).swap(S.row(7));
-    //S.row(5).swap(S.row(8));
-    ///////
-    
     for (int i = 0; i < 4; ++i) { polynomial_row_echelon_step(S, i, i, { 0 }, false); }
-
-    std::cout << "S" << std::endl;
-    std::cout << S << std::endl;
 
     Eigen::Matrix<polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> S6 = S(Eigen::seqN(4, 6), Eigen::seqN(4, 6));
 
@@ -129,11 +116,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
     polynomial<float, 1> hidden_univariate = S3.determinant();
 
-    std::cout << "POLY: " << hidden_univariate << std::endl;
-
     Eigen::Matrix<float, 1, 11> hidden_coefficients = matrix_from_polynomial_grevlex<float, 1, 11>(hidden_univariate);
-
-
 
     double coefficients[11];
     double z_roots[10];
@@ -177,8 +160,15 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
 
 
+//std::cout << "POLY: " << hidden_univariate << std::endl;
 
-
+//std::cout << "S" << std::endl;
+    //std::cout << S << std::endl;
+///////
+    //S.row(3).swap(S.row(6));
+    //S.row(4).swap(S.row(7));
+    //S.row(5).swap(S.row(8));
+    ///////
 //Eigen::Matrix<polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> ss = substitute(S, { true }, { z });//<float, 1, Eigen::Dynamic, Eigen::Dynamic>
 //Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> FINAL = split(ss, {}); //<float, 1, Eigen::Dynamic, Eigen::Dynamic>
     //FINAL = matrix_from_polynomial_grevlex<float, Eigen::Dynamic, Eigen::Dynamic>(ss, 10, 10);
