@@ -5,8 +5,10 @@
 #include <vector>
 #include <sstream>
 
+namespace x38
+{
 //=============================================================================
-// add_vector
+// add_vector / remove_vector
 //=============================================================================
 
 template <typename T, int n>
@@ -24,37 +26,71 @@ struct add_vector<T, 0>
 template <typename T, int n>
 using add_vector_type = typename add_vector<T, n>::type;
 
+template <typename T>
+struct remove_vector
+{
+    typedef T type;
+};
+
+template <typename T>
+struct remove_vector<std::vector<T>>
+{
+    typedef typename remove_vector<T>::type type;
+};
+
+template <typename T>
+using remove_vector_type = typename remove_vector<T>::type;
+
 //=============================================================================
-// monomial_indices
+// scalar operations
 //=============================================================================
 
-template <int variables>
-using monomial_indices = std::array<int, variables>;
+template <typename T>
+T& negate(T& x)
+{
+    x = -x;
+    return x;
+}
+
+//=============================================================================
+// array operations
+//=============================================================================
+
+template <typename scalar, int variables>
+using array_type = std::array<scalar, variables>;
 
 //-----------------------------------------------------------------------------
 // +
 //-----------------------------------------------------------------------------
 
-template <int variables>
-monomial_indices<variables> operator+(monomial_indices<variables> const& x)
+template <typename scalar, int variables>
+array_type<scalar, variables> operator+(array_type<scalar, variables> const& x)
 {
     return x;
 }
 
-template <int variables>
-monomial_indices<variables> operator+(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
+template <typename scalar, int variables>
+array_type<scalar, variables> operator+(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
 {
-    monomial_indices<variables> result;
+    array_type<scalar, variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = lhs[i] + rhs[i]; }
     return result;
+}
+
+template <typename scalar, int variables>
+scalar sum(array_type<scalar, variables> const& x)
+{
+    scalar s = 0;
+    for (int i = 0; i < variables; ++i) { s += x[i]; }
+    return s;
 }
 
 //-----------------------------------------------------------------------------
 // +=
 //-----------------------------------------------------------------------------
 
-template <int variables>
-monomial_indices<variables>& operator+=(monomial_indices<variables>& lhs, monomial_indices<variables> const& rhs)
+template <typename scalar, int variables>
+array_type<scalar, variables>& operator+=(array_type<scalar, variables>& lhs, array_type<scalar, variables> const& rhs)
 {
     for (int i = 0; i < variables; ++i) { lhs[i] += rhs[i]; }
     return lhs;
@@ -64,18 +100,25 @@ monomial_indices<variables>& operator+=(monomial_indices<variables>& lhs, monomi
 // -
 //-----------------------------------------------------------------------------
 
-template <int variables>
-monomial_indices<variables> operator-(monomial_indices<variables> const& x)
+template <typename scalar, int variables>
+array_type<scalar, variables> operator-(array_type<scalar, variables> const& x)
 {
-    monomial_indices<variables> result;
+    array_type<scalar, variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = -x[i]; }
     return result;
 }
 
-template <int variables>
-monomial_indices<variables> operator-(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
+template <typename scalar, int variables>
+array_type<scalar, variables>& negate(array_type<scalar, variables>& x)
 {
-    monomial_indices<variables> result;
+    for (int i = 0; i < variables; ++i) { negate(x[i]); }
+    return x;
+}
+
+template <typename scalar, int variables>
+array_type<scalar, variables> operator-(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
+{
+    array_type<scalar, variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = lhs[i] - rhs[i]; }
     return result;
 }
@@ -84,12 +127,71 @@ monomial_indices<variables> operator-(monomial_indices<variables> const& lhs, mo
 // -=
 //-----------------------------------------------------------------------------
 
-template <int variables>
-monomial_indices<variables>& operator-=(monomial_indices<variables>& lhs, monomial_indices<variables> const& rhs)
+template <typename scalar, int variables>
+array_type<scalar, variables>& operator-=(array_type<scalar, variables>& lhs, array_type<scalar, variables> const& rhs)
 {
     for (int i = 0; i < variables; ++i) { lhs[i] -= rhs[i]; }
     return lhs;
 }
+
+//-----------------------------------------------------------------------------
+// min
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int variables>
+array_type<scalar, variables> min(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
+{
+    array_type<scalar, variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = std::min(lhs[i], rhs[i]); }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// max
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int variables>
+array_type<scalar, variables> max(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
+{
+    array_type<scalar, variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = std::max(lhs[i], rhs[i]); }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// recombine
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int variables>
+array_type<scalar, variables - 1> split(array_type<scalar, variables> const& x, int index)
+{
+    array_type<scalar, variables - 1> result;
+    int j = 0;
+    for (int i = 0; i < variables; ++i) { if (i != index) { result[j++] = x[i]; } }
+    return result;
+}
+
+template <typename scalar, int variables>
+array_type<scalar, variables + 1> merge(array_type<scalar, variables> const& x, int index, scalar const& pick)
+{
+    array_type<scalar, variables + 1> result;
+    int j = 0;
+    for (int i = 0; i < (variables + 1); ++i) { if (i != index) { result[i] = x[j++]; } else { result[i] = pick; } }
+    return result;
+}
+
+//=============================================================================
+// monomial aliases
+//=============================================================================
+
+template <int variables>
+using monomial_indices = std::array<int, variables>;
+
+template <int variables>
+using monomial_mask = std::array<bool, variables>;
+
+template <typename scalar, int variables>
+using monomial_values = std::array<scalar, variables>;
 
 //-----------------------------------------------------------------------------
 // <<
@@ -98,15 +200,18 @@ monomial_indices<variables>& operator-=(monomial_indices<variables>& lhs, monomi
 template <int variables>
 std::ostream& operator<<(std::ostream& os, monomial_indices<variables> const& indices)
 {
-    bool first = true;
+    char const* const prefix = "";
+    char const* const separator = "*";
+
+    char const* infix = prefix;
+
     for (int i = 0; i < variables; ++i)
     {
         if (indices[i] != 0)
         {
-            if (!first) { os << "*"; }
-            first = false;
-            os << "x_" << i;
+            os << infix << "x_" << i;
             if (indices[i] != 1) { os << "^" << indices[i]; }
+            infix = separator;
         }
     }
     return os;
@@ -126,158 +231,26 @@ bool is_integral(monomial_indices<variables> const& indices)
 template <int variables>
 int total_degree(monomial_indices<variables> const& indices)
 {
-    int sum = 0;
-    for (int i = 0; i < variables; ++i) { sum += indices[i]; }
-    return sum;
+    return sum(indices);
 }
 
 template <int variables>
 monomial_indices<variables> gcd(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
 {
-    monomial_indices<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = std::min(lhs[i], rhs[i]); }
-    return result;
+    return min(lhs, rhs);
 }
 
 template <int variables>
 monomial_indices<variables> lcm(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
 {
-    monomial_indices<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = std::max(lhs[i], rhs[i]); }
-    return result;
+    return max(lhs, rhs);
 }
-
-template <int variables>
-monomial_indices<variables - 1> split(monomial_indices<variables> const& indices, int index)
-{
-    monomial_indices<variables - 1> result;
-    int j = 0;
-    for (int i = 0; i < variables; ++i) { if (i != index) { result[j++] = indices[i]; } }
-    return result;
-}
-
-template <int variables>
-monomial_indices<variables + 1> merge(monomial_indices<variables> const& indices, int index, monomial_indices<1> const& pick)
-{
-    monomial_indices<variables + 1> result;
-    int j = 0;
-    for (int i = 0; i < (variables + 1); ++i) { if (i != index) { result[i] = indices[j++]; } else { result[i] = pick[0]; } }
-    return result;
-}
-
-//=============================================================================
-// monomial_mask
-//=============================================================================
-
-template <int variables>
-using monomial_mask = std::array<bool, variables>;
-
-//-----------------------------------------------------------------------------
-// ~
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_mask<variables> operator~(monomial_mask<variables> const& x)
-{
-    monomial_mask<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = !x[i]; }
-    return result;
-}
-
-//-----------------------------------------------------------------------------
-// |
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_mask<variables> operator|(monomial_mask<variables> const& lhs, monomial_mask<variables> const& rhs)
-{
-    monomial_mask<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = lhs[i] || rhs[i]; }
-    return result;
-}
-
-//-----------------------------------------------------------------------------
-// |=
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_mask<variables>& operator|=(monomial_mask<variables>& lhs, monomial_mask<variables> const& rhs)
-{
-    for (int i = 0; i < variables; ++i) { lhs[i] = lhs[i] || rhs[i]; }
-    return lhs;
-}
-
-//-----------------------------------------------------------------------------
-// &
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_mask<variables> operator&(monomial_mask<variables> const& lhs, monomial_mask<variables> const& rhs)
-{
-    monomial_mask<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = lhs[i] && rhs[i]; }
-    return result;
-}
-
-//-----------------------------------------------------------------------------
-// &=
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_mask<variables>& operator&=(monomial_mask<variables>& lhs, monomial_mask<variables> const& rhs)
-{
-    for (int i = 0; i < variables; ++i) { lhs[i] = lhs[i] && rhs[i]; }
-    return lhs;
-}
-
-//-----------------------------------------------------------------------------
-// ^
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_mask<variables> operator^(monomial_mask<variables> const& lhs, monomial_mask<variables> const& rhs)
-{
-    monomial_mask<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = (!lhs[i] && rhs[i]) || (lhs[i] && !rhs[i]); }
-    return result;
-}
-
-//-----------------------------------------------------------------------------
-// ^=
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_mask<variables>& operator^=(monomial_mask<variables>& lhs, monomial_mask<variables> const& rhs)
-{
-    for (int i = 0; i < variables; ++i) { lhs[i] = (!lhs[i] && rhs[i]) || (lhs[i] && !rhs[i]); }
-    return lhs;
-}
-
-//-----------------------------------------------------------------------------
-// compare
-//-----------------------------------------------------------------------------
-
-template <int variables>
-monomial_indices<variables> select(monomial_indices<variables> const indices, monomial_mask<variables> const& mask, bool complement)
-{
-    monomial_indices<variables> result;
-    for (int i = 0; i < variables; ++i) { result[i] = (mask[i] - complement) ? indices[i] : 0; }
-    return result;
-}
-
-//=============================================================================
-// monomial_values
-//=============================================================================
 
 template <typename scalar, int variables>
-using monomial_values = std::array<scalar, variables>;
-
-template <typename scalar, int variables>
-monomial_values<scalar, variables + 1> merge(monomial_values<scalar, variables> const& indices, int index, monomial_values<scalar, 1> const& pick)
+monomial_values<scalar, variables> select(monomial_values<scalar, variables> const x, monomial_mask<variables> const& mask, bool complement)
 {
-    monomial_values<scalar, variables + 1> result;
-    int j = 0;
-    for (int i = 0; i < (variables + 1); ++i) { if (i != index) { result[i] = indices[j++]; } else { result[i] = pick[0]; } }
+    monomial_values<scalar, variables> result;
+    for (int i = 0; i < variables; ++i) { result[i] = (mask[i] - complement) ? x[i] : 0; }
     return result;
 }
 
@@ -327,7 +300,7 @@ private:
             {
                 if constexpr (level == (variables - 1))
                 {
-                    object.resize(indices[level] + 1, std::make_tuple<scalar, bool>({ 1 }, false));
+                    object.resize(indices[level] + 1, std::make_tuple<scalar, bool>(1, false));
                 }
                 else
                 {
@@ -345,7 +318,7 @@ public:
 
     monomial_powers(values_type const& values) : values{ values }
     {
-        for (int i = 0; i < variables; ++i) { powers[i].push_back({ 1 }); }
+        for (int i = 0; i < variables; ++i) { powers[i].push_back(1); }
     }
 
     //-------------------------------------------------------------------------
@@ -424,6 +397,12 @@ public:
     monomial_type operator-() const
     {
         return monomial_type(-coefficient, indices);
+    }
+
+    friend monomial_type& negate(monomial_type& x)
+    {
+        negate(x.coefficient);
+        return x;
     }
 
     //-------------------------------------------------------------------------
@@ -580,6 +559,13 @@ monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> 
     return x;
 }
 
+template <typename scalar, int variables>
+monomial_vector<scalar, variables>& negate(monomial_vector<scalar, variables>& x)
+{
+    for (auto& m : x) { negate(m); }
+    return x;
+}
+
 //-----------------------------------------------------------------------------
 // *=
 //-----------------------------------------------------------------------------
@@ -679,15 +665,19 @@ monomial_vector<scalar, variables> operator%(monomial_vector<scalar, variables> 
 template <typename scalar, int variables>
 std::ostream& operator<<(std::ostream& os, monomial_vector<scalar, variables> const& v)
 {
+    char const* const prefix = "";
+    char const* const separator = " , ";
+
+    char const* infix = prefix;
+
     os << "[";
-    bool first = true;
     for (auto const& m : v)
     {
-        if (!first) { os << " , "; }
-        first = false;
-        os << m;
+        os << infix << m;
+        infix = separator;
     }
     os << "]";
+
     return os;
 }
 
@@ -864,11 +854,11 @@ public:
         for (auto const& m : v) { (*this)[m.indices] += m.coefficient; }
     }
 
-    //template <typename other_scalar>
-    //polynomial(polynomial_other_type<other_scalar> const& other)
-    //{
-    //    other.for_each([&](other_scalar const& coefficient, monomial_indices_type const& indices) { (*this)[indices] = scalar(coefficient); });
-    //}
+    template <typename other_scalar>
+    explicit polynomial(polynomial_other_type<other_scalar> const& other)
+    {
+        other.for_each([&](other_scalar const& coefficient, monomial_indices_type const& indices) { (*this)[indices] = scalar(coefficient); });
+    }
 
     //-------------------------------------------------------------------------
     // access
@@ -1004,6 +994,12 @@ public:
         polynomial_type result;
         for_each([&](scalar const& coefficient, monomial_indices_type const& indices) { result[indices] = -coefficient; });
         return result;
+    }
+
+    friend polynomial_type& negate(polynomial_type& x)
+    {
+        x.for_each([&](scalar& coefficient, monomial_indices_type const& indices) { negate(coefficient); });
+        return x;
     }
 
     polynomial_type operator-(polynomial_type const& other) const
@@ -1221,18 +1217,23 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, polynomial_type const& x)
     {
-        bool first = true;
+        char const* const prefix = "";
+        char const* const separator = " + ";
+
+        char const* infix = prefix;
+
         x.for_each
         (
             [&](scalar const& coefficient, monomial_indices_type const& indices)
             {
-                if (!first) { os << " + "; }
-                first = false;
-                os << "(" << coefficient << ")";
-                if (indices != monomial_indices_type{}) { os << "*" << indices; }                
+                os << infix << "(" << coefficient << ")";
+                if (indices != monomial_indices_type{}) { os << "*" << indices; }
+                infix = separator;
             }
         );
-        if (first) { os << "(0)"; }
+
+        if (infix == prefix) { os << "(0)"; }
+
         return os;
     }
 
@@ -1272,7 +1273,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// process
+// compare
 //-----------------------------------------------------------------------------
 
 template <typename scalar, int variables>
@@ -1282,6 +1283,10 @@ monomial_vector<scalar, variables> find_multiples(polynomial<scalar, variables> 
     p.for_each([&](scalar const& coefficient, monomial_indices<variables> const& indices) { if (is_integral(indices - f)) { multiples.push_back({ coefficient, indices }); } });
     return multiples;
 }
+
+//-----------------------------------------------------------------------------
+// hidden variable
+//-----------------------------------------------------------------------------
 
 template <typename scalar, int variables>
 polynomial<polynomial<scalar, 1>, variables - 1> hide_in(polynomial<scalar, variables> const& p, int index)
@@ -1303,7 +1308,7 @@ template <typename scalar, int variables>
 polynomial<scalar, variables + 1> unhide_in(polynomial<polynomial<scalar, 1>, variables> const& p, int index)
 {
     polynomial<scalar, variables + 1> result;
-    p.for_each([&](polynomial<scalar, 1> const& coefficent_a, monomial_indices<variables> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<1> const& indices_b) { result[merge(indices_a, index, indices_b)] += coefficient_b; }); });
+    p.for_each([&](polynomial<scalar, 1> const& coefficent_a, monomial_indices<variables> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<1> const& indices_b) { result[merge(indices_a, index, indices_b[0])] += coefficient_b; }); });
     return result;
 }
 
@@ -1311,12 +1316,34 @@ template <typename scalar, int variables>
 polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, variables>, 1> const& p, int index)
 {
     polynomial<scalar, variables + 1> result;
-    p.for_each([&](polynomial<scalar, variables> const& coefficent_a, monomial_indices<1> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<variables> const& indices_b) { result[merge(indices_b, index, indices_a)] += coefficient_b; }); });
+    p.for_each([&](polynomial<scalar, variables> const& coefficent_a, monomial_indices<1> const& indices_a) { coefficent_a.for_each([&](scalar const& coefficient_b, monomial_indices<variables> const& indices_b) { result[merge(indices_b, index, indices_a[0])] += coefficient_b; }); });
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// substitute
+//-----------------------------------------------------------------------------
+
+template<typename scalar, int variables>
+polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, monomial_values<polynomial<scalar, variables>, variables> const& values)
+{
+    polynomial<scalar, variables> result;
+    monomial_powers<polynomial<scalar, variables>, variables> powers(values);
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result += monomial<scalar, variables>(coefficent, select(indices, mask, true)) * powers[select(indices, mask, false)]; });
     return result;
 }
 
 template<typename scalar, int variables>
-polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
+polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, monomial_values<monomial<scalar, variables>, variables> const& values)
+{
+    polynomial<scalar, variables> result;
+    monomial_powers<monomial<scalar, variables>, variables> powers(values);
+    p.for_each([&](scalar const& coefficent, monomial_indices<variables> const& indices) { result += monomial<scalar, variables>(coefficent, select(indices, mask, true)) * powers[select(indices, mask, false)]; });
+    return result;
+}
+
+template<typename scalar, int variables>
+polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, monomial_values<scalar, variables> const& values)
 {
     polynomial<scalar, variables> result;
     monomial_powers<scalar, variables> powers(values);
@@ -1325,7 +1352,7 @@ polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p,
 }
 
 //=============================================================================
-// remove_polynomial
+// remove_polynomial / add_polynomial
 //=============================================================================
 
 template <typename scalar, typename... Args>
@@ -1347,6 +1374,21 @@ using remove_polynomial_type = typename remove_polynomial<T>::type;
 
 template <typename T>
 using remove_polynomial_indices = typename remove_polynomial<T>::indices;
+
+template <typename scalar, int variables, int... Args>
+struct add_polynomial
+{
+    typedef typename add_polynomial<polynomial<scalar, variables>, Args...>::type type;
+};
+
+template <typename scalar, int variables>
+struct add_polynomial<scalar, variables>
+{
+    typedef polynomial<scalar, variables> type;
+};
+
+template<typename scalar, int variables, int... Args>
+using add_polynomial_type = typename add_polynomial<scalar, variables, Args...>::type;
 
 //=============================================================================
 // grevlex_generator
@@ -1715,4 +1757,7 @@ std::ostream& operator<<(std::ostream& os, Eigen::Matrix<polynomial<scalar, vari
         os << std::endl;
     }
     return os;
+}
+
+
 }
