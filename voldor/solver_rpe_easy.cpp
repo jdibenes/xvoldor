@@ -17,47 +17,11 @@ struct objkindn
 
 
 
-template <typename _scalar, int _rows, int _cols, int _n>
-void polynomial_row_echelon_sort(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices<_n> const& monomial)
-{
-    _scalar max_s = _scalar(0);
-    int max_r = row;
 
-    for (int i = row; i < M.rows(); ++i)
-    {
-        _scalar v = abs(M(i, col)[monomial]);
-        if (v <= max_s) { continue; }
-        max_s = v;
-        max_r = i;
-    }
 
-    if (max_r != row) { M.row(row).swap(M.row(max_r)); }
-}
 
-template <typename _scalar, int _rows, int _cols, int _n>
-bool polynomial_row_echelon_eliminate(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices<_n> const& monomial, bool all)
-{
-    _scalar a = M(row, col)[monomial];
-    if (abs(a) <= 0) { return false; }
-    M.row(row) /= a;
 
-    for (int i = all ? 0 : (row + 1); i < M.rows(); ++i)
-    {
-        if (i == row) { continue; }
-        _scalar b = M(i, col)[monomial];
-        if (abs(b) <= 0) { continue; }
-        M.row(i) -= b * M.row(row);
-    }
 
-    return true;
-}
-
-template <typename _scalar, int _rows, int _cols, int _n>
-bool polynomial_row_echelon_step(Eigen::Matrix<polynomial<_scalar, _n>, _rows, _cols>& M, int row, int col, monomial_indices<_n> const& monomial, bool all)
-{
-    polynomial_row_echelon_sort(M, row, col, monomial);
-    return polynomial_row_echelon_eliminate(M, row, col, monomial, all);
-}
 
 bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 {
@@ -84,17 +48,17 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
         (e_full(Eigen::all, 1) + z(1) * e_full(Eigen::all, 3)),
         (e_full(Eigen::all, 2) + z(2) * e_full(Eigen::all, 3));
 
-    Eigen::Matrix<polynomial<float, 2>, 3, 3> E = matrix_to_polynomial_grevlex<float, 2, 3, 3>(e); // OK
+    Eigen::Matrix<x38::polynomial<float, 2>, 3, 3> E = x38::matrix_to_polynomial_grevlex<float, 2, 3, 3>(e); // OK
 
-    polynomial<float, 2> E_determinant = E.determinant();
+    x38::polynomial<float, 2> E_determinant = E.determinant();
 
-    Eigen::Matrix<polynomial<float, 2>, 3, 3> EEt = E * E.transpose();
-    Eigen::Matrix<polynomial<float, 2>, 3, 3> E_singular_values = (EEt * E) - ((0.5 * EEt.trace()) * E);
+    Eigen::Matrix<x38::polynomial<float, 2>, 3, 3> EEt = E * E.transpose();
+    Eigen::Matrix<x38::polynomial<float, 2>, 3, 3> E_singular_values = (EEt * E) - ((0.5 * EEt.trace()) * E);
 
     Eigen::Matrix<float, 10, 10> S;
 
-    S << matrix_from_polynomial_grevlex<float, 9, 10>(E_singular_values),
-         matrix_from_polynomial_grevlex<float, 1, 10>(E_determinant);
+    S << x38::matrix_from_polynomial_grevlex<float, 9, 10>(E_singular_values),
+         x38::matrix_from_polynomial_grevlex<float, 1, 10>(E_determinant);
 
     std::cout << "S SV: " << S.bdcSvd().singularValues() << std::endl;
 
@@ -121,6 +85,33 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
     float t_sum = t01[0] + t01[1] + t01[2];
 
     float x_sum = r_sum + t_sum;
+
+
+    std::cout << "E_determinant:         " << E_determinant << std::endl;
+    std::cout << "negate(E_determinant): " << negate(E_determinant) << std::endl;
+    x38::monomial_vector<float, 2> mv = E_determinant;
+    float av = 0;
+    x38::negate(mv);
+    x38::negate(av);
+
+    using rvtype = x38::remove_vector_type<x38::add_vector_type<float, 5>>;
+    using aptype = x38::add_polynomial_type<float, 2, 3, 4>; //x38::add_polynomial<float, 5, 3, 4, 2>::type;
+
+    aptype xapt = x38::polynomial<x38::polynomial<x38::polynomial<float, 2>, 3>, 4>();
+
+    
+    x38::polynomial<float, 2> xx = x38::polynomial<float, 2>(x38::polynomial<double, 2>());
+    x38::polynomial<x38::polynomial<float, 3>, 2> dashjrfla = x38::polynomial<x38::polynomial<float, 3>, 2>(x38::polynomial<x38::polynomial<double, 3>, 2>());
+
+    using aptt = x38::remove_polynomial_type<x38::polynomial<x38::polynomial<x38::polynomial<float, 2>, 3>, 4>>;
+    using apind = x38::remove_polynomial_indices<x38::polynomial<x38::polynomial<x38::polynomial<float, 2>, 3>, 4>>;
+    apind xapti = std::tuple<std::array<int, 4>, std::array<int, 3>, std::array<int, 2>>();
+
+    //aptype tsts = x38::polynomial<x38::polynomial < x38::polynomial < x38::polynomial<float, 5>, 3>, 4>, 2>();
+
+    //std::array<int, 5> xarray;
+   // x38::monomial_indices<5> xarray;
+    //std::cout << xarray << std::endl;
 
     return std::isfinite(x_sum);
 
@@ -240,6 +231,7 @@ bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01)
 
 
 
+//* // GOOD
 bool solver_rpe_easy2(float const* p1, float const* p2, float* r01, float* t01)
 {
     Eigen::Matrix<float, 3, 5> P1 = matrix_from_buffer<float, 3, 5>(p1);
@@ -255,36 +247,36 @@ bool solver_rpe_easy2(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<float, 9, 4> e = Q.fullPivLu().kernel();
 
-    Eigen::Matrix<polynomial<float, 3>, 3, 3> E = matrix_to_polynomial_grevlex<float, 3, 3, 3>(e); // OK
+    Eigen::Matrix<x38::polynomial<float, 3>, 3, 3> E = x38::matrix_to_polynomial_grevlex<float, 3, 3, 3>(e); // OK
 
     int hidden_variable_index = 2;
 
-    Eigen::Matrix<polynomial<polynomial<float, 1>, 2>, 3, 3> E_hidden = hide_in(E, hidden_variable_index);
+    Eigen::Matrix<x38::polynomial<x38::polynomial<float, 1>, 2>, 3, 3> E_hidden = hide_in(E, hidden_variable_index);
 
-    polynomial<polynomial<float, 1>, 2> E_determinant = E_hidden.determinant();
+    x38::polynomial<x38::polynomial<float, 1>, 2> E_determinant = E_hidden.determinant();
 
-    Eigen::Matrix<polynomial<polynomial<float, 1>, 2>, 3, 3> EEt = E_hidden * E_hidden.transpose();
-    Eigen::Matrix<polynomial<polynomial<float, 1>, 2>, 3, 3> E_singular_values = (EEt * E_hidden) - ((0.5 * EEt.trace()) * E_hidden);
+    Eigen::Matrix<x38::polynomial<x38::polynomial<float, 1>, 2>, 3, 3> EEt = E_hidden * E_hidden.transpose();
+    Eigen::Matrix<x38::polynomial<x38::polynomial<float, 1>, 2>, 3, 3> E_singular_values = (EEt * E_hidden) - ((0.5 * EEt.trace()) * E_hidden);
 
-    Eigen::Matrix<polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> S(10, 10);
+    Eigen::Matrix<x38::polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> S(10, 10);
 
-    S << matrix_from_polynomial_grevlex<polynomial<float, 1>, 9, 10>(E_singular_values).rowwise().reverse(),
-         matrix_from_polynomial_grevlex<polynomial<float, 1>, 1, 10>(E_determinant).rowwise().reverse();
+    S << x38::matrix_from_polynomial_grevlex<x38::polynomial<float, 1>, 9, 10>(E_singular_values).rowwise().reverse(),
+         x38::matrix_from_polynomial_grevlex<x38::polynomial<float, 1>, 1, 10>(E_determinant).rowwise().reverse();
 
-    for (int i = 0; i < 4; ++i) { polynomial_row_echelon_step(S, i, i, { 0 }, false); }
+    for (int i = 0; i < 4; ++i) { x38::row_echelon_step(S, i, i, { 0 }, false); }
 
-    Eigen::Matrix<polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> S6 = S(Eigen::seqN(4, 6), Eigen::seqN(4, 6));
+    Eigen::Matrix<x38::polynomial<float, 1>, Eigen::Dynamic, Eigen::Dynamic> S6 = S(Eigen::seqN(4, 6), Eigen::seqN(4, 6));
 
-    polynomial_row_echelon_step(S6, 0, 0, { 1 }, true);
-    polynomial_row_echelon_step(S6, 1, 0, { 0 }, true);
+    x38::row_echelon_step(S6, 0, 0, { 1 }, true);
+    x38::row_echelon_step(S6, 1, 0, { 0 }, true);
 
-    polynomial_row_echelon_step(S6, 2, 1, { 1 }, true);
-    polynomial_row_echelon_step(S6, 3, 1, { 0 }, true);
+    x38::row_echelon_step(S6, 2, 1, { 1 }, true);
+    x38::row_echelon_step(S6, 3, 1, { 0 }, true);
 
-    polynomial_row_echelon_step(S6, 4, 2, { 1 }, true);
-    polynomial_row_echelon_step(S6, 5, 2, { 0 }, true);
+    x38::row_echelon_step(S6, 4, 2, { 1 }, true);
+    x38::row_echelon_step(S6, 5, 2, { 0 }, true);
 
-    polynomial<float, 1> hidden_variable = monomial<float, 1>{ 1, { 1 } };
+    x38::polynomial<float, 1> hidden_variable = x38::monomial<float, 1>{ 1, { 1 } };
 
     S6.row(1) = (S6.row(1) * hidden_variable) - S6.row(0);
     S6.row(3) = (S6.row(3) * hidden_variable) - S6.row(2);
@@ -293,11 +285,11 @@ bool solver_rpe_easy2(float const* p1, float const* p2, float* r01, float* t01)
     S6.row(1).swap(S6.row(2));
     S6.row(2).swap(S6.row(4));
 
-    Eigen::Matrix<polynomial<float, 1>, 3, 3> S3 = S6(Eigen::seqN(3, 3), Eigen::seqN(3, 3));
+    Eigen::Matrix<x38::polynomial<float, 1>, 3, 3> S3 = S6(Eigen::seqN(3, 3), Eigen::seqN(3, 3));
 
-    polynomial<float, 1> hidden_univariate = S3.determinant();
+    x38::polynomial<float, 1> hidden_univariate = S3.determinant();
 
-    Eigen::Matrix<float, 1, 11> hidden_coefficients = matrix_from_polynomial_grevlex<float, 1, 11>(hidden_univariate);
+    Eigen::Matrix<float, 1, 11> hidden_coefficients = x38::matrix_from_polynomial_grevlex<float, 1, 11>(hidden_univariate);
 
     double coefficients[11];
     double z_roots[10];
@@ -312,14 +304,14 @@ bool solver_rpe_easy2(float const* p1, float const* p2, float* r01, float* t01)
     {
         float z = z_roots[i];
 
-        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> FINAL = split(substitute(S, { true }, { z }), {});
+        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> FINAL = x38::slice(x38::substitute(S, { true }, x38::monomial_values<float, 1>{ z }), {});
 
         solution = FINAL.bdcSvd(Eigen::ComputeFullV).matrixV().col(9);
 
         float x = solution(8) / solution(9);
         float y = solution(7) / solution(9);
 
-        fake_E = split(substitute(E, { true, true, true }, merge<float, 2>({ x, y }, hidden_variable_index, { z })), {});
+        fake_E = x38::slice(x38::substitute(E, { true, true, true }, x38::merge(x38::array_type<float, 2>{ x, y }, hidden_variable_index, z)), {});
 
         result_R_t_from_E result = R_t_from_E(fake_E, q1, q2);
 
@@ -346,6 +338,7 @@ bool solver_rpe_easy2(float const* p1, float const* p2, float* r01, float* t01)
 
     return false;
 }
+
 
 
 
