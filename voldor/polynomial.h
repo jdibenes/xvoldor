@@ -1788,4 +1788,50 @@ std::ostream& operator<<(std::ostream& os, Eigen::Matrix<polynomial<scalar, vari
     return os;
 }
 
+//-----------------------------------------------------------------------------
+// row echelon
+//-----------------------------------------------------------------------------
+
+template <typename scalar, int rows, int cols, int variables>
+void row_echelon_sort(Eigen::Matrix<polynomial<scalar, variables>, rows, cols>& M, int row, int col, monomial_indices<variables> const& monomial)
+{
+    scalar max_s = 0;
+    int max_r = row;
+
+    for (int i = row; i < M.rows(); ++i)
+    {
+        scalar v = abs(M(i, col)[monomial]);
+        if (v <= max_s) { continue; }
+        max_s = v;
+        max_r = i;
+    }
+
+    if (max_r != row) { M.row(row).swap(M.row(max_r)); }
+}
+
+template <typename scalar, int rows, int cols, int variables>
+bool row_echelon_eliminate(Eigen::Matrix<x38::polynomial<scalar, variables>, rows, cols>& M, int row, int col, x38::monomial_indices<variables> const& monomial, bool all)
+{
+    scalar a = M(row, col)[monomial];
+    if (abs(a) <= 0) { return false; }
+    M.row(row) /= a;
+
+    for (int i = all ? 0 : (row + 1); i < M.rows(); ++i)
+    {
+        if (i == row) { continue; }
+        scalar b = M(i, col)[monomial];
+        if (abs(b) <= 0) { continue; }
+        M.row(i) -= b * M.row(row);
+    }
+
+    return true;
+}
+
+template <typename scalar, int rows, int cols, int variables>
+bool row_echelon_step(Eigen::Matrix<x38::polynomial<scalar, variables>, rows, cols>& M, int row, int col, x38::monomial_indices<variables> const& monomial, bool all)
+{
+    row_echelon_sort(M, row, col, monomial);
+    return row_echelon_eliminate(M, row, col, monomial, all);
+}
+
 }
