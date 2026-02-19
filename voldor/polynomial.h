@@ -1652,24 +1652,9 @@ Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> matrix_to_polynomial_
 template <typename _matrix_scalar, int _rows, int _cols, typename scalar, int variables>
 Eigen::Matrix<_matrix_scalar, _rows, _cols> matrix_from_polynomial_grevlex(polynomial<scalar, variables> const& src, int rows = _rows, int cols = _cols)
 {
-    Eigen::Matrix<_matrix_scalar, _rows, _cols> dst(rows, cols);// = Eigen::Matrix<_matrix_scalar, _rows, _cols>::Zero(rows, cols);
+    Eigen::Matrix<_matrix_scalar, _rows, _cols> dst(rows, cols);
     grevlex_generator<variables> gg;
     for (int i = 0; i < dst.size(); ++i) { dst(i) = src[gg.next().current_indices()]; }
-    //for (int i = 0; i < cols; ++i) {
-    //    for (int j = 0; j < rows; ++j) {
-    //        dst(j, i) = src[gg.next().current_indices()];
-    //    }
-    //}
-    /*
-    src.for_each
-    (
-        [&](scalar const& element, monomial_indices<variables> const& indices)
-        {
-            int i = grevlex_generator<variables>::ravel(indices);
-            if (i < dst.size()) { dst(i) = element; }
-        }
-    );
-    */
     return dst;
 }
 
