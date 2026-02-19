@@ -229,6 +229,13 @@ bool is_integral(monomial_indices<variables> const& indices)
 }
 
 template <int variables>
+bool is_multiple(monomial_indices<variables> const& num, monomial_indices<variables> const& den)
+{
+    for (int i = 0; i < variables; ++i) { if ((num[i] - den[i]) < 0) { return false; } };
+    return true;
+}
+
+template <int variables>
 int total_degree(monomial_indices<variables> const& indices)
 {
     return sum(indices);
@@ -247,7 +254,7 @@ monomial_indices<variables> lcm(monomial_indices<variables> const& lhs, monomial
 }
 
 template <typename scalar, int variables>
-monomial_values<scalar, variables> select(monomial_values<scalar, variables> const x, monomial_mask<variables> const& mask, bool complement)
+monomial_values<scalar, variables> select(monomial_values<scalar, variables> const& x, monomial_mask<variables> const& mask, bool complement)
 {
     monomial_values<scalar, variables> result;
     for (int i = 0; i < variables; ++i) { result[i] = (mask[i] - complement) ? x[i] : 0; }
@@ -526,7 +533,7 @@ public:
 
     bool is_multiple(monomial_indices_type const& f) const
     {
-        return is_integral(indices - f);
+        return is_multiple(indices, f);
     }
 };
 
@@ -555,7 +562,7 @@ template <typename scalar, int variables>
 monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> const& x)
 {
     monomial_vector<scalar, variables> result = x;
-    for (auto& m : result) { m = -m; }
+    for (auto& m : result) { negate(m); }
     return x;
 }
 
@@ -1028,17 +1035,20 @@ public:
 
     friend polynomial_type operator-(monomial_vector_type const& other, polynomial_type const& x)
     {
-        return -x + other;
+        polynomial_type nresult = x - other;
+        return negate(nresult); //-x + other;
     }
 
     friend polynomial_type operator-(monomial_type const& other, polynomial_type const& x)
     {
-        return -x + other;
+        polynomial_type nresult = x - other;
+        return negate(nresult); //-x + other;
     }
 
     friend polynomial_type operator-(scalar const& other, polynomial_type const& x)
     {
-        return -x + other;
+        polynomial_type nresult = x - other;
+        return negate(nresult); //-x + other;
     }
 
     //-------------------------------------------------------------------------
@@ -1280,7 +1290,7 @@ template <typename scalar, int variables>
 monomial_vector<scalar, variables> find_multiples(polynomial<scalar, variables> const& p, monomial_indices<variables> const& f)
 {
     monomial_vector<scalar, variables> multiples;
-    p.for_each([&](scalar const& coefficient, monomial_indices<variables> const& indices) { if (is_integral(indices - f)) { multiples.push_back({ coefficient, indices }); } });
+    p.for_each([&](scalar const& coefficient, monomial_indices<variables> const& indices) { if (is_multiple(indices, f)) { multiples.push_back({ coefficient, indices }); } });
     return multiples;
 }
 
@@ -1622,6 +1632,13 @@ result_reduce<scalar, variables> reduce(polynomial<scalar, variables> const& div
     if (is_integral(q.indices)) { return { q, simple_reduce(dividend, divisor, q, { lt_divisor.coefficient, {} }), false }; } else { return { 0, dividend, true }; }
 }
 
+
+
+
+
+
+
+
 //=============================================================================
 // matrix of polynomials
 //=============================================================================
@@ -1706,22 +1723,27 @@ Eigen::Matrix<polynomial<scalar, variables + 1>, _rows, _cols> unhide_out(Eigen:
     return dst;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template <typename scalar, int _rows, int _cols, int variables>
-Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> substitute(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
+Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> substitute(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src, monomial_mask<variables> const& mask, monomial_values<scalar, variables> const& values)
 {
     Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> dst(src.rows(), src.cols());
     for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = substitute(src(j, i), mask, values); } }
     return dst;
 }
-
-template <typename scalar, int _rows, int _cols, int variables>
-void substitute_inplace(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols>& src, monomial_mask<variables> const& mask, std::array<scalar, variables> const& values)
-{
-    for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { src(j, i) = substitute(src(j, i), mask, values); } }
-}
-
-
-// TODO: functions for polynomial -> matrix of polynomials
 
 template <typename scalar, int _rows, int _cols, int variables>
 Eigen::Matrix<scalar, _rows, _cols> split(Eigen::Matrix<polynomial<scalar, variables>, _rows, _cols> const& src, monomial_indices<variables> const& indices)
@@ -1730,6 +1752,17 @@ Eigen::Matrix<scalar, _rows, _cols> split(Eigen::Matrix<polynomial<scalar, varia
     for (int i = 0; i < src.cols(); ++i) { for (int j = 0; j < src.rows(); ++j) { dst(j, i) = src(j, i)[indices]; } }
     return dst;
 }
+
+
+
+
+
+
+
+
+// TODO: functions for polynomial -> matrix of polynomials
+
+
 
 
 
