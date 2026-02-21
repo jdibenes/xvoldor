@@ -31,9 +31,7 @@ bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01)
     Eigen::Matrix<float, 3, 3> R = result.P(Eigen::all, Eigen::seqN(0, 3));
     Eigen::Matrix<float, 3, 1> v = result.P.col(3);
 
-    Eigen::AngleAxis<float> aa(R);
-
-    Eigen::Matrix<float, 3, 1> r = aa.axis() * aa.angle();
+    Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
     Eigen::Matrix<float, 3, 1> t = (P2.col(0) - R * P1.col(0)).norm() * v;
 
     matrix_to_buffer(r, r01);

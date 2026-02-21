@@ -25,17 +25,17 @@ bool solver_gpm_nm5(float const* p1, float const* p2, float* r01, float* t01)
 
     e << (-(k(3, Eigen::all) + k(7, Eigen::all))), k;
 
-    Eigen::Matrix<polynomial<float, 2>, 3, 3> E = matrix_to_polynomial_grevlex<float, 2, 3, 3>(e); // OK
+    Eigen::Matrix<x38::polynomial<float, 2>, 3, 3> E = x38::matrix_to_polynomial_grevlex<float, 2, 3, 3>(e); // OK
 
-    polynomial<float, 2> E_determinant = E.determinant();
+    x38::polynomial<float, 2> E_determinant = E.determinant();
 
-    Eigen::Matrix<polynomial<float, 2>, 3, 3> EEt = E * E.transpose();
-    Eigen::Matrix<polynomial<float, 2>, 3, 3> E_singular_values = (EEt * E) - ((0.5 * EEt.trace()) * E);
+    Eigen::Matrix<x38::polynomial<float, 2>, 3, 3> EEt = E * E.transpose();
+    Eigen::Matrix<x38::polynomial<float, 2>, 3, 3> E_singular_values = (EEt * E) - ((0.5 * EEt.trace()) * E);
 
     Eigen::Matrix<float, 10, 10> S;
 
-    S << matrix_from_polynomial_grevlex<float, 9, 10>(E_singular_values),
-         matrix_from_polynomial_grevlex<float, 1, 10>(E_determinant);
+    S << x38::matrix_from_polynomial_grevlex<float, 9, 10>(E_singular_values),
+         x38::matrix_from_polynomial_grevlex<float, 1, 10>(E_determinant);
 
     Eigen::Matrix<float, 10, 1> solution = S.bdcSvd(Eigen::ComputeThinV).matrixV().col(9);
 

@@ -167,9 +167,7 @@ bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float
 
     if (!set) { return false; }
 
-    Eigen::AngleAxis<float> aa(R);
-
-    Eigen::Matrix<float, 3, 1> r = aa.axis() * aa.angle();
+    Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
 
     matrix_to_buffer(r, r01);
     matrix_to_buffer(t, t01);

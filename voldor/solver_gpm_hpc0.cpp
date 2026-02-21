@@ -2,6 +2,7 @@
 #include <Eigen/Eigen>
 #include "helpers.h"
 #include "helpers_eigen.h"
+#include "helpers_geometry.h"
 
 bool solver_gpm_hpc0(float const* pa1, float const* pb1, float const* pa2, float const* pb2, float* r01, float* t01)
 {
@@ -44,7 +45,7 @@ bool solver_gpm_hpc0(float const* pa1, float const* pb1, float const* pa2, float
     float thetaR = 2.0f * std::acos(clamp((cs * cF_2) / std::sqrt((cc * cc) + (cs * cs)), -1.0f, 1.0f));
 
     Eigen::Matrix<float, 3, 1> r = kR * thetaR;
-    Eigen::Matrix<float, 3, 1> t = ((PA2 + PB2) - (Eigen::AngleAxis<float>(thetaR, kR).toRotationMatrix() * (PA1 + PB1))) / 2.0f;
+    Eigen::Matrix<float, 3, 1> t = ((PA2 + PB2) - (matrix_R_rodrigues(r) * (PA1 + PB1))) / 2.0f;
 
     matrix_to_buffer(r, r01);
     matrix_to_buffer(t, t01);
