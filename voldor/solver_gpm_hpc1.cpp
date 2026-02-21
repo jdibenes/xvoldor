@@ -5,12 +5,15 @@
 #include "helpers.h"
 #include "helpers_eigen.h"
 
-bool solver_gpm_hpc1(float const* pa1, float const* pb1, float const* pa2, float const* pb2, float* r01, float* t01, int refine_iterations)
+bool solver_gpm_hpc1(float const* p1, float const* p2, float* r01, float* t01, int refine_iterations)
 {
-    Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
-    Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
-    Eigen::Matrix<float, 3, 1> PA2 = matrix_from_buffer<float, 3, 1>(pa2);
-    Eigen::Matrix<float, 3, 1> PB2 = matrix_from_buffer<float, 3, 1>(pb2);
+    Eigen::Matrix<float, 3, 2> P1 = matrix_from_buffer<float, 3, 2>(p1);
+    Eigen::Matrix<float, 3, 2> P2 = matrix_from_buffer<float, 3, 2>(p2);
+
+    Eigen::Matrix<float, 3, 1> PA1 = P1.col(0);
+    Eigen::Matrix<float, 3, 1> PB1 = P1.col(1);
+    Eigen::Matrix<float, 3, 1> PA2 = P2.col(0);
+    Eigen::Matrix<float, 3, 1> PB2 = P2.col(1);
 
     Eigen::Matrix<float, 3, 1> PB2_n = PB2 / PB2(2, 0);
     Eigen::Matrix<float, 3, 1> PX1_d = PB1 - PA1;

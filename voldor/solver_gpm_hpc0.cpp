@@ -4,12 +4,15 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-bool solver_gpm_hpc0(float const* pa1, float const* pb1, float const* pa2, float const* pb2, float* r01, float* t01)
+bool solver_gpm_hpc0(float const* p1, float const* p2, float* r01, float* t01)
 {
-    Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
-    Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
-    Eigen::Matrix<float, 3, 1> PA2 = matrix_from_buffer<float, 3, 1>(pa2);
-    Eigen::Matrix<float, 3, 1> PB2 = matrix_from_buffer<float, 3, 1>(pb2);
+    Eigen::Matrix<float, 3, 2> P1 = matrix_from_buffer<float, 3, 2>(p1);
+    Eigen::Matrix<float, 3, 2> P2 = matrix_from_buffer<float, 3, 2>(p2);
+
+    Eigen::Matrix<float, 3, 1> PA1 = P1.col(0);
+    Eigen::Matrix<float, 3, 1> PB1 = P1.col(1);
+    Eigen::Matrix<float, 3, 1> PA2 = P2.col(0);
+    Eigen::Matrix<float, 3, 1> PB2 = P2.col(1);
 
     Eigen::Matrix<float, 3, 1> V1 = (PA1 - PB1).normalized();
     Eigen::Matrix<float, 3, 1> V2 = (PA2 - PB2).normalized();

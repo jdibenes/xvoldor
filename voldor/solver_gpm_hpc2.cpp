@@ -1,4 +1,5 @@
 
+#include <limits>
 #include <Eigen/Eigen>
 #include "algebra.h"
 #include "helpers.h"
@@ -59,14 +60,17 @@ static Eigen::Matrix<float, 6, 1> solver_gpm_hpc2_build_conic(Eigen::Matrix<floa
     return conic;
 }
 
-bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float const* pa2, float const* pb2, float const* pc2, float* r01, float* t01, int refine_iterations)
+bool solver_gpm_hpc2(float const* p1, float const* p2, float* r01, float* t01, int refine_iterations)
 {
-    Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
-    Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
-    Eigen::Matrix<float, 3, 1> PC1 = matrix_from_buffer<float, 3, 1>(pc1);
-    Eigen::Matrix<float, 3, 1> PA2 = matrix_from_buffer<float, 3, 1>(pa2);
-    Eigen::Matrix<float, 3, 1> PB2 = matrix_from_buffer<float, 3, 1>(pb2);
-    Eigen::Matrix<float, 3, 1> PC2 = matrix_from_buffer<float, 3, 1>(pc2);
+    Eigen::Matrix<float, 3, 3> P1 = matrix_from_buffer<float, 3, 3>(p1);
+    Eigen::Matrix<float, 3, 3> P2 = matrix_from_buffer<float, 3, 3>(p2);
+
+    Eigen::Matrix<float, 3, 1> PA1 = P1.col(0);
+    Eigen::Matrix<float, 3, 1> PB1 = P1.col(1);
+    Eigen::Matrix<float, 3, 1> PC1 = P1.col(2);
+    Eigen::Matrix<float, 3, 1> PA2 = P2.col(0);
+    Eigen::Matrix<float, 3, 1> PB2 = P2.col(1);
+    Eigen::Matrix<float, 3, 1> PC2 = P2.col(2);
 
     Eigen::Matrix<float, 3, 1> QB1 = PA1.cross(PB1);
     Eigen::Matrix<float, 3, 1> QC1 = PA1.cross(PC1);
@@ -135,7 +139,7 @@ bool solver_gpm_hpc2(float const* pa1, float const* pb1, float const* pc1, float
     Eigen::Matrix<float, 3, 3> R;
     Eigen::Matrix<float, 3, 1> t;
 
-    float error = HUGE_VALF;
+    float error = std::numeric_limits<float>::infinity();
     bool  set   = false;
 
     for (int r = 0; r < 4; ++r)
