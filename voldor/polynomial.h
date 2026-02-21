@@ -1784,9 +1784,9 @@ template <typename scalar, int rows, int cols, int variables>
 std::ostream& operator<<(std::ostream& os, Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src)
 {
     for (int i = 0; i < src.rows(); ++i) {
+        if (i > 0) { os << '\n'; }
         os << " | ";
         for (int j = 0; j < src.cols(); ++j) { os << src(i, j) << " | "; }
-        os << std::endl;
     }
     return os;
 }
