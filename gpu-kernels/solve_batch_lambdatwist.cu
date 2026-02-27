@@ -82,7 +82,7 @@ int solve_batch_p3p_lambdatwist_gpu(float* h_p3s, float* h_p2s, float* h_o_rvecs
 
 	// solve batch ap3p
 	float fx = h_K[0], cx = h_K[2], fy = h_K[4], cy = h_K[5];
-	solve << <DIV_CEIL(N_poses, N_THREADS), N_THREADS >> > (d_p2s, d_p3s, d_rvecs, d_tvecs, d_rand_states, N_pts, N_poses);
+	solve << <DIV_CEIL(N_poses, N_THREADS), N_THREADS >> > (d_p2s, d_p3s, d_rvecs, d_tvecs, d_rand_states, N_pts - 1, N_poses);
 	gpuErrchk;
 
 	// copy back R,t
