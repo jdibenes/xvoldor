@@ -45,8 +45,8 @@ if __name__ == '__main__':
     toolset = 'gt'
     mode_name = 'stereo'
     set_save_pose = True
-    set_enable_mapping = False
-    set_enable_loop_closure = False    
+    set_enable_mapping = True
+    set_enable_loop_closure = True    
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
 

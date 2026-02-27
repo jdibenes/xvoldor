@@ -27,7 +27,8 @@ sys.path.append('../slam_py')
 #sys.path.append('./lib_VS_flow2_fix_triangulation_mt_ressl')
 #sys.path.append('./lib_p3p_but_not_planar')
 #sys.path.append('./lib_gpm_3d3d')
-sys.path.append('./lib_vs_p3p_migration')
+#sys.path.append('./lib_vs_p3p_migration')
+sys.path.append('./lib_hpc0_new')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
