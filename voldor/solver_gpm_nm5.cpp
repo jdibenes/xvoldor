@@ -47,15 +47,10 @@ bool solver_gpm_nm5(float const* p1, float const* p2, float* r01, float* t01)
     Eigen::Matrix<float, 3, 1> v = result.P.col(3);
 
     Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
-    Eigen::Matrix<float, 3, 1> t = (P2.col(0) - R * P1.col(0)).norm() * v;
+    Eigen::Matrix<float, 3, 1> t = v * solve_scale_t_2D3D(v, -P2.col(0), R * P1.col(0));
 
     matrix_to_buffer(r, r01);
     matrix_to_buffer(t, t01);
 
-    float r_sum = r01[0] + r01[1] + r01[2];
-    float t_sum = t01[0] + t01[1] + t01[2];
-
-    float x_sum = r_sum + t_sum;
-
-    return std::isfinite(x_sum);
+    return is_valid_pose(r, t);
 }

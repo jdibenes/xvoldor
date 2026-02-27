@@ -176,10 +176,5 @@ bool solver_gpm_hpc2(float const* p1, float const* p2, float* r01, float* t01, i
     matrix_to_buffer(r, r01);
     matrix_to_buffer(t, t01);
 
-    float r_sum = r01[0] + r01[1] + r01[2];
-    float t_sum = t01[0] + t01[1] + t01[2];
-
-    float x_sum = r_sum + t_sum;
-
-    return std::isfinite(x_sum);
+    return is_valid_pose(r, t);
 }

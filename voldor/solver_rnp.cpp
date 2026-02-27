@@ -44,7 +44,7 @@ bool solver_r6p1l(float const* p3d, float const* p2d, bool direction, float r0, 
 	matrix_to_buffer(r, r01);
 	matrix_to_buffer(t, t01);
 
-	return true;
+	return is_valid_pose(r, t);
 }
 
 // OK
@@ -93,7 +93,7 @@ bool solver_r6p2l(float const* p3d, float const* p2d, bool direction, float r0, 
 	matrix_to_buffer(r, r01);
 	matrix_to_buffer(t, t01);
 
-	return true;
+	return is_valid_pose(r, t);
 }
 
 // OK
@@ -123,5 +123,5 @@ bool solver_r6pi(float const* p3d, float const* p2d, bool direction, float r0, i
 	matrix_to_buffer(r, r01);
 	matrix_to_buffer(t, t01);
 
-	return true;
+	return is_valid_pose(r, t);
 }

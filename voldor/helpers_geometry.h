@@ -208,3 +208,28 @@ Eigen::Matrix<typename A::Scalar, 3, 1> vector_r_rodrigues(Eigen::MatrixBase<A> 
     Eigen::AngleAxis<typename A::Scalar> aa(R);
     return aa.axis() * aa.angle();
 }
+
+// OK
+// unit_t: 3x1
+// p2d:    3x1
+// p3d:    3x1
+template <typename A, typename B, typename C>
+typename A::Scalar solve_scale_t_2D3D(Eigen::MatrixBase<A> const& unit_t, Eigen::MatrixBase<B> const& p2d, Eigen::MatrixBase<C> const& p3d)
+{
+    Eigen::Matrix<typename A::Scalar, 3, 3> P;
+    P << unit_t, p2d, p3d;
+    Eigen::Matrix<typename A::Scalar, 3, 1> u = P.jacobiSvd(Eigen::ComputeFullV).matrixV().col(2);
+    return u(0) / u(2);
+}
+
+// OK
+// r: 3x1
+// t: 3x1
+template <typename A, typename B>
+bool is_valid_pose(Eigen::MatrixBase<A> const& r, Eigen::MatrixBase<B> const& t)
+{
+    float r_sum = r(0) + r(1) + r(2);
+    float t_sum = t(0) + t(1) + t(2);
+    float x_sum = r_sum + t_sum;
+    return std::isfinite(x_sum);
+}
