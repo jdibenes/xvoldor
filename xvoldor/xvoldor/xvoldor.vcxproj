@@ -45,9 +45,7 @@
     <ClInclude Include="..\..\voldor\polynomial.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
     <ClInclude Include="..\..\voldor\solver_4p3v_para.h" />
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc0.h" />
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc1.h" />
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc2.h" />
+    <ClInclude Include="..\..\voldor\solver_gpm.h" />
     <ClInclude Include="..\..\voldor\solver_rnp.h" />
     <ClInclude Include="..\..\voldor\trifocal.h" />
     <ClInclude Include="..\..\voldor\voldor_utils.h" />

@@ -84,7 +84,7 @@
     <ClInclude Include="..\..\voldor\trifocal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc0.h">
+    <ClInclude Include="..\..\voldor\solver_gpm.h">
       <Filter>Header Files\solvers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_eigen.h">
@@ -98,12 +98,6 @@
     </ClInclude>
     <ClInclude Include="..\..\voldor\lock.h">
       <Filter>Header Files\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc1.h">
-      <Filter>Header Files\solvers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc2.h">
-      <Filter>Header Files\solvers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
       <Filter>Header Files</Filter>
