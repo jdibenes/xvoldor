@@ -26,7 +26,7 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> triangulate(Ei
     L(0, 2) =  p2d((2 * m) + 1, n);
     L(1, 2) = -p2d((2 * m) + 0, n);
 
-    ls_matrix(Eigen::seqN(2 * m, 2), Eigen::all) = L * P(Eigen::all, Eigen::seqN(4 * m, 4));
+    ls_matrix(Eigen::seqN(2 * m, 2), Eigen::indexing::all) = L * P(Eigen::indexing::all, Eigen::seqN(4 * m, 4));
     }
 
     p3d_h.col(n) = ls_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().col(3); // Previously BDC SVD, Full = Thin
@@ -56,8 +56,8 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
 
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> p2d(4, N);
 
-    p2d(Eigen::seqN(0, 2), Eigen::all) = p2d_1;
-    p2d(Eigen::seqN(2, 2), Eigen::all) = p2d_2;
+    p2d(Eigen::seqN(0, 2), Eigen::indexing::all) = p2d_1;
+    p2d(Eigen::seqN(2, 2), Eigen::indexing::all) = p2d_2;
 
     Eigen::Matrix<typename A::Scalar, 3, 3> W{ {0, -1, 0}, {1, 0, 0}, {0, 0, 1} };
 
@@ -94,8 +94,8 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
     case 3: P2 << R2, nt; break;
     }
 
-    PX(Eigen::all, Eigen::seqN(0, 4)) = P1;
-    PX(Eigen::all, Eigen::seqN(4, 4)) = P2;
+    PX(Eigen::indexing::all, Eigen::seqN(0, 4)) = P1;
+    PX(Eigen::indexing::all, Eigen::seqN(4, 4)) = P2;
 
     XYZW = triangulate(PX, p2d).colwise().hnormalized().colwise().homogeneous();
 

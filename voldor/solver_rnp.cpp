@@ -13,8 +13,8 @@ bool solver_r6p1l(float const* p3d, float const* p2d, bool direction, float r0, 
 	Eigen::MatrixXd X7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d, 3, 7).cast<double>();
 	Eigen::MatrixXd u7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d, 2, 7).cast<double>();
 	
-	Eigen::MatrixXd X = X7(Eigen::all, Eigen::seqN(0, 6));
-	Eigen::MatrixXd u = u7(Eigen::all, Eigen::seqN(0, 6));
+	Eigen::MatrixXd X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::MatrixXd u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
 
 	R6P1Lin(X, u, direction, r0, maxpow, &solutions); // always returns 0
 
@@ -60,8 +60,8 @@ bool solver_r6p2l(float const* p3d, float const* p2d, bool direction, float r0, 
 	Eigen::MatrixXd X7 = R_initial * matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d, 3, 7).cast<double>();
 	Eigen::MatrixXd u7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d, 2, 7).cast<double>();
 
-	Eigen::MatrixXd X = X7(Eigen::all, Eigen::seqN(0, 6));
-	Eigen::MatrixXd u = u7(Eigen::all, Eigen::seqN(0, 6));
+	Eigen::MatrixXd X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::MatrixXd u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
 
 	RSDoublelinCameraPoseVector solutions;
 
@@ -109,8 +109,8 @@ bool solver_r6pi(float const* p3d, float const* p2d, bool direction, float r0, i
 	Eigen::MatrixXd X7 = R_initial * matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d, 3, 7).cast<double>();
 	Eigen::MatrixXd u7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d, 2, 7).cast<double>();
 
-	Eigen::MatrixXd X = X7(Eigen::all, Eigen::seqN(0, 6));
-	Eigen::MatrixXd u = u7(Eigen::all, Eigen::seqN(0, 6));
+	Eigen::MatrixXd X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::MatrixXd u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
 
 	RSDoublelinCameraPose solution;
 

@@ -8,18 +8,17 @@ import numpy
 import shutil
 
 # Change these folders
-opencv_include_dir = 'D:/jcds/SDK/opencv_3414/build/include'
-ceres_include_dirs = ['D:/jcds/SDK/ceres_2/ceres-solver/include', \
-                        'D:/jcds/SDK/ceres_2/ceres-solver/config', \
-                        'D:/jcds/SDK/ceres_2/ceres-solver/eigen', \
-                        'D:/jcds/SDK/ceres_2/ceres-solver/glog/build', \
-                        'D:/jcds/SDK/ceres_2/ceres-solver/glog/src', \
-                        'D:/jcds/SDK/ceres_2/ceres-solver/glog/src/windows']
+opencv_include_dir = 'D:/jcds/SDK2/opencv_3_4_16/build/include'
+ceres_include_dirs = [
+    'D:/jcds/Documents/GitHub/vcpkg/packages/ceres_x64-windows/include',
+    'D:/jcds/Documents/GitHub/vcpkg/packages/eigen3_x64-windows/include/eigen3',
+    'D:/jcds/Documents/GitHub/vcpkg/packages/glog_x64-windows/include'
+]
 
-opencv_lib_dir = 'D:/jcds/SDK/opencv_3414/build/x64/vc15/lib'
-ceres_lib_dirs = ['D:/jcds/SDK/ceres_2/ceres-solver/ceres-bin/lib/Release', 'D:/jcds/SDK/ceres_2/ceres-solver/glog/build/Release']
+opencv_lib_dir = 'D:/jcds/SDK2/opencv_3_4_16/build/x64/vc15/lib'
+ceres_lib_dirs = ['D:/jcds/Documents/GitHub/vcpkg/packages/ceres_x64-windows/lib', 'D:/jcds/Documents/GitHub/vcpkg/packages/glog_x64-windows/lib']
 
-opencv_lib_name = 'opencv_world3414'
+opencv_lib_name = 'opencv_world3416'
 ceres_lib_names = ['ceres', 'glog']
 
 # Change this if you target different host/device
@@ -30,19 +29,19 @@ gpu_sources_cu = ' '.join(glob('../../gpu-kernels/*.cu'))
 
 gpu_kernel_build_cmd = f'nvcc {gpu_sources_cpp} {gpu_sources_cu} -I {opencv_include_dir} -L {opencv_lib_dir} -l {opencv_lib_name} \
                         -shared -o ./gpu-kernels.dll -O3 -cudart static {nvcc_machine_code} -Xcompiler /wd4819'
-os.system('nvcc --version')
 os.system(gpu_kernel_build_cmd)
 
 ext = Extension('pyvoldor_full',
     sources = ['pyvoldor_full.pyx'] + \
             [x for x in glob('../../voldor/*.cpp') if 'main.cpp' not in x] + \
             [x for x in glob('../../frame-alignment/*.cpp') if 'main.cpp' not in x] + \
-            [x for x in glob('../../pose-graph/*.cpp') if 'main.cpp' not in x],
+            [x for x in glob('../../pose-graph/*.cpp') if 'main.cpp' not in x] + \
+            [x for x in glob('../../thirdparty/rnp/*.cpp')],
     language = 'c++',
     library_dirs = ['./gpu-kernels.lib', opencv_lib_dir] + ceres_lib_dirs,
     libraries = ['gpu-kernels', opencv_lib_name] + ceres_lib_names,
-    include_dirs = [numpy.get_include(), opencv_include_dir] + ceres_include_dirs,
-    extra_compile_args = ["-MD"],
+    include_dirs = [numpy.get_include(), opencv_include_dir] + ceres_include_dirs + ['../../thirdparty'],
+    extra_compile_args = ['/std:c++17', '-MD'],
     define_macros = [('_CRT_NONSTDC_NO_DEPRECATE',''), ('CERES_USE_CXX_THREADS',''), ('GLOG_USE_GLOG_EXPORT','')]
 )
 

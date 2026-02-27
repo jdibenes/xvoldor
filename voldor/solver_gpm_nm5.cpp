@@ -20,10 +20,10 @@ bool solver_gpm_nm5(float const* p1, float const* p2, float* r01, float* t01)
     Q.col(4) = Q.col(4) - Q.col(0);
     Q.col(8) = Q.col(8) - Q.col(0);
 
-    Eigen::Matrix<float, 8, 3> k = Q(Eigen::all, Eigen::seqN(1, 8)).fullPivLu().kernel();
+    Eigen::Matrix<float, 8, 3> k = Q(Eigen::indexing::all, Eigen::seqN(1, 8)).fullPivLu().kernel();
     Eigen::Matrix<float, 9, 3> e;
 
-    e << (-(k(3, Eigen::all) + k(7, Eigen::all))), k;
+    e << (-(k(3, Eigen::indexing::all) + k(7, Eigen::indexing::all))), k;
 
     Eigen::Matrix<x38::polynomial<float, 2>, 3, 3> E = x38::matrix_to_polynomial_grevlex<float, 2, 3, 3>(e); // OK
 
@@ -39,11 +39,11 @@ bool solver_gpm_nm5(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<float, 10, 1> solution = S.bdcSvd(Eigen::ComputeThinV).matrixV().col(9);
 
-    Eigen::Matrix<float, 3, 3> fake_E = (e(Eigen::all, 0) + ((solution(1) / solution(0)) * e(Eigen::all, 1)) + ((solution(2) / solution(0)) * e(Eigen::all, 2))).reshaped(3, 3);
+    Eigen::Matrix<float, 3, 3> fake_E = (e(Eigen::indexing::all, 0) + ((solution(1) / solution(0)) * e(Eigen::indexing::all, 1)) + ((solution(2) / solution(0)) * e(Eigen::indexing::all, 2))).reshaped(3, 3);
 
     result_R_t_from_E result = R_t_from_E(fake_E, q1, q2);
 
-    Eigen::Matrix<float, 3, 3> R = result.P(Eigen::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R = result.P(Eigen::indexing::all, Eigen::seqN(0, 3));
     Eigen::Matrix<float, 3, 1> v = result.P.col(3);
 
     Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
