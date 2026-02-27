@@ -1,6 +1,6 @@
 
 #include <opencv2/calib3d.hpp>
-#include "solver_gpm_hpc1.h"
+#include "solver_gpm.h"
 #include "batch_solve_common.h"
 
 // points in format [u, v, z]
@@ -26,10 +26,18 @@ int batch_solve_gpm_hpc1_cpu(std::vector<cv::Point3f> const& pts0, std::vector<c
 		int i1 = ix[0];
 		int i2 = ix[1];
 
-		cv::Point3f pa1 = pts0[i1];
-		cv::Point3f pb1 = pts0[i2];
-		cv::Point3f pa2 = pts1[i1];
-		cv::Point3f pb2 = pts1[i2];
+		cv::Point3f p1[2];
+		cv::Point3f p2[2];
+
+		p1[0] = pts0[i1];
+		p1[1] = pts0[i2];
+		p2[0] = pts1[i1];
+		p2[1] = pts1[i2];
+
+		cv::Point3f& pa1 = p1[0];
+		cv::Point3f& pb1 = p1[1];
+		cv::Point3f& pa2 = p2[0];
+		cv::Point3f& pb2 = p2[1];
 
 		pa1.x = ((pa1.x - cx) / fx) * pa1.z;
 		pb1.x = ((pb1.x - cx) / fx) * pb1.z;
@@ -41,7 +49,7 @@ int batch_solve_gpm_hpc1_cpu(std::vector<cv::Point3f> const& pts0, std::vector<c
 		pa2.y = ((pa2.y - cy) / fy) * pa2.z;
 		pb2.y = ((pb2.y - cy) / fy) * pb2.z;
 
-		bool ok = solver_gpm_hpc1((float*)&pa1, (float*)&pb1, (float*)&pa2, (float*)&pb2, (float*)&r, (float*)&t, refine_iterations);
+		bool ok = solver_gpm_hpc1((float*)p1, (float*)p2, (float*)&r, (float*)&t, refine_iterations);
 		if (!ok) { continue; }
 
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = r;
