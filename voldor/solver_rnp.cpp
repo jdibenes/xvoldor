@@ -53,7 +53,8 @@ bool solver_r6p2l(float const* p3d, float const* p2d, bool direction, float r0, 
 	cv::Mat r_initial;
 	cv::Mat t_initial;
 
-	cv::solvePnP(cv::Mat(4, 3, CV_32FC1, (void*)p3d), cv::Mat(4, 2, CV_32FC1, (void*)p2d), cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
+	bool ok = cv::solvePnP(cv::Mat(4, 3, CV_32FC1, (void*)p3d), cv::Mat(4, 2, CV_32FC1, (void*)p2d), cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
+	if (!ok) { return false; }
 
 	Eigen::Matrix<double, 3, 3> R_initial = matrix_R_rodrigues(matrix_from_buffer<double, 3, 1>((double*)r_initial.data));
 
@@ -102,7 +103,8 @@ bool solver_r6pi(float const* p3d, float const* p2d, bool direction, float r0, i
 	cv::Mat r_initial;
 	cv::Mat t_initial;
 
-	cv::solvePnP(cv::Mat(4, 3, CV_32FC1, (void*)p3d), cv::Mat(4, 2, CV_32FC1, (void*)p2d), cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
+	bool ig = cv::solvePnP(cv::Mat(4, 3, CV_32FC1, (void*)p3d), cv::Mat(4, 2, CV_32FC1, (void*)p2d), cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
+	if (!ig) { return false; }
 
 	Eigen::Matrix<double, 3, 3> R_initial = matrix_R_rodrigues(matrix_from_buffer<double, 3, 1>((double*)r_initial.data));
 
