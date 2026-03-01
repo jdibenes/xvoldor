@@ -300,3 +300,4 @@ slam_py/install/gpu-kernels.dll
 slam_py/install/gpu-kernels.exp
 slam_py/install/gpu-kernels.lib
 slam_py/install/pyvoldor_full.cp36-win_amd64.pyd
+/demo/lib_rnp
