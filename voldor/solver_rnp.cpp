@@ -6,7 +6,7 @@
 #include "helpers_geometry.h"
 
 // OK
-bool solver_r6p1l(float const* p3d, float const* p2d, bool direction, float r0, int maxpow, float* r01, float* t01)
+bool solver_r6p1l(float const* p3d, float const* p2d, bool direction, float r0, int max_pow, float* r01, float* t01)
 {
 	RSSinglelinCameraPoseVector solutions;
 
@@ -16,7 +16,7 @@ bool solver_r6p1l(float const* p3d, float const* p2d, bool direction, float r0, 
 	Eigen::MatrixXd X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
 	Eigen::MatrixXd u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
 
-	R6P1Lin(X, u, direction, r0, maxpow, &solutions); // always returns 0
+	R6P1Lin(X, u, direction, r0, max_pow, &solutions); // always returns 0
 
 	if (solutions.size() < 0) { return false; }
 
@@ -106,15 +106,12 @@ bool solver_r6pi(float const* p3d, float const* p2d, bool direction, float r0, i
 
 	Eigen::Matrix<double, 3, 3> R_initial = matrix_R_rodrigues(matrix_from_buffer<double, 3, 1>((double*)r_initial.data));
 
-	Eigen::MatrixXd X7 = R_initial * matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d, 3, 7).cast<double>();
-	Eigen::MatrixXd u7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d, 2, 7).cast<double>();
-
-	Eigen::MatrixXd X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
-	Eigen::MatrixXd u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::MatrixXd X6 = R_initial * matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d, 3, 6).cast<double>();
+	Eigen::MatrixXd u6 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d, 2, 6).cast<double>();
 
 	RSDoublelinCameraPose solution;
 
-	bool ok = !iterativeRnP<RSDoublelinCameraPose, R6PIter>(X, u, Eigen::Vector3d{0,0,0}, 6, r0, direction, max_iterations, solution);
+	bool ok = !iterativeRnP<RSDoublelinCameraPose, R6PIter>(X6, u6, Eigen::Vector3d{0,0,0}, 6, r0, direction, max_iterations, solution);
 	if (!ok) { return false; }
 
 	Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues((Eigen::Matrix<double, 3, 3>::Identity() + matrix_cross(solution.v)) * R_initial).cast<float>();
