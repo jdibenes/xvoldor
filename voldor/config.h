@@ -18,15 +18,16 @@ struct Config
 	int rs_max_pow = 2;
 	int rs_max_iterations = 5;
 
-
-	int cpu_p3p = false; //do p3p on cpu (deprecated)
-	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
-
 	int trifocal_index_0 = 0;
 	int trifocal_index_1 = 0;
 	int trifocal_index_2 = 0;
 	float trifocal_squared_error_min_thresh = 0;//0.01f;
 	float trifocal_squared_error_max_thresh = 2.0f;
+
+	// OLD
+
+	int cpu_p3p = false; //do p3p on cpu (deprecated)
+	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
@@ -133,6 +134,23 @@ struct Config
 
 			else if (cfg_strs[i] == "--multiview_mode")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->multiview_mode);
+			else if (cfg_strs[i] == "--solver_select")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->solver_select);
+
+			else if (cfg_strs[i] == "--batch_workers")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->batch_workers);
+
+
+			else if (cfg_strs[i] == "--rs_direction")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_direction);
+			else if (cfg_strs[i] == "--rs_r0")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_r0);
+			else if (cfg_strs[i] == "--rs_max_pow")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_pow);
+			else if (cfg_strs[i] == "--rs_max_iterations")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_iterations);
+
+			// OLD
 
 			else if (cfg_strs[i] == "--basefocal")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->basefocal);
