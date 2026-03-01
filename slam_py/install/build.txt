@@ -1,0 +1,3 @@
+run native tools x64 vs 2019
+cd /d D:\jcds\Documents\GitHub\xvoldor\slam_py\install
+C:/Users/jdibe/AppData/Local/Programs/Python/Python36/python.exe D:/jcds/Documents/GitHub/xvoldor/slam_py/install/setup_win_full.py build_ext -i
