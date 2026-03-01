@@ -41,12 +41,15 @@ big_table = [
 '''
 
 if __name__ == '__main__':
+    solver_id = 16
     sequence_index = 18
     toolset = 'gt'
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
     set_enable_loop_closure = True    
+
+    extra_args = f'--solver_select {solver_id}'
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
 
@@ -58,7 +61,7 @@ if __name__ == '__main__':
     path_disp = os.path.join(path_base, sequence, f'disp_{toolset}')
     #path_disp = os.path.join(path_base, sequence, f'disp')
     path_img = os.path.join(path_base, sequence, 'img')
-    fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}.txt')
+    fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}_{solver_id}.txt')
 
     cmd = 'C:/Users/jdibe/AppData/Local/Programs/Python/Python36/python.exe D:/jcds/Documents/GitHub/xvoldor/demo/demo.py'
     fx = f'--fx {fx_val}'
@@ -79,4 +82,4 @@ if __name__ == '__main__':
     abs_resize = f'--abs_resize {abs_resize_val}'
     save_pose = f'--save_pose {fname_pose}' if (set_save_pose) else ''
 
-    os.system(f'{cmd} {fx} {fy} {cx} {cy} {bf} {flow_dir} {flow_2_dir} {img_dir} {disp_dir} {mode} {enable_mapping} {enable_loop_closure} {resize} {abs_resize} {save_pose}')
+    os.system(f'{cmd} {fx} {fy} {cx} {cy} {bf} {flow_dir} {flow_2_dir} {img_dir} {disp_dir} {mode} {enable_mapping} {enable_loop_closure} {resize} {abs_resize} {save_pose} {extra_args}')

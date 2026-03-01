@@ -17,6 +17,7 @@ parser.add_argument('--enable_loop_closure', type=str, default=None)
 parser.add_argument('--enable_mapping', action='store_true')
 parser.add_argument('--save_poses', type=str)
 parser.add_argument('--save_depths', type=str)
+parser.add_argument('--solver_select', type=int)
 
 opt = parser.parse_args()
 if opt.abs_resize is None:
@@ -28,7 +29,8 @@ sys.path.append('../slam_py')
 #sys.path.append('./lib_p3p_but_not_planar')
 #sys.path.append('./lib_gpm_3d3d')
 #sys.path.append('./lib_vs_p3p_migration')
-sys.path.append('./lib_p3plt_gpu')
+#sys.path.append('./lib_p3plt_gpu')
+sys.path.append('./lib_rnp')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
@@ -44,7 +46,7 @@ if __name__ == '__main__':
 
     # set camera intrinsic
     slam.set_cam_params(opt.fx,opt.fy,opt.cx,opt.cy,opt.bf, rescale=opt.resize)
-    slam.voldor_user_config = f'--abs_resize_factor {opt.abs_resize}'
+    slam.voldor_user_config = f'--abs_resize_factor {opt.abs_resize} --solver_select {opt.solver_select}'
 
     # enable loop closure
     if opt.enable_loop_closure is not None:
