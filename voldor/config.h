@@ -6,10 +6,18 @@ struct Config
 {
 	//vector<string> flow_names;
 	int multiview_mode = 2; // 2: binocular, 3: trifocal
-	int solver_select = 3;
+	int solver_select = 16;
 	int disparities_enable = 0;
 	int trifocal_enable_flow_2 = 0;
 	int root_refine_interations = 2;
+	int batch_workers = 12;
+
+	// rolling shutter
+	int rs_direction = 0;
+	float rs_r0 = 0;
+	int rs_max_pow = 2;
+	int rs_max_iterations = 5;
+
 
 	int cpu_p3p = false; //do p3p on cpu (deprecated)
 	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
