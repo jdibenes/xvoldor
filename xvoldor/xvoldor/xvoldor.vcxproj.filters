@@ -159,6 +159,9 @@
     <ClInclude Include="..\..\voldor\polynomial.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\batch_solve_cpu.h">
+      <Filter>Header Files\batch_solve</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
@@ -426,6 +429,12 @@
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_cpu.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

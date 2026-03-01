@@ -35,6 +35,7 @@
     <ClInclude Include="..\..\voldor\algebra.h" />
     <ClInclude Include="..\..\voldor\batch_solve.h" />
     <ClInclude Include="..\..\voldor\batch_solve_common.h" />
+    <ClInclude Include="..\..\voldor\batch_solve_cpu.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
     <ClInclude Include="..\..\voldor\helpers.h" />
@@ -212,7 +213,9 @@
     <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\utils.cpp" />
     <ClCompile Include="..\..\voldor\algebra.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_common.cpp" />
+    <ClCompile Include="..\..\voldor\batch_solve_cpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc1_cpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc2_cpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp" />
@@ -225,10 +228,10 @@
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\lock.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\main_solver_test.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp" />
