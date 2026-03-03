@@ -192,7 +192,7 @@ class VOLDOR_SLAM:
             self.cython_process_pool = multiprocessing.pool.ThreadPool(6)
             self.falign_thread_pool = multiprocessing.pool.ThreadPool(12)
 
-    def set_cam_params(self, fx, fy, cx, cy, basefocal='auto', rescale=1.0):
+    def set_cam_params(self, fx, fy, cx, cy, basefocal='auto', rescale=1.0, depth_scale=1000):
         self.fx = fx*rescale
         self.fy = fy*rescale
         self.cx = cx*rescale
@@ -204,6 +204,7 @@ class VOLDOR_SLAM:
         self.K = np.array([[fx,0,cx], [0,fy,cy], [0,0,1]], np.float32)
         self.K_inv = np.linalg.inv(self.K)
         self.voldor_config += f'--pose_sample_min_depth {self.basefocal/self.voldor_pose_sample_max_disp} --pose_sample_max_depth {self.basefocal/self.voldor_pose_sample_min_disp} '
+        self.depth_scale = depth_scale
         print(f'Camera parameters set to {self.fx}, {self.fy}, {self.cx}, {self.cy}, {self.basefocal}')
 
     def flow_loader_sync(self, fid_query, no_block=False, block_when_uninit=False):
@@ -345,7 +346,7 @@ class VOLDOR_SLAM:
                 disp = np.ascontiguousarray(disp)
             elif fn.endswith('.png'):
                 disp = cv2.imread(os.path.join(disp_path, fn), cv2.IMREAD_UNCHANGED)
-                disp = disp.astype(np.float32) / 256.0
+                disp = np.nan_to_num(self.basefocal / (disp.astype(np.float32) / self.depth_scale), nan=0, posinf=0, neginf=0)                
             else:
                 raise f'Unsupported disparity format {fn}'
 
