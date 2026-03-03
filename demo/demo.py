@@ -18,6 +18,7 @@ parser.add_argument('--enable_mapping', action='store_true')
 parser.add_argument('--save_poses', type=str)
 parser.add_argument('--save_depths', type=str)
 parser.add_argument('--solver_select', type=int)
+parser.add_argument('--depth_scale', type=float, default=1000)
 
 opt = parser.parse_args()
 if opt.abs_resize is None:
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     slam = VOLDOR_SLAM(mode=opt.mode)
 
     # set camera intrinsic
-    slam.set_cam_params(opt.fx,opt.fy,opt.cx,opt.cy,opt.bf, rescale=opt.resize)
+    slam.set_cam_params(opt.fx,opt.fy,opt.cx,opt.cy,opt.bf, rescale=opt.resize, depth_scale=opt.depth_scale)
     slam.voldor_user_config = f'--abs_resize_factor {opt.abs_resize} --solver_select {opt.solver_select}'
 
     # enable loop closure
@@ -55,10 +56,6 @@ if __name__ == '__main__':
     # start flow loader
     threading.Thread(target=slam.flow_loader, kwargs={'flow_path':opt.flow_dir, 'resize':opt.resize}).start()
     slam.flow_loader_sync(0, block_when_uninit=True)
-
-    # start flow 2 loader
-    threading.Thread(target=slam.flow_2_loader, kwargs={'flow_2_path':opt.flow_dir, 'resize':opt.resize}).start()
-    slam.flow_2_loader_sync(0, block_when_uninit=True)
 
     # start image loader
     if opt.img_dir is not None:
@@ -72,6 +69,10 @@ if __name__ == '__main__':
     if opt.disp_dir is not None:
         threading.Thread(target=slam.disp_loader, kwargs={'disp_path':opt.disp_dir}).start()    
         slam.disp_loader_sync(0, block_when_uninit=True)
+
+    # start flow 2 loader
+    threading.Thread(target=slam.flow_2_loader, kwargs={'flow_2_path':opt.flow_2_dir, 'resize':opt.resize}).start()
+    slam.flow_2_loader_sync(0, block_when_uninit=True)
     
     # start viewer
     viewer = VOLDOR_Viewer(slam)
