@@ -555,9 +555,11 @@ struct result_normalize_points
 template <typename A>
 result_normalize_points<typename A::Scalar> normalize_points(Eigen::MatrixBase<A> const& p_i)
 {
+    typename A::Scalar const sqrt_2 = static_cast<typename A::Scalar>(1.4142135623730950488016887242097);
+
     Eigen::Matrix<typename A::Scalar, 2, 1> p0 = p_i.rowwise().mean();
 
-    typename A::Scalar s = static_cast<typename A::Scalar>(1.4142135623730950488016887242097) / (p_i.colwise() - p0).colwise().norm().mean();
+    typename A::Scalar s = sqrt_2 / (p_i.colwise() - p0).colwise().norm().mean();
 
     result_normalize_points<typename A::Scalar> result;
 
