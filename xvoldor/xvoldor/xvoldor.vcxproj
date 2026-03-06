@@ -228,10 +228,10 @@
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\lock.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\main_solver_test.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp" />
@@ -242,7 +242,6 @@
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp" />
     <ClCompile Include="..\..\voldor\solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp" />
-    <ClCompile Include="..\..\voldor\solver_tft_linear.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp" />
     <ClCompile Include="..\..\voldor\trifocal.cpp" />
     <ClCompile Include="..\..\voldor\voldor_utils.cpp" />

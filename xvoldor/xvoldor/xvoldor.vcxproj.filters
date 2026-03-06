@@ -350,9 +350,6 @@
     <ClCompile Include="..\..\voldor\algebra.cpp">
       <Filter>Source Files\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_tft_linear.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
