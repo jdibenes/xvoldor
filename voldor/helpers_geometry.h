@@ -457,15 +457,15 @@ struct result_linear_TFT
 };
 
 // OK
-// A: 27x4*N
+// Q: 27x4*N
 template <typename A>
 result_linear_TFT<typename A::Scalar> linear_TFT(Eigen::MatrixBase<A> const& Q, typename A::Scalar threshold = 0) // default
 {
     Eigen::Matrix<typename A::Scalar, 27, 1> t = -(Q.bdcSvd<Eigen::ComputeThinU>().matrixU().col(26)); // Previously BDC SVD, jacobiSVD drift
     Eigen::Matrix<typename A::Scalar,  3, 2> e = epipoles_from_TFT(t); // OK
 
-    Eigen::Matrix<typename A::Scalar, 3, 3> I3 = Eigen::Matrix<typename A::Scalar, 3, 3>::Identity(); // TODO: constant
-    Eigen::Matrix<typename A::Scalar, 9, 9> I9 = Eigen::Matrix<typename A::Scalar, 9, 9>::Identity(); // TODO: constant
+    Eigen::Matrix<typename A::Scalar, 3, 3> I3 = Eigen::Matrix<typename A::Scalar, 3, 3>::Identity();
+    Eigen::Matrix<typename A::Scalar, 9, 9> I9 = Eigen::Matrix<typename A::Scalar, 9, 9>::Identity();
 
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> E(27, 18);
 
@@ -541,4 +541,87 @@ result_R_t_from_TFT<typename A::Scalar> R_t_from_TFT(Eigen::MatrixBase<A> const&
 
     return result;
 }
+
+// OK
+template <typename scalar>
+struct result_normalize_points
+{
+    Eigen::Matrix<scalar, Eigen::Dynamic, Eigen::Dynamic> H; // 3x3
+    Eigen::Matrix<scalar, Eigen::Dynamic, Eigen::Dynamic> p; // 2xN
+};
+
+// OK
+// p_i: 2xN
+template <typename A>
+result_normalize_points<typename A::Scalar> normalize_points(Eigen::MatrixBase<A> const& p_i)
+{
+    Eigen::Matrix<typename A::Scalar, 2, 1> p0 = p_i.rowwise().mean();
+
+    typename A::Scalar s = static_cast<typename A::Scalar>(1.4142135623730950488016887242097) / (p_i.colwise() - p0).colwise().norm().mean();
+
+    result_normalize_points<typename A::Scalar> result;
+
+    result.H = Eigen::Matrix<typename A::Scalar, 3, 3>
+    {
+        {s, 0, -s * p0(0)},
+        {0, s, -s * p0(1)},
+        {0, 0,          1},
+    };
+
+    result.p = result.H(Eigen::seqN(0, 2), Eigen::indexing::all) * p_i.colwise().homogeneous();
+
+    return result;
+}
+
+// OK
+// tft: 27x1
+// M1:   3x3
+// M2:   3x3
+// M3:   3x3
+template <typename A, typename B, typename C, typename D>
+Eigen::Matrix<typename A::Scalar, 27, 1> transform_TFT(Eigen::MatrixBase<A> const& tft, Eigen::MatrixBase<B> const& M1, Eigen::MatrixBase<C> const& M2, Eigen::MatrixBase<D> const& M3, bool inverse)
+{
+    Eigen::Matrix<typename A::Scalar, 3, 3> t1 = tft(Eigen::seqN( 0, 9)).reshaped(3, 3);
+    Eigen::Matrix<typename A::Scalar, 3, 3> t2 = tft(Eigen::seqN( 9, 9)).reshaped(3, 3);
+    Eigen::Matrix<typename A::Scalar, 3, 3> t3 = tft(Eigen::seqN(18, 9)).reshaped(3, 3);
+
+    Eigen::Matrix<typename A::Scalar, 27, 1> t;
+
+    if (!inverse)
+    {
+    Eigen::Matrix<typename A::Scalar, 3, 3> M1i = M1.inverse();
+
+    t(Eigen::seqN( 0, 9)) = (M2 * (M1i(0, 0) * t1 + M1i(1, 0) * t2 + M1i(2, 0) * t3) * M3.transpose()).reshaped(9, 1);
+    t(Eigen::seqN( 9, 9)) = (M2 * (M1i(0, 1) * t1 + M1i(1, 1) * t2 + M1i(2, 1) * t3) * M3.transpose()).reshaped(9, 1);
+    t(Eigen::seqN(18, 9)) = (M2 * (M1i(0, 2) * t1 + M1i(1, 2) * t2 + M1i(2, 2) * t3) * M3.transpose()).reshaped(9, 1);
+    }
+    else
+    {
+    Eigen::Matrix<typename A::Scalar, 3, 3> M2i = M2.inverse();
+    Eigen::Matrix<typename A::Scalar, 3, 3> M3i = M3.inverse();
+
+    t(Eigen::seqN( 0, 9)) = (M2i * (M1(0, 0) * t1 + M1(1, 0) * t2 + M1(2, 0) * t3) * M3i.transpose()).reshaped(9, 1);
+    t(Eigen::seqN( 9, 9)) = (M2i * (M1(0, 1) * t1 + M1(1, 1) * t2 + M1(2, 1) * t3) * M3i.transpose()).reshaped(9, 1);
+    t(Eigen::seqN(18, 9)) = (M2i * (M1(0, 2) * t1 + M1(1, 2) * t2 + M1(2, 2) * t3) * M3i.transpose()).reshaped(9, 1);
+    }
+
+    return t.normalized();
+}
+
+// OK
+// r_gt: 3x1
+// t_gt: 3x1
+// r:    3x1
+// t:    3x1
+template <typename A, typename B, typename C, typename D>
+Eigen::Matrix<typename A::Scalar, 2, 1> compute_error(Eigen::MatrixBase<A> const& r_gt, Eigen::MatrixBase<B> const& t_gt, Eigen::MatrixBase<C> const& r, Eigen::MatrixBase<D> const& t)
+{
+    typename A::Scalar r_error = vector_r_rodrigues(matrix_R_rodrigues(r_gt).transpose() * matrix_R_rodrigues(r)).norm();
+    typename A::Scalar t_error = (t_gt - t).norm();
+
+    return Eigen::Matrix<typename A::Scalar, 2, 1>{ r_error, t_error };
+}
+
+
+
 
