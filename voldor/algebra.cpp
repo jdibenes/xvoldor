@@ -1,5 +1,6 @@
 
 #include <complex>
+#include <rnp/sturm.h>
 
 static float refine_root_quadratic(float c, float b, float a, float root, int iterations)
 {
@@ -109,3 +110,21 @@ void solve_quartic(float const* factors, float* real_roots, int refine_iteration
     real_roots[2] = refine_root_quartic(a0, a1, a2, a3, a4, B_4A - sqrt_2m_rh + sqrt2, refine_iterations);
     real_roots[3] = refine_root_quartic(a0, a1, a2, a3, a4, B_4A - sqrt_2m_rh - sqrt2, refine_iterations);
 }
+
+
+
+int find_real_roots(float const* factors, int degree, float* roots)
+{
+    std::unique_ptr<double[]> f = std::make_unique<double[]>(degree + 1);
+    std::unique_ptr<double[]> r = std::make_unique<double[]>(degree);
+    for (int i = 0; i < (degree + 1); ++i) { f[i] = factors[i]; }
+    int nroots = 0;
+    if (!find_real_roots_sturm(f.get(), degree, r.get(), &nroots, 2, 0)) { return -1; }
+    for (int i = 0; i < nroots; ++i) { roots[i] = r[i]; }
+    return nroots;
+}
+
+
+
+
+
