@@ -26,13 +26,12 @@ bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<float, 3, 3> fake_E = e.reshaped(3, 3);
     
-    result_R_t_from_E result = R_t_from_E(fake_E, q1, q2);
+    result_R_t_from_E result = R_t_from_E(fake_E, P1, q2);
 
     Eigen::Matrix<float, 3, 3> R = result.P(Eigen::indexing::all, Eigen::seqN(0, 3));
-    Eigen::Matrix<float, 3, 1> v = result.P.col(3);
+    Eigen::Matrix<float, 3, 1> t = result.P.col(3);
 
     Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
-    Eigen::Matrix<float, 3, 1> t = v * solve_scale_t_2D3D(v, -P2.col(0), R * P1.col(0));
 
     matrix_to_buffer(r, r01);
     matrix_to_buffer(t, t01);
