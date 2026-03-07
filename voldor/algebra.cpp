@@ -120,7 +120,7 @@ int find_real_roots(float const* factors, int degree, float* roots)
     for (int i = 0; i < (degree + 1); ++i) { f[i] = factors[i]; }
     int nroots = 0;
     if (!find_real_roots_sturm(f.get(), degree, r.get(), &nroots, 2, 0)) { return -1; }
-    for (int i = 0; i < nroots; ++i) { roots[i] = r[i]; }
+    for (int i = 0; i < nroots; ++i) { roots[i] = static_cast<float>(r[i]); }
     return nroots;
 }
 
