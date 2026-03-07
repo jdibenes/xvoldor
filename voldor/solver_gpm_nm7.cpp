@@ -3,10 +3,10 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01)
+bool solver_gpm_nm7(float const* p3d_1, float const* p2h_2, float* r_12, float* t_12)
 {
-    Eigen::Matrix<float, 3, 7> P1 = matrix_from_buffer<float, 3, 7>(p1);
-    Eigen::Matrix<float, 3, 7> P2 = matrix_from_buffer<float, 3, 7>(p2);
+    Eigen::Matrix<float, 3, 7> P1 = matrix_from_buffer<float, 3, 7>(p3d_1);
+    Eigen::Matrix<float, 3, 7> P2 = matrix_from_buffer<float, 3, 7>(p2h_2);
 
     Eigen::Matrix<float, 2, 7> q1 = P1.colwise().hnormalized();
     Eigen::Matrix<float, 2, 7> q2 = P2.colwise().hnormalized();
@@ -33,8 +33,8 @@ bool solver_gpm_nm7(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
 
-    matrix_to_buffer(r, r01);
-    matrix_to_buffer(t, t01);
+    matrix_to_buffer(r, r_12);
+    matrix_to_buffer(t, t_12);
 
     return is_valid_pose(r, t);
 }
