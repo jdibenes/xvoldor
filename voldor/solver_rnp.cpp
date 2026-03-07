@@ -113,7 +113,7 @@ bool solver_r6pi(float const* p3d_1, float const* p2d_2, bool direction, float r
 
 	RSDoublelinCameraPose solution;
 
-	bool ok = !iterativeRnP<RSDoublelinCameraPose, R6PIter>(X6, u6, Eigen::Vector3d{0,0,0}, 6, r0, direction, max_iterations, solution); // vk, sampleSize not used
+	bool ok = !iterativeRnP<RSDoublelinCameraPose, R6PIter>(X6, u6, Eigen::Vector3d{ 0, 0, 0 }, 6, r0, direction, max_iterations, solution); // vk, sampleSize not used
 	if (!ok) { return false; }
 
 	Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues((Eigen::Matrix<double, 3, 3>::Identity() + matrix_cross(solution.v)) * R_initial).cast<float>();
