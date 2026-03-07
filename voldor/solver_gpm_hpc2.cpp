@@ -60,10 +60,10 @@ static Eigen::Matrix<float, 6, 1> solver_gpm_hpc2_build_conic(Eigen::Matrix<floa
     return conic;
 }
 
-bool solver_gpm_hpc2(float const* p1, float const* p2, float* r01, float* t01)
+bool solver_gpm_hpc2(float const* p3d_1, float const* p3d_2, float* r_12, float* t_12)
 {
-    Eigen::Matrix<float, 3, 3> P1 = matrix_from_buffer<float, 3, 3>(p1);
-    Eigen::Matrix<float, 3, 3> P2 = matrix_from_buffer<float, 3, 3>(p2);
+    Eigen::Matrix<float, 3, 3> P1 = matrix_from_buffer<float, 3, 3>(p3d_1);
+    Eigen::Matrix<float, 3, 3> P2 = matrix_from_buffer<float, 3, 3>(p3d_2);
 
     Eigen::Matrix<float, 3, 1> PA1 = P1.col(0);
     Eigen::Matrix<float, 3, 1> PB1 = P1.col(1);
@@ -169,8 +169,8 @@ bool solver_gpm_hpc2(float const* p1, float const* p2, float* r01, float* t01)
 
     Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(R);
 
-    matrix_to_buffer(r, r01);
-    matrix_to_buffer(t, t01);
+    matrix_to_buffer(r, r_12);
+    matrix_to_buffer(t, t_12);
 
     return is_valid_pose(r, t);
 }
