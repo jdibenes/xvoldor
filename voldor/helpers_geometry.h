@@ -49,7 +49,7 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> triangulate(Ei
     Eigen::Matrix<typename A::Scalar, 2, 3> L{ {0, -1, 0}, {1, 0, 0} };
 
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> ls_matrix(2 * M, 4);
-    Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> p3d_h(4, N);
+    Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> p3h(4, N);
 
     for (int n = 0; n < N; ++n)
     {
@@ -61,10 +61,10 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> triangulate(Ei
     ls_matrix(Eigen::seqN(2 * m, 2), Eigen::indexing::all) = L * P(Eigen::indexing::all, Eigen::seqN(4 * m, 4));
     }
 
-    p3d_h.col(n) = ls_matrix.jacobiSvd<Eigen::ComputeFullV>().matrixV().col(3); // Previously BDC SVD, Full = Thin
+    p3h.col(n) = ls_matrix.jacobiSvd<Eigen::ComputeFullV>().matrixV().col(3); // Previously BDC SVD, Full = Thin
     }
 
-    return p3d_h;
+    return p3h;
 }
 
 // OK
@@ -72,8 +72,8 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> triangulate(Ei
 template <typename scalar>
 struct result_R_t_from_E
 {
-    Eigen::Matrix<scalar, Eigen::Dynamic, Eigen::Dynamic> P;     // 3x4
-    Eigen::Matrix<scalar, Eigen::Dynamic, Eigen::Dynamic> p3d_h; // 4xN
+    Eigen::Matrix<scalar, Eigen::Dynamic, Eigen::Dynamic> P;   // 3x4
+    Eigen::Matrix<scalar, Eigen::Dynamic, Eigen::Dynamic> p3h; // 4xN
 };
 
 // OK
@@ -109,12 +109,12 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
 
     result_R_t_from_E<typename A::Scalar> result;
 
-    Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> XYZW;
+    Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> p3h;
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> p2d;
 
     if (is_3d)
     {
-    XYZW = p2d_1.colwise().homogeneous();
+    p3h = p2d_1.colwise().homogeneous();
     }
     else
     {
@@ -145,15 +145,15 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
     PX(Eigen::indexing::all, Eigen::seqN(0, 4)) = P1;
     PX(Eigen::indexing::all, Eigen::seqN(4, 4)) = P2;
 
-    XYZW = triangulate(PX, p2d).colwise().hnormalized().colwise().homogeneous();
+    p3h = triangulate(PX, p2d).colwise().hnormalized().colwise().homogeneous();
     }
 
-    int64_t count = ((P1 * XYZW).row(2).array() > 0).count() + ((P2 * XYZW).row(2).array() > 0).count();
+    int64_t count = ((P1 * p3h).row(2).array() > 0).count() + ((P2 * p3h).row(2).array() > 0).count();
     if (count < max_count) { continue; }
     max_count = count;
 
-    result.P     = P2;
-    result.p3d_h = XYZW;
+    result.P   = P2;
+    result.p3h = p3h;
     }
 
     return result;
@@ -167,21 +167,21 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
 // p2dh_2: 3xN
 // return: Nx9
 template <typename A, typename B>
-Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix_E_constraints(Eigen::MatrixBase<A> const& p2dh_1, Eigen::MatrixBase<B> const& p2dh_2)
+Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix_E_constraints(Eigen::MatrixBase<A> const& p2h_1, Eigen::MatrixBase<B> const& p2h_2)
 {
-    Eigen::Index const N = p2dh_1.cols();
+    Eigen::Index const N = p2h_1.cols();
 
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> Q(N, 9);
 
-    Q.col(0) = p2dh_1.row(0).cwiseProduct(p2dh_2.row(0)).transpose();
-    Q.col(1) = p2dh_1.row(0).cwiseProduct(p2dh_2.row(1)).transpose();
-    Q.col(2) = p2dh_1.row(0).cwiseProduct(p2dh_2.row(2)).transpose();
-    Q.col(3) = p2dh_1.row(1).cwiseProduct(p2dh_2.row(0)).transpose();
-    Q.col(4) = p2dh_1.row(1).cwiseProduct(p2dh_2.row(1)).transpose();
-    Q.col(5) = p2dh_1.row(1).cwiseProduct(p2dh_2.row(2)).transpose();
-    Q.col(6) = p2dh_1.row(2).cwiseProduct(p2dh_2.row(0)).transpose();
-    Q.col(7) = p2dh_1.row(2).cwiseProduct(p2dh_2.row(1)).transpose();
-    Q.col(8) = p2dh_1.row(2).cwiseProduct(p2dh_2.row(2)).transpose();
+    Q.col(0) = p2h_1.row(0).cwiseProduct(p2h_2.row(0)).transpose();
+    Q.col(1) = p2h_1.row(0).cwiseProduct(p2h_2.row(1)).transpose();
+    Q.col(2) = p2h_1.row(0).cwiseProduct(p2h_2.row(2)).transpose();
+    Q.col(3) = p2h_1.row(1).cwiseProduct(p2h_2.row(0)).transpose();
+    Q.col(4) = p2h_1.row(1).cwiseProduct(p2h_2.row(1)).transpose();
+    Q.col(5) = p2h_1.row(1).cwiseProduct(p2h_2.row(2)).transpose();
+    Q.col(6) = p2h_1.row(2).cwiseProduct(p2h_2.row(0)).transpose();
+    Q.col(7) = p2h_1.row(2).cwiseProduct(p2h_2.row(1)).transpose();
+    Q.col(8) = p2h_1.row(2).cwiseProduct(p2h_2.row(2)).transpose();
 
     return Q;
 }
@@ -536,8 +536,8 @@ result_R_t_from_TFT<typename A::Scalar> R_t_from_TFT(Eigen::MatrixBase<A> const&
 
     result_R_t_from_TFT<typename A::Scalar> result;
 
-    result.v2 = R_t_from_E(E21, p2d_1,                                   p2d_2); // OK
-    result.v3 = R_t_from_E(E31, result.v2.p3d_h.colwise().hnormalized(), p2d_3); // OK
+    result.v2 = R_t_from_E(E21, p2d_1,                                 p2d_2); // OK
+    result.v3 = R_t_from_E(E31, result.v2.p3h.colwise().hnormalized(), p2d_3); // OK
 
     return result;
 }
@@ -551,15 +551,15 @@ struct result_normalize_points
 };
 
 // OK
-// p_i: 2xN
+// p2d: 2xN
 template <typename A>
-result_normalize_points<typename A::Scalar> normalize_points(Eigen::MatrixBase<A> const& p_i)
+result_normalize_points<typename A::Scalar> normalize_points(Eigen::MatrixBase<A> const& p2d)
 {
     typename A::Scalar const sqrt_2 = static_cast<typename A::Scalar>(1.4142135623730950488016887242097);
 
-    Eigen::Matrix<typename A::Scalar, 2, 1> p0 = p_i.rowwise().mean();
+    Eigen::Matrix<typename A::Scalar, 2, 1> p0 = p2d.rowwise().mean();
 
-    typename A::Scalar s = sqrt_2 / (p_i.colwise() - p0).colwise().norm().mean();
+    typename A::Scalar s = sqrt_2 / (p2d.colwise() - p0).colwise().norm().mean();
 
     result_normalize_points<typename A::Scalar> result;
 
@@ -570,7 +570,7 @@ result_normalize_points<typename A::Scalar> normalize_points(Eigen::MatrixBase<A
         {0, 0,          1},
     };
 
-    result.p = result.H(Eigen::seqN(0, 2), Eigen::indexing::all) * p_i.colwise().homogeneous();
+    result.p = result.H(Eigen::seqN(0, 2), Eigen::indexing::all) * p2d.colwise().homogeneous();
 
     return result;
 }
