@@ -383,7 +383,7 @@
     <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_rnp.cpp">
+    <ClCompile Include="..\..\voldor\solver_rnp_r6p1l.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\benchmark.bak">
@@ -433,6 +433,12 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rnp_r6pi.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp">
+      <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
