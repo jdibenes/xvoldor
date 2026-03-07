@@ -8,26 +8,26 @@
 
 static Eigen::Matrix<float, 10, 1> solver_gpm_hpc2_build_quadric(Eigen::Matrix<float, 3, 1> const& q, Eigen::Matrix<float, 3, 1> const& p)
 {
-    float qx = q(0, 0);
-    float qy = q(1, 0);
-    float qz = q(2, 0);
+    float qx = q(0);
+    float qy = q(1);
+    float qz = q(2);
 
-    float px = p(0, 0);
-    float py = p(1, 0);
-    float pz = p(2, 0);
+    float px = p(0);
+    float py = p(1);
+    float pz = p(2);
 
     Eigen::Matrix<float, 10, 1> quadric;
 
-    quadric(0, 0) = + (qx * px) - (qy * py) - (qz * pz); // kx^2
-    quadric(1, 0) = - (qx * px) + (qy * py) - (qz * pz); // ky^2
-    quadric(2, 0) = - (qx * px) - (qy * py) + (qz * pz); // kz^2
-    quadric(3, 0) = 2.0f * ((qy * px) + (qx * py));      // kx*ky
-    quadric(4, 0) = 2.0f * ((qz * px) + (qx * pz));      // kx*kz
-    quadric(5, 0) = 2.0f * ((qz * py) + (qy * pz));      // ky*kz
-    quadric(6, 0) = 2.0f * ((qz * py) - (qy * pz));      // kx
-    quadric(7, 0) = 2.0f * ((qx * pz) - (qz * px));      // ky
-    quadric(8, 0) = 2.0f * ((qy * px) - (qx * py));      // kz
-    quadric(9, 0) = + (qx * px) + (qy * py) + (qz * pz); // 1
+    quadric(0) = + (qx * px) - (qy * py) - (qz * pz); // kx^2
+    quadric(1) = - (qx * px) + (qy * py) - (qz * pz); // ky^2
+    quadric(2) = - (qx * px) - (qy * py) + (qz * pz); // kz^2
+    quadric(3) = 2.0f * ((qy * px) + (qx * py));      // kx*ky
+    quadric(4) = 2.0f * ((qz * px) + (qx * pz));      // kx*kz
+    quadric(5) = 2.0f * ((qz * py) + (qy * pz));      // ky*kz
+    quadric(6) = 2.0f * ((qz * py) - (qy * pz));      // kx
+    quadric(7) = 2.0f * ((qx * pz) - (qz * px));      // ky
+    quadric(8) = 2.0f * ((qy * px) - (qx * py));      // kz
+    quadric(9) = + (qx * px) + (qy * py) + (qz * pz); // 1
 
     return quadric;
 }
@@ -49,13 +49,13 @@ static Eigen::Matrix<float, 6, 1> solver_gpm_hpc2_build_conic(Eigen::Matrix<floa
     default: i0 = 0; i1 = 1; i2 = 3; i3 = 6; i4 = 7; i5 = 9; x0 = 2; x1 = 4; x2 = 5; x3 = 8; a = sdx / sdz; b = sdy / sdz; break;
     }
 
-    conic(0, 0) = quadric(i0, 0) +        quadric(x0, 0) * (a * a) - quadric(x1, 0) * a; // ky^2;
-    conic(1, 0) = quadric(i1, 0) +        quadric(x0, 0) * (b * b) - quadric(x2, 0) * b; // kz^2
-    conic(2, 0) = quadric(i2, 0) + 2.0f * quadric(x0, 0) * (a * b) - quadric(x1, 0) * b 
-                                                                   - quadric(x2, 0) * a; // ky*kz
-    conic(3, 0) = quadric(i3, 0)                                   - quadric(x3, 0) * a; // ky
-    conic(4, 0) = quadric(i4, 0)                                   - quadric(x3, 0) * b; // kz
-    conic(5, 0) = quadric(i5, 0);                                                        // 1
+    conic(0) = quadric(i0) +        quadric(x0) * (a * a) - quadric(x1) * a; // ky^2;
+    conic(1) = quadric(i1) +        quadric(x0) * (b * b) - quadric(x2) * b; // kz^2
+    conic(2) = quadric(i2) + 2.0f * quadric(x0) * (a * b) - quadric(x1) * b 
+                                                          - quadric(x2) * a; // ky*kz
+    conic(3) = quadric(i3)                                - quadric(x3) * a; // ky
+    conic(4) = quadric(i4)                                - quadric(x3) * b; // kz
+    conic(5) = quadric(i5);                                                  // 1
 
     return conic;
 }
@@ -72,21 +72,24 @@ bool solver_gpm_hpc2(float const* p1, float const* p2, float* r01, float* t01, i
     Eigen::Matrix<float, 3, 1> PB2 = P2.col(1);
     Eigen::Matrix<float, 3, 1> PC2 = P2.col(2);
 
-    Eigen::Matrix<float, 3, 1> QB1 = PA1.cross(PB1);
-    Eigen::Matrix<float, 3, 1> QC1 = PA1.cross(PC1);
+    Eigen::Matrix<float, 3, 1> pb1 = PB1.normalized();
+    Eigen::Matrix<float, 3, 1> pc1 = PC1.normalized();
+    Eigen::Matrix<float, 3, 1> pb2 = PB2.normalized();
+    Eigen::Matrix<float, 3, 1> pc2 = PC2.normalized();
 
-    Eigen::Matrix<float, 3, 1> QB2 = PB2.cross(PA2);
-    Eigen::Matrix<float, 3, 1> QC2 = PC2.cross(PA2);
+    Eigen::Matrix<float, 3, 1> QB1 = PA1.cross(pb1);
+    Eigen::Matrix<float, 3, 1> QC1 = PA1.cross(pc1);
 
-    Eigen::Matrix<float, 10, 1> quadric_1 = solver_gpm_hpc2_build_quadric(QB2, PB1) - solver_gpm_hpc2_build_quadric(PB2, QB1);
-    Eigen::Matrix<float, 10, 1> quadric_2 = solver_gpm_hpc2_build_quadric(QC2, PC1) - solver_gpm_hpc2_build_quadric(PC2, QC1);
+    Eigen::Matrix<float, 3, 1> QB2 = pb2.cross(PA2);
+    Eigen::Matrix<float, 3, 1> QC2 = pc2.cross(PA2);
+
+    Eigen::Matrix<float, 10, 1> quadric_1 = solver_gpm_hpc2_build_quadric(QB2, pb1) - solver_gpm_hpc2_build_quadric(pb2, QB1);
+    Eigen::Matrix<float, 10, 1> quadric_2 = solver_gpm_hpc2_build_quadric(QC2, pc1) - solver_gpm_hpc2_build_quadric(pc2, QC1);
 
     quadric_1.normalize();
     quadric_2.normalize();
 
     Eigen::Matrix<float, 3, 1> DA = PA2 - PA1;
-
-    DA.normalize();
 
     float sdx = DA(0, 0);
     float sdy = DA(1, 0);
@@ -104,33 +107,26 @@ bool solver_gpm_hpc2(float const* p1, float const* p2, float* r01, float* t01, i
     conic_1.normalize();
     conic_2.normalize();
 
-    Eigen::Matrix<float, 3, 1> feb_1{ -conic_1(5, 0), -conic_1(4, 0), -conic_1(1, 0) };
-    Eigen::Matrix<float, 3, 1> feb_2{ -conic_2(5, 0), -conic_2(4, 0), -conic_2(1, 0) };
+    float f_1 = conic_1(0);
+    float f_2 = conic_2(0);
 
-    Eigen::Matrix<float, 2, 1> dc_1{ -conic_1(3, 0), -conic_1(2, 0) };
-    Eigen::Matrix<float, 2, 1> dc_2{  conic_2(3, 0),  conic_2(2, 0) };
+    Eigen::Matrix<float, 6, 1> conic_3 = f_2 * conic_1 - f_1 * conic_2;
 
-    float a_1 = conic_1(0, 0);
-    float a_2 = conic_2(0, 0);
- 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2_1 = vector_multiply(dc_2, feb_1);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2_2 = vector_multiply(dc_1, feb_2);
+    Eigen::Matrix<float, 3, 1> abe_1{ conic_1(5), conic_1(4), conic_1(1) };
+    Eigen::Matrix<float, 3, 1> abe_2{ conic_2(5), conic_2(4), conic_2(1) };
+    Eigen::Matrix<float, 3, 1> abe_3{ conic_3(5), conic_3(4), conic_3(1) };
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> v2 = vector_add(v2_1, v2_2);
+    Eigen::Matrix<float, 2, 1> cd_1{ conic_1(3), conic_1(2) };
+    Eigen::Matrix<float, 2, 1> cd_2{ conic_2(3), conic_2(2) };
+    Eigen::Matrix<float, 2, 1> cd_3{ conic_3(3), conic_3(2) };
 
-    Eigen::Matrix<float, 3, 1> v1 = a_1 * feb_2 - a_2 * feb_1;
-    Eigen::Matrix<float, 2, 1> w1 = a_1 *  dc_2 + a_2 *  dc_1;
-
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> lhs = vector_multiply(v1, v1);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> rhs = vector_multiply(v2, w1);
-
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> polynomial = vector_subtract(lhs, rhs);
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> polynomial = vector_multiply(cd_3, vector_multiply(cd_1, abe_2) - vector_multiply(cd_2, abe_1)) - vector_multiply(abe_3, (f_1 * abe_2) - (f_2 * abe_1));
 
     polynomial.normalize();
 
     float roots[4];
-
-    solve_quartic(polynomial.data(), roots, refine_iterations);
+    int nroots = find_real_roots(polynomial.data(), 4, roots);
+    if (nroots <= 0) { return false; }
 
     float kx;
     float ky;
@@ -142,14 +138,14 @@ bool solver_gpm_hpc2(float const* p1, float const* p2, float* r01, float* t01, i
     float error = std::numeric_limits<float>::infinity();
     bool  set   = false;
 
-    for (int r = 0; r < 4; ++r)
+    for (int r = 0; r < nroots; ++r)
     {
     switch (index)
     {
-    case 0:  kz = roots[r]; ky = v1.dot(Eigen::Matrix<float, 3, 1>{ 1, kz, kz * kz }) / w1.dot(Eigen::Matrix<float, 2, 1>{ 1, kz }); kx = -((ky * sdy) + (kz * sdz)) / sdx; break; // x eliminated, solving for (y,y^2), z is hidden
-    case 1:  kz = roots[r]; kx = v1.dot(Eigen::Matrix<float, 3, 1>{ 1, kz, kz * kz }) / w1.dot(Eigen::Matrix<float, 2, 1>{ 1, kz }); ky = -((kx * sdx) + (kz * sdz)) / sdy; break; // y eliminated, solving for (x,x^2), z is hidden
+    case 0:  kz = roots[r]; ky = -abe_3.dot(Eigen::Matrix<float, 3, 1>{ 1, kz, kz * kz }) / cd_3.dot(Eigen::Matrix<float, 2, 1>{ 1, kz }); kx = -((ky * sdy) + (kz * sdz)) / sdx; break; // x eliminated, solving for (y,y^2), z is hidden
+    case 1:  kz = roots[r]; kx = -abe_3.dot(Eigen::Matrix<float, 3, 1>{ 1, kz, kz * kz }) / cd_3.dot(Eigen::Matrix<float, 2, 1>{ 1, kz }); ky = -((kx * sdx) + (kz * sdz)) / sdy; break; // y eliminated, solving for (x,x^2), z is hidden
     case 2:
-    default: ky = roots[r]; kx = v1.dot(Eigen::Matrix<float, 3, 1>{ 1, ky, ky * ky }) / w1.dot(Eigen::Matrix<float, 2, 1>{ 1, ky }); kz = -((kx * sdx) + (ky * sdy)) / sdz; break; // z eliminated, solving for (x,x^2), y is hidden
+    default: ky = roots[r]; kx = -abe_3.dot(Eigen::Matrix<float, 3, 1>{ 1, ky, ky * ky }) / cd_3.dot(Eigen::Matrix<float, 2, 1>{ 1, ky }); kz = -((kx * sdx) + (ky * sdy)) / sdz; break; // z eliminated, solving for (x,x^2), y is hidden
     }
 
     Eigen::Matrix<float, 3, 3> Ri = matrix_R_cayley(Eigen::Matrix<float, 3, 1>{ kx, ky, kz });
