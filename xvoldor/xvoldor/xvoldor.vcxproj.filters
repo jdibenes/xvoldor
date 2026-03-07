@@ -347,9 +347,6 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\algebra.cpp">
-      <Filter>Source Files\helpers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -428,9 +425,6 @@
     <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_cpu.cpp">
-      <Filter>Source Files\batch_solve</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -439,6 +433,12 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\algebra.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_solve_cpu.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
