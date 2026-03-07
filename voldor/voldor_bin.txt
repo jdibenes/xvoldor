@@ -1,0 +1,794 @@
+
+    std::cout << "rotation errors: " << (ea1.angle() * (180.0 / 3.141592653589793238463)) << " | " << (ea2.angle() * (180.0 / 3.141592653589793238463)) << std::endl;
+    std::cout << "translation errors: " << (e01.col(3).hnormalized().norm()) << " | " << (e02.col(3).hnormalized().norm()) << std::endl;
+
+    return 0;
+*/
+
+/*
+
+// OK
+struct
+gh_evaluation
+{
+    Eigen::MatrixXf f;
+    Eigen::MatrixXf g;
+    Eigen::MatrixXf A;
+    Eigen::MatrixXf B;
+    Eigen::MatrixXf C;
+    Eigen::MatrixXf D;
+};
+
+// OK
+struct
+gh_result
+{
+    Eigen::MatrixXf x_opt;
+    Eigen::MatrixXf t_opt;
+    Eigen::MatrixXf y_opt;
+    int iter;
+};
+
+// OK
+typedef 
+gh_evaluation
+(*gh_function)
+(
+    Eigen::Ref<const Eigen::MatrixXf> const& x,
+    Eigen::Ref<const Eigen::MatrixXf> const& t,
+    Eigen::Ref<const Eigen::MatrixXf> const& y,
+    void* user
+);
+
+// OK
+gh_evaluation
+gh_ressl
+(
+    Eigen::Ref<const Eigen::MatrixXf> const& x_in, // (6*N)x1
+    Eigen::Ref<const Eigen::MatrixXf> const& p_in, // 20x1
+    Eigen::Ref<const Eigen::MatrixXf> const&,
+    void* user
+)
+{
+    // Ind2=1:3;
+    // Ind2=Ind2(Ind2~=Ind);
+    int Ind = *(Eigen::Index*)user;
+    int Ind2[2];
+    switch (Ind)
+    {
+    case 0: Ind2[0] = 1; Ind2[1] = 2; break;
+    case 1: Ind2[0] = 0; Ind2[1] = 2; break;
+    case 2: Ind2[0] = 0; Ind2[1] = 1; break;
+    default:                          break; // TODO: BUG
+    }
+
+    // S=reshape(p(1:9),3,3);
+    Eigen::Matrix<float, 3, 3> S = p_in(Eigen::seq(0, 8), 0).reshaped(3, 3);
+
+    // e21=ones(3,1);
+    // e21(Ind2)=p(10:11);
+    // e31=p(18:20);
+    Eigen::Matrix<float, 3, 1> e21 = Eigen::Matrix<float, 3, 1>::Ones();
+    e21(Ind2) = p_in(Eigen::seq(9, 10), 0);
+    Eigen::Matrix<float, 3, 1> e31 = p_in(Eigen::seq(17, 19), 0);
+
+    // mn=zeros(3);
+    // mn(:,Ind2)=reshape(p(12:17),3,2);
+    Eigen::Matrix<float, 3, 3> mn = Eigen::Matrix<float, 3, 3>::Zero();
+    mn(Eigen::indexing::all, Ind2) = p_in(Eigen::seq(11, 16), 0).reshaped(3, 2);
+
+    // % tensor
+    // T1=(S(:,1)*e21.'+e31*mn(1,:)).';
+    Eigen::Matrix<float, 3, 3> T1 = (S(Eigen::indexing::all, 0) * e21.transpose() + e31 * mn(0, Eigen::indexing::all)).transpose();
+    
+    // T2=(S(:,2)*e21.'+e31*mn(2,:)).';
+    Eigen::Matrix<float, 3, 3> T2 = (S(Eigen::indexing::all, 1) * e21.transpose() + e31 * mn(1, Eigen::indexing::all)).transpose();
+    
+    // T3=(S(:,3)*e21.'+e31*mn(3,:)).';
+    Eigen::Matrix<float, 3, 3> T3 = (S(Eigen::indexing::all, 2) * e21.transpose() + e31 * mn(2, Eigen::indexing::all)).transpose();
+
+    // % other slices of the TFT
+    // J3=[T1(3,:);T2(3,:);T3(3,:)];
+    Eigen::Matrix<float, 3, 3> J3;
+    J3 << T1(2, Eigen::indexing::all), T2(2, Eigen::indexing::all), T3(2, Eigen::indexing::all);
+
+    // K3=[T1(:,3),T2(:,3),T3(:,3)];
+    Eigen::Matrix<float, 3, 3> K3;    
+    K3 << T1(Eigen::indexing::all, 2), T2(Eigen::indexing::all, 2), T3(Eigen::indexing::all, 2);
+
+    // N=size(x,1)/6;
+    int N = x_in.rows() / 6;
+
+    // g=[sum(e31.^2)-1;sum(S(:).^2)-1];
+    Eigen::MatrixXf g(2, 1);
+    g << (e31.squaredNorm() - 1), (S.squaredNorm() - 1);
+
+    // % g jacobian w.r.t. p evaluated in p
+    // C=zeros(2,20);
+    Eigen::MatrixXf C = Eigen::MatrixXf::Zero(2, 20);
+
+    // C(1,18:20)=2*e31.';
+    C(0, Eigen::seq(17, 19)) = 2 * e31.transpose();
+
+    // C(2,1:9)=2*S(:).';
+    C(1, Eigen::seq(0, 8)) = 2 * S.reshaped(9, 1).transpose();
+
+    // f=zeros(4*N,1);     % constraints for tensor and observations (trilinearities)
+    Eigen::MatrixXf f = Eigen::MatrixXf::Zero(4 * N, 1);
+
+    // Ap=zeros(4*N,27);   % jacobian of f w.r.t. the tensor T
+    Eigen::MatrixXf Ap = Eigen::MatrixXf::Zero(4 * N, 27);
+
+    // B=zeros(4*N,6*N);   % jacobian of f w.r.t. the observations
+    Eigen::MatrixXf B = Eigen::MatrixXf::Zero(4 * N, 6 * N);
+
+    Eigen::Matrix<float, 2, 1> x1;
+    Eigen::Matrix<float, 2, 1> x2;
+    Eigen::Matrix<float, 2, 1> x3;
+
+    Eigen::Matrix<float, 3, 2> S2{ {0, -1}, {-1, 0}, {0, 0} };
+    Eigen::Matrix<float, 3, 2> S3{ {0, -1}, {-1, 0}, {0, 0} };
+
+    Eigen::Matrix<float, 2, 2> tmp_22_swp{ {0, 1}, {1, 0} };
+    Eigen::Matrix<float, 2, 1> tmm;
+
+    Eigen::Matrix<float, 3, 3> I3 = Eigen::Matrix<float, 3, 3>::Identity();
+    Eigen::Matrix<float, 2, 2> I2 = Eigen::Matrix<float, 2, 2>::Identity();
+    Eigen::Matrix<float, 9, 9> I9 = Eigen::Matrix<float, 9, 9>::Identity();
+
+    // for i=1:N
+    for (int i = 0; i < N; ++i)
+    {
+        // % points in the three images for correspondance i
+        // ind=6*(i-1);
+        int ind = 6 * i;
+
+        // x1=x(ind+1:ind+2);
+        x1 = x_in(Eigen::seq(ind + 0, ind + 1), 0);
+
+        // x2=x(ind+3:ind+4);
+        x2 = x_in(Eigen::seq(ind + 2, ind + 3), 0);
+
+        // x3=x(ind+5:ind+6);
+        x3 = x_in(Eigen::seq(ind + 4, ind + 5), 0);
+
+        // % 4 trilinearities
+        // ind2=4*(i-1);
+        int ind2 = 4 * i;
+        
+        // S2=[0 -1; -1 0; x2(2) x2(1)];
+        S2(2, 0) = x2(1);
+        S2(2, 1) = x2(0);
+
+        // S3=[0 -1; -1 0; x3(2) x3(1)];
+        S3(2, 0) = x3(1);
+        S3(2, 1) = x3(0);
+
+        // f(ind2+1:ind2+4)=reshape( S2.'*(x1(1)*T1+x1(2)*T2+T3)*S3,4,1);
+        f(Eigen::seq(ind2 + 0, ind2 + 3), 0) = (S2.transpose() * (x1(0) * T1 + x1(1) * T2 + T3) * S3).reshaped(4, 1);
+
+        // % Jacobians for the trilinearities
+        // Ap(ind2+1:ind2+4,:)=kron(S3,S2).'*kron([x1;1].',eye(9));
+        Ap(Eigen::seq(ind2 + 0, ind2 + 3), Eigen::indexing::all) = Eigen::kroneckerProduct(S3, S2).transpose() * Eigen::kroneckerProduct(x1.colwise().homogeneous().transpose(), I9);
+
+        // B(ind2+1:ind2+4,ind+1)=reshape(S2.'*T1*S3,4,1);
+        B(Eigen::seq(ind2 + 0, ind2 + 3), ind + 0) = (S2.transpose() * T1 * S3).reshaped(4, 1);
+        
+        // B(ind2+1:ind2+4,ind+2)=reshape(S2.'*T2*S3,4,1);
+        B(Eigen::seq(ind2 + 0, ind2 + 3), ind + 1) = (S2.transpose() * T2 * S3).reshaped(4, 1);
+        
+        // B(ind2+1:ind2+4,ind+3:ind+4)=kron(S3.'*J3.'*[x1;1],[0,1;1,0]);
+        tmm = S3.transpose() * J3.transpose() * x1.colwise().homogeneous();
+        B(Eigen::seq(ind2 + 0, ind2 + 3), Eigen::seq(ind + 2, ind + 3)) = Eigen::kroneckerProduct(tmm, tmp_22_swp);
+        
+        // B(ind2+1:ind2+4,ind+5:ind+6)=kron([0,1;1,0],S2.'*K3*[x1;1]);
+        B(Eigen::seq(ind2 + 0, ind2 + 3), Eigen::seq(ind + 4, ind + 5)) = Eigen::kroneckerProduct(tmp_22_swp, S2.transpose() * K3 * x1.colwise().homogeneous());
+    
+    // end
+    }
+
+    // % jacobian for parametrization t=F(p) w.r.t. p evaluated in p
+    // D=zeros(27,20);
+    Eigen::MatrixXf D = Eigen::MatrixXf::Zero(27, 20);
+
+    // D(:,1:9)=kron(eye(3),kron(eye(3),e21));
+    D(Eigen::indexing::all, Eigen::seq(0, 8)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(I3, e21));
+    
+    // aux=zeros(3,2); 
+    // aux(Ind2,:)=eye(2);
+    Eigen::Matrix<float, 3, 2> aux = Eigen::Matrix<float, 3, 2>::Zero();
+    aux(Ind2, Eigen::indexing::all) = I2;
+
+    // D(:,10:11)=[kron(S(:,1),aux);
+    //             kron(S(:,2),aux);
+    //             kron(S(:,3),aux)];
+    Eigen::MatrixXf tmp_D_9_10(27, 2);
+    tmp_D_9_10 << Eigen::kroneckerProduct(S.col(0), aux),
+                  Eigen::kroneckerProduct(S.col(1), aux),
+                  Eigen::kroneckerProduct(S.col(2), aux);
+    D(Eigen::indexing::all, Eigen::seq(9, 10)) = tmp_D_9_10;
+
+    // D(:,12:14)=kron(eye(3),kron(e31,aux(:,1)));
+    D(Eigen::indexing::all, Eigen::seq(11, 13)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e31, aux.col(0)));
+    
+    // D(:,15:17)=kron(eye(3),kron(e31,aux(:,2)));
+    D(Eigen::indexing::all, Eigen::seq(14, 16)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e31, aux.col(1)));
+
+    // D(:,18:20)=[kron(eye(3),mn(1,:).');
+    //             kron(eye(3),mn(2,:).');
+    //             kron(eye(3),mn(3,:).')];
+    Eigen::MatrixXf tmp_D_17_19(27, 3);
+    tmp_D_17_19 << Eigen::kroneckerProduct(I3, mn.row(0).transpose()),
+                   Eigen::kroneckerProduct(I3, mn.row(1).transpose()),
+                   Eigen::kroneckerProduct(I3, mn.row(2).transpose());
+    D(Eigen::indexing::all, Eigen::seq(17, 19)) = tmp_D_17_19;
+
+    // % jacobian of f w.r.t. the minimal parameterization
+    // A=Ap*D;
+    Eigen::MatrixXf A = Ap * D; // Ap(4*N, 27) D(27,20) -> A(4*N, 20)
+
+    // D=zeros(2,0);
+    D = Eigen::MatrixXf::Zero(2, 0);
+
+    // f(4*N, 1)
+    // g(2, 1)
+    // A(4*N, 20)
+    // B(4*N, 6*N)
+    // C(2, 20)
+    // D(2, 0)
+    return { f, g, A, B, C, D };
+}
+
+gh_result 
+Gauss_Helmert
+(
+    gh_function f,
+    Eigen::Ref<const Eigen::MatrixXf> const& x0, // (6*N)x1
+    Eigen::Ref<const Eigen::MatrixXf> const& t0, // 20x1
+    Eigen::Ref<const Eigen::MatrixXf> const& y0, // ?x? // 0x1
+    Eigen::Ref<const Eigen::MatrixXf> const& x,  // (6xN)x1
+    Eigen::Ref<const Eigen::MatrixXf> const& P,  // (6*N)x(6*N)
+    void* user
+)
+{
+    float rs = 1e-12f;
+
+    // it_max=400;
+    int it_max = 400;
+
+    // tol=1e-6;
+    float tol = 1e-9f;
+
+    // xi=x0; 
+    // yi=y0; 
+    // ti=t0;
+    Eigen::MatrixXf xi = x0;
+    Eigen::MatrixXf yi = y0;
+    Eigen::MatrixXf ti = t0;
+
+    // u=size(t0,1);
+    int u = t0.rows();
+
+    // s=size(y0,1);
+    int s = y0.rows();
+
+    // v0=x0-x;
+    Eigen::MatrixXf v0 = x0 - x;
+
+    // objFunc=sum(v0.'*P*v0);
+    float objFunc = (v0.transpose() * P * v0).sum();
+    
+    // factor=1;
+    float factor = 1.0f;
+    
+    Eigen::MatrixXf Pi = P.inverse();
+    Eigen::MatrixXf z_us = Eigen::MatrixXf::Zero(u, s);
+    Eigen::MatrixXf z_sus = Eigen::MatrixXf::Zero(s, u+s);
+    Eigen::MatrixXf z_s = Eigen::MatrixXf::Zero(s, 1);
+
+    Eigen::MatrixXf sIW;
+    Eigen::MatrixXf sIM;
+    Eigen::MatrixXf z_c2c2;
+    Eigen::MatrixXf W;
+    Eigen::MatrixXf w;
+    Eigen::MatrixXf M;
+    Eigen::MatrixXf M1;
+    Eigen::MatrixXf M2;
+    Eigen::MatrixXf M3;
+    Eigen::MatrixXf b;
+    Eigen::MatrixXf aux;
+    Eigen::MatrixXf dt;
+    Eigen::MatrixXf dy;
+    Eigen::MatrixXf v;
+
+    int c2_p = -1;
+    int cw_p = -1;
+
+    gh_evaluation ghe;
+
+    // for it=1:it_max
+    int it;
+    for (it = 0; it < it_max; ++it)
+    {
+        // [f,g,A,B,C,D]=func(xi,ti,yi);
+        ghe = f(xi, ti, yi, user);
+
+        // c2=size(C,1);
+        int c2 = ghe.C.rows();
+        int m_size = u + s + c2;
+
+        // W=B*pinv(P)*B.';
+        W = ghe.B * Pi * ghe.B.transpose();
+        int cw = W.rows();
+
+        // if any(isnan(W(:))) || any(isinf(W(:)))
+        if (!std::isfinite(W.sum()))
+        {
+            //std::cout << "STOP inf/nan W" << std::endl;
+            // break;
+            break;
+        // end
+        }
+
+        if (c2 != c2_p)
+        {
+            c2_p = c2;
+            sIM = rs * Eigen::MatrixXf::Identity(m_size, m_size);
+            z_c2c2 = Eigen::MatrixXf::Zero(c2, c2);
+            M1 = Eigen::MatrixXf(u, m_size);
+            M2 = Eigen::MatrixXf(s, m_size);
+            M3 = Eigen::MatrixXf(c2, m_size);
+            M = Eigen::MatrixXf(m_size, m_size);
+            b = Eigen::MatrixXf(m_size, 1);
+        }
+
+        if (cw != cw_p)
+        {
+            cw_p = cw;
+            sIW = rs * Eigen::MatrixXf::Identity(cw, cw);
+        }
+        
+        // W=pinv(W+(1e-12)*eye(size(W,1)));
+        // W=W+(1e-12)*eye(size(W,1));
+        W = (W + sIW).completeOrthogonalDecomposition().pseudoInverse();
+        W = W + sIW;        
+
+        // w=-f-B*(x-xi);
+        w = -(ghe.f + ghe.B * (x - xi));
+
+        // M=[A.'*W*A, zeros(u,s), C.';...
+        M1 << (ghe.A.transpose() * W * ghe.A), z_us, ghe.C.transpose();
+        //           zeros(s,u+s), D.';...
+        M2 << z_sus, ghe.D.transpose();
+        //         C, D, zeros(c2,c2)];
+        M3 << ghe.C, ghe.D, z_c2c2;
+
+        M << M1, M2, M3;
+
+        // b=[A.'*W*w; zeros(s,1); -g];
+        b << (ghe.A.transpose() * W * w), z_s, (-ghe.g);
+
+        // if any(isnan(M(:))) || any(isinf(M(:)))
+        if (!std::isfinite(M.sum()))
+        {
+            //std::cout << "STOP inf/nan M" << std::endl;
+            // break;
+            break;
+        // end
+        }
+
+        // aux=pinv(M+(1e-12)*eye(size(M,1)))*b;
+        aux = (M + sIM).completeOrthogonalDecomposition().solve(b);
+
+        // dt=aux(1:u,:); 
+        // dy=aux(u+1:u+s,:);
+        dt = aux(Eigen::seq(0, u - 1), Eigen::indexing::all);
+        dy = aux(Eigen::seq(u, u + s - 1), Eigen::indexing::all);
+
+        // v=-inv(P)*B.'*(W*(A*dt-w));
+        v = -(Pi * ghe.B.transpose() * (W * (ghe.A * dt - w)));
+
+        // if norm(dt)< tol && norm(dy) < tol && norm(xi-x-v) <tol
+        if ((dt.norm() < tol) && (dy.norm() < tol) && ((xi - x - v).norm() < tol))
+        {
+            //std::cout << "STOP tol" << std::endl;
+            // break;
+            break;
+        // end
+        }
+        
+        // if sum(v.'*P*v) > objFunc*factor
+        float of = (v.transpose() * P * v).sum();
+        //std::cout << "cost: " << of << std::endl;
+        if (of > objFunc * factor)
+        {
+            //std::cout << "STOP objFunc" << std::endl;
+            // break;
+            break;
+        }
+        else
+        // else
+        {
+            // objFunc=sum(v.'*P*v);
+            objFunc = of;
+        // end
+        }
+
+        // xi=x+v; 
+        // ti=ti+dt;
+        // yi=yi+dy;
+        xi = x + v;
+        ti = ti + dt;
+        yi = yi + dy;
+
+    // end
+    }
+
+    // iter=it;
+    // x_opt = xi; y_opt = yi; t_opt = ti;
+    return { xi, ti, yi, it };
+}
+
+// OK
+bool
+trifocal_R_t_Ressl
+(
+    float const* p2d_1,
+    float const* p2d_2,
+    float const* p2d_3,
+    float const* p2d_s,
+    float const* p3d_s,
+    int N,
+    bool use_prior,
+    float* r1,
+    float* t1,
+    float* r2,
+    float* t2
+)
+{
+    Eigen::MatrixXf p2d_1_w(2, N);
+    Eigen::MatrixXf p2d_2_w(2, N);
+    Eigen::MatrixXf p2d_3_w(2, N);
+    Eigen::MatrixXf p2d_s_w(2, N);
+    Eigen::MatrixXf p3d_s_w(3, N);
+
+    memcpy(p2d_s_w.data(), p2d_s, 2 * N * sizeof(float));
+    memcpy(p3d_s_w.data(), p3d_s, 3 * N * sizeof(float));
+    memcpy(p2d_1_w.data(), p2d_1, 2 * N * sizeof(float));
+    memcpy(p2d_2_w.data(), p2d_2, 2 * N * sizeof(float));
+    memcpy(p2d_3_w.data(), p2d_3, 2 * N * sizeof(float));
+
+    Eigen::MatrixXf p2d(6, N);
+    p2d << p2d_1_w, p2d_2_w, p2d_3_w;
+
+    Eigen::MatrixXf At = build_A(p2d_1_w, p2d_2_w, p2d_3_w);
+    result_linear_TFT ltr = linear_TFT(At);
+
+    Eigen::Matrix<float, 3, 4> P1 = Eigen::Matrix<float, 3, 4>::Identity(); // TODO: constant
+
+    // e21=P2(:,4);
+    Eigen::Matrix<float, 3, 1> e21 = ltr.P2.col(3);
+
+    // [~,Ind]=max(abs(e21));
+    // e21=e21/e21(Ind);
+    Eigen::Index Ind;
+    e21.cwiseAbs().maxCoeff(&Ind);
+    //std::cout << e21 << std::endl;
+   // std::cout << Ind << std::endl;
+    e21 = e21 / e21(Ind);
+
+    // e31=P3(:,4);           
+    // e31=e31/norm(e31);
+    Eigen::Matrix<float, 3, 1> e31 = ltr.P3.col(3);
+    e31.normalize();
+
+    // S=[T(Ind,:,1).',T(Ind,:,2).',T(Ind,:,3).'];
+    Eigen::Matrix<float, 3, 3> T1 = ltr.TFT(Eigen::seqN( 0, 9)).reshaped(3, 3);
+    Eigen::Matrix<float, 3, 3> T2 = ltr.TFT(Eigen::seqN( 9, 9)).reshaped(3, 3);
+    Eigen::Matrix<float, 3, 3> T3 = ltr.TFT(Eigen::seqN(18, 9)).reshaped(3, 3);
+
+    Eigen::Matrix<float, 3, 3> S;
+
+    S.col(0) = T1.row(Ind).transpose();
+    S.col(1) = T2.row(Ind).transpose();
+    S.col(2) = T3.row(Ind).transpose();
+
+    //aux=norm(S(:));
+    //S=S./aux;
+    float aux = S.norm();
+    S = S / aux;
+
+    // T=T/aux;
+    //ltr.TFT = ltr.TFT / aux;
+    T1 = T1 / aux;
+    T2 = T2 / aux;
+    T3 = T3 / aux;
+
+    // Ind2=1:3; 
+    // Ind2=Ind2(Ind2~=Ind);
+    Eigen::Index Ind2[2];
+    switch (Ind)
+    {
+    case 0: Ind2[0] = 1; Ind2[1] = 2; break;
+    case 1: Ind2[0] = 0; Ind2[1] = 2; break;
+    case 2: Ind2[0] = 0; Ind2[1] = 1; break;
+    default:  std::cout << "BUGGGGGGG" << std::endl;                        break; // TODO: BUG
+    }
+    
+    // mn=[e31.'*(T(:,:,1).'-S(:,1)*e21.');...
+    //     e31.'*(T(:,:,2).'-S(:,2)*e21.');...
+    //     e31.'*(T(:,:,3).'-S(:,3)*e21.')];
+    Eigen::Matrix<float, 3, 3> mn_33;
+    
+    mn_33.row(0) = e31.transpose() * (T1.transpose() - S.col(0) * e21.transpose());
+    mn_33.row(1) = e31.transpose() * (T2.transpose() - S.col(1) * e21.transpose());
+    mn_33.row(2) = e31.transpose() * (T3.transpose() - S.col(2) * e21.transpose());
+
+    // mn=mn(:,Ind2);
+    Eigen::Matrix<float, 3, 2> mn_32;
+    mn_32.col(0) = mn_33.col(Ind2[0]);
+    mn_32.col(1) = mn_33.col(Ind2[1]);
+
+    //std::cout << "mn_33" << std::endl;
+    //std::cout << mn_33 << std::endl;
+    
+    // points3D=triangulation3D({P1,P2,P3},[x1;x2;x3]);
+    Eigen::Matrix<float, 3, 4 * 3> PX;
+    PX << P1, ltr.P2, ltr.P3;
+    Eigen::MatrixXf p3dh = triangulate(PX, p2d);
+
+    // p1_est=P1*points3D; p1_est=p1_est(1:2,:)./repmat(p1_est(3,:),2,1);
+    Eigen::MatrixXf p1_est = (    P1 * p3dh).colwise().hnormalized();
+
+    // p2_est=P2*points3D; p2_est=p2_est(1:2,:)./repmat(p2_est(3,:),2,1);
+    Eigen::MatrixXf p2_est = (ltr.P2 * p3dh).colwise().hnormalized();
+
+    // p3_est=P3*points3D; p3_est=p3_est(1:2,:)./repmat(p3_est(3,:),2,1);
+    Eigen::MatrixXf p3_est = (ltr.P3 * p3dh).colwise().hnormalized();
+
+
+
+    // N=size(x1,2);
+    // p=[S(:);e21(Ind2);mn(:);e31];
+    Eigen::MatrixXf p(9 + 2 + 6 + 3, 1);
+
+    p << S.reshaped(9, 1),
+        e21(Ind2[0]),
+        e21(Ind2[1]),
+         mn_32.reshaped(6, 1),
+         e31;
+
+    // x=reshape([x1(1:2,:);x2(1:2,:);x3(1:2,:)],6*N,1);
+    Eigen::MatrixXf x(6 * N, 1);
+    x = p2d.reshaped(6 * N, 1);
+
+    Eigen::MatrixXf x_est(6, N);
+    x_est << p1_est, p2_est, p3_est;
+    x_est = x_est.reshaped(6 * N, 1);
+
+    Eigen::MatrixXf y(0, 1);
+    Eigen::MatrixXf P = Eigen::MatrixXf::Identity(6 * N, 6 * N);
+    gh_result ghr = Gauss_Helmert(gh_ressl, x_est, p, y, x, P, &Ind);
+    //std::cout << "GH ITER: " << ghr.iter << std::endl;
+    ghr.t_opt = p;
+
+    S = ghr.t_opt(Eigen::seqN(0, 9), 0).reshaped(3, 3);
+
+    e21 = Eigen::Matrix<float, 3, 1>::Ones();
+    e21(Ind2[0]) = ghr.t_opt(9, 0);
+    e21(Ind2[1]) = ghr.t_opt(10, 0);
+
+    mn_33 = Eigen::Matrix<float, 3, 3>::Zero();
+    mn_33.col(Ind2[0]) = ghr.t_opt(Eigen::seqN(11, 3), 0);
+    mn_33.col(Ind2[1]) = ghr.t_opt(Eigen::seqN(14, 3), 0);
+    e31 = ghr.t_opt(Eigen::seqN(17, 3), 0);
+
+    T1 = ((S.col(0) * e21.transpose()) + (e31 * mn_33.row(0))).transpose();
+    T2 = ((S.col(1) * e21.transpose()) + (e31 * mn_33.row(1))).transpose();
+    T3 = ((S.col(2) * e21.transpose()) + (e31 * mn_33.row(2))).transpose();
+
+    ltr.TFT << T1.reshaped(9, 1), T2.reshaped(9, 1), T3.reshaped(9, 1);
+
+    result_R_t_from_TFT rpt = R_t_from_TFT(ltr.TFT, p2d_1_w, p2d_2_w, p2d_3_w, p3d_s_w, use_prior);
+
+    float world_scale = compute_scale(p2d_s_w, p3d_s_w, rpt.v2.P);
+
+    Eigen::Matrix<float, 3, 3> R2 = rpt.v2.P(Eigen::indexing::all, Eigen::seqN(0, 3));
+    Eigen::Matrix<float, 3, 3> R3 = rpt.v3.P(Eigen::indexing::all, Eigen::seqN(0, 3));
+
+    Eigen::AngleAxis<float> R01(R2);
+    Eigen::AngleAxis<float> R02(R3);
+
+    Eigen::Matrix<float, 3, 1> r01 = R01.angle() * R01.axis();
+    Eigen::Matrix<float, 3, 1> r02 = R02.angle() * R02.axis();
+
+    Eigen::Matrix<float, 3, 1> t01 = world_scale * rpt.v2.P.col(3);
+    Eigen::Matrix<float, 3, 1> t02 = world_scale * rpt.v3.P.col(3);
+
+    memcpy(r1, r01.data(), 3 * sizeof(float));
+    memcpy(r2, r02.data(), 3 * sizeof(float));
+    memcpy(t1, t01.data(), 3 * sizeof(float));
+    memcpy(t2, t02.data(), 3 * sizeof(float));
+
+    return std::isfinite(r1[0] + r1[1] + r1[2] + t1[0] + t1[1] + t1[2] + r2[0] + r2[1] + r2[2] + t2[0] + t2[1] + t2[2]);
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+// OK
+//bool trifocal_R_t(float const* p2d_1, float const* p2d_2, float const* p2d_3, float const* sp2d, float const* sp3d, float* tft, float* rt1, float* rt2, float* s1, float* s2)
+//{
+//    return trifocal_R_t_Ressl(p2d_1, p2d_2, p2d_3, sp2d, sp3d, 7, false, rt1 + 0, rt1 + 3, rt2 + 0, rt2 + 3);
+//}
+
+/*
+
+struct trifocal_data_map
+{
+    float const* p2d_1;
+    float const* p2d_2;
+    float const* p2d_3;
+    float const* p2d_s;
+    float const* p3d_s;
+    float* tft;
+    float* rt1;
+    float* rt2;
+    float* s1;
+    float* s2;
+    int count;
+};
+
+struct trifocal_job_descriptor
+{
+    trifocal_data_map const* map;
+    int const* rng;
+    int id;
+    int start;
+    int end;
+    int valid;
+};
+
+// OK
+void trifocal_R_t_group(trifocal_job_descriptor& tjd)
+{
+    bool enable_world_scale = (tjd.map->p2d_s) && (tjd.map->p3d_s);
+
+    float p2d_1[2 * 7];
+    float p2d_2[2 * 7];
+    float p2d_3[2 * 7];
+    float p2d_s[2 * 7];
+    float p3d_s[3 * 7];
+
+    float const* base_p2d_s = enable_world_scale ? p2d_s : nullptr;
+    float const* base_p3d_s = enable_world_scale ? p3d_s : nullptr;
+
+    tjd.valid = 0;
+
+    for (int i = tjd.start; i < tjd.end; ++i)
+    {
+        for (int p = 0; p < 7; ++p)
+        {
+            int q = tjd.rng[(7 * i) + p];
+            
+            p2d_1[(2 * p) + 0] = tjd.map->p2d_1[(2 * q) + 0];
+            p2d_1[(2 * p) + 1] = tjd.map->p2d_1[(2 * q) + 1];
+            p2d_2[(2 * p) + 0] = tjd.map->p2d_2[(2 * q) + 0];
+            p2d_2[(2 * p) + 1] = tjd.map->p2d_2[(2 * q) + 1];
+            p2d_3[(2 * p) + 0] = tjd.map->p2d_3[(2 * q) + 0];
+            p2d_3[(2 * p) + 1] = tjd.map->p2d_3[(2 * q) + 1];
+
+            if (!enable_world_scale) { continue; }
+
+            p2d_s[(2 * p) + 0] = tjd.map->p2d_s[(2 * q) + 0];
+            p2d_s[(2 * p) + 1] = tjd.map->p2d_s[(2 * q) + 1];
+            p3d_s[(3 * p) + 0] = tjd.map->p3d_s[(3 * q) + 0];
+            p3d_s[(3 * p) + 1] = tjd.map->p3d_s[(3 * q) + 1];
+            p3d_s[(3 * p) + 2] = tjd.map->p3d_s[(3 * q) + 2];
+        }
+
+        int offset = tjd.start + tjd.valid;
+
+        float* base_tft = tjd.map->tft ? tjd.map->tft + (27 * offset) : nullptr;
+        float* base_s1  = tjd.map->s1  ? tjd.map->s1  + ( 1 * offset) : nullptr;
+        float* base_s2  = tjd.map->s2  ? tjd.map->s2  + ( 1 * offset) : nullptr;
+        float* base_rt1 = tjd.map->rt1 + (6 * offset);
+        float* base_rt2 = tjd.map->rt2 + (6 * offset);
+        
+        bool valid = trifocal_R_t(p2d_1, p2d_2, p2d_3, base_p2d_s, base_p3d_s, base_tft, base_rt1, base_rt2, base_s1, base_s2);
+
+        tjd.valid += valid; // TODO: Notify if not valid
+    }
+}
+
+// OK
+int trifocal_R_t_batch(int jobs, int workers, float const* p2d_1, float const* p2d_2, float const* p2d_3, float const* p2d_s, float const* p3d_s, int count, float* tft, float* rt1, float* rt2, float* s1, float* s2)
+{
+    trifocal_data_map map{ p2d_1, p2d_2, p2d_3, p2d_s, p3d_s, tft, rt1, rt2, s1, s2, count };
+
+    int batch = jobs / workers;
+    int spill = jobs % workers;
+    int start = 0;
+    int valid = 0;
+
+    std::unique_ptr<int[]> rng = std::make_unique<int[]>(7 * jobs);
+
+    std::vector<trifocal_job_descriptor> registry;
+    std::vector<std::thread> threads;
+
+    for (int i = 0; i < jobs; ++i)
+    {
+        for (int p = 0; p < 7; ++p)
+        {
+            rng[(7 * i) + p] = ((float)rand() / (float)RAND_MAX) * count;
+        }
+    }
+
+    for (int i = 0; i < workers; ++i)
+    {
+        int end = start + batch;
+        if (spill > 0)
+        {
+            end++;
+            spill--;
+        }
+        if (start >= end) { break; }
+        registry.push_back({ &map, rng.get(), i, start, end, 0 });
+        start = end;
+    }
+
+    for (auto& tjd : registry)
+    {
+        threads.push_back(std::thread(trifocal_R_t_group, std::ref(tjd)));
+    }
+
+    for (auto& wtp : threads)
+    {
+        wtp.join();
+    }
+
+    for (auto& tjd : registry)
+    {
+        if (tjd.valid <= 0) { continue; }
+
+        memmove(rt1 + (6 * valid), rt1 + (6 * tjd.start), (6 * tjd.valid) * sizeof(float));
+        memmove(rt2 + (6 * valid), rt2 + (6 * tjd.start), (6 * tjd.valid) * sizeof(float));
+
+        if (tft) { memmove(tft + (27 * valid), tft + (27 * tjd.start), (27 * tjd.valid) * sizeof(float)); }
+        if (s1)  { memmove(s1  + ( 1 * valid), s1  + ( 1 * tjd.start), ( 1 * tjd.valid) * sizeof(float)); }
+        if (s2)  { memmove(s2  + ( 1 * valid), s2  + ( 1 * tjd.start), ( 1 * tjd.valid) * sizeof(float)); }
+
+        valid += tjd.valid;
+    }
+
+    return valid;
+}
+*/
+
+
+/*
+// OK
+// unit_t: 3x1
+// p2d:    3x1
+// p3d:    3x1
+template <typename A, typename B, typename C>
+typename A::Scalar solve_scale_t_2D3D(Eigen::MatrixBase<A> const& unit_t, Eigen::MatrixBase<B> const& p2d, Eigen::MatrixBase<C> const& p3d)
+{
+    Eigen::Matrix<typename A::Scalar, 3, 3> P;
+    P.col(0) = unit_t;
+    P.col(1) = p2d;
+    P.col(2) = p3d;
+    Eigen::Matrix<typename A::Scalar, 3, 1> u = P.jacobiSvd<Eigen::ComputeFullV>().matrixV().col(2);
+    return u(0) / u(2);
+}
+*/
+
