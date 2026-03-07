@@ -5,10 +5,10 @@
 struct Config 
 {
 	//vector<string> flow_names;
-	int multiview_mode = 2; // 2: binocular, 3: trifocal
-	int solver_select = 16;
-	int disparities_enable = 0;
-	int trifocal_enable_flow_2 = 0;
+	int multiview_mode = 3; // 2: binocular, 3: trifocal
+	int solver_select = 5;
+	int disparities_enable = 1;
+	int trifocal_enable_flow_2 = 1;
 	int root_refine_interations = 2;
 	int batch_workers = 12;
 
@@ -22,7 +22,7 @@ struct Config
 	int trifocal_index_1 = 0;
 	int trifocal_index_2 = 0;
 	float trifocal_squared_error_min_thresh = 0;//0.01f;
-	float trifocal_squared_error_max_thresh = 2.0f;
+	float trifocal_squared_error_max_thresh = 65536;//2.0f;
 
 	// OLD
 
