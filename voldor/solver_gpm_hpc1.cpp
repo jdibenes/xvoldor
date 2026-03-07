@@ -5,7 +5,7 @@
 #include "helpers.h"
 #include "helpers_eigen.h"
 
-bool solver_gpm_hpc1(float const* p1, float const* p2, float* r01, float* t01, int refine_iterations)
+bool solver_gpm_hpc1(float const* p1, float const* p2, float* r01, float* t01)
 {
     Eigen::Matrix<float, 3, 2> P1 = matrix_from_buffer<float, 3, 2>(p1);
     Eigen::Matrix<float, 3, 2> P2 = matrix_from_buffer<float, 3, 2>(p2);
@@ -20,8 +20,8 @@ bool solver_gpm_hpc1(float const* p1, float const* p2, float* r01, float* t01, i
 
     float cba[3] = { PA2.dot(PA2) - PX1_d.dot(PX1_d), -2.0f * PB2_n.dot(PA2), PB2_n.dot(PB2_n) };
     float roots[2];
-
-    solve_quadratic(cba, roots, refine_iterations);
+    int nroots = find_real_roots(cba, 2, roots);
+    if (nroots <= 0) { return false; }
 
     float z1 = roots[0];
     float z2 = roots[1];
