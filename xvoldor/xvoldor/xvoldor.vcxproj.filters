@@ -428,7 +428,7 @@
     <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_rnp_r6pi.cpp">
+    <ClCompile Include="..\..\voldor\solver_rnp_r6p2i.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp">

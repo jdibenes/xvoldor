@@ -242,7 +242,7 @@
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp" />
     <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp" />
     <ClCompile Include="..\..\voldor\solver_rnp_r6p1l.cpp" />
-    <ClCompile Include="..\..\voldor\solver_rnp_r6pi.cpp" />
+    <ClCompile Include="..\..\voldor\solver_rnp_r6p2i.cpp" />
     <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp" />
     <ClCompile Include="..\..\voldor\trifocal.cpp" />
