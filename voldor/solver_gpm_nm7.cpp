@@ -16,8 +16,8 @@ bool solver_gpm_nm7(float const* p3d_1, float const* p2h_2, float* r_12, float* 
 
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Q = matrix_E_constraints(Q1, Q2);
 
-    Q.col(4) = Q.col(4) - Q.col(0);
-    Q.col(8) = Q.col(8) - Q.col(0);
+    Q.col(4) -= Q.col(0);
+    Q.col(8) -= Q.col(0);
 
     Eigen::Matrix<float, 8, 1> k = Q(Eigen::indexing::all, Eigen::seqN(1, 8)).fullPivLu().kernel();
     Eigen::Matrix<float, 9, 1> e;
