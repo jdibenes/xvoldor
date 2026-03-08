@@ -335,12 +335,6 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\py_export.cpp">
-      <Filter>Source Files\wrapper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\lock.cpp">
-      <Filter>Source Files\helpers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
@@ -422,9 +416,6 @@
     <ClCompile Include="..\..\voldor\solver_gpm_nm5.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -439,6 +430,15 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\batch_solve_cpu.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\py_export.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\lock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
+      <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
