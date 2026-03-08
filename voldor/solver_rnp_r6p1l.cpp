@@ -6,8 +6,10 @@
 #include "helpers_geometry.h"
 
 // OK
-bool solver_r6p1l(float const* p3d_1, float const* p2d_2, bool direction, float r0, int max_pow, float* r_12, float* t_12)
+bool solver_r6p1l(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12)
 {
+	int const max_pow = 2;
+
 	RSSinglelinCameraPoseVector solutions;
 
 	Eigen::MatrixXd X7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d_1, 3, 7).cast<double>();
