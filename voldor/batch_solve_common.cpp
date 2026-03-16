@@ -12,7 +12,7 @@ void sample(int n, int k, int* chosen)
     while (i < k)
     {
         int s = sample_draw(n);
-        if (n >= k)
+        if ((n >= k))// && unique)
         {
             int j;
             for (j = 0; j < i; ++j)
@@ -23,5 +23,14 @@ void sample(int n, int k, int* chosen)
         }
         chosen[i] = s;
         i++;
+    }
+}
+
+void sample_batch(int jobs, int n, int k, int* chosen, bool unique)
+{
+    for (int i = 0; i < jobs; ++i)
+    {
+        sample(n, k, chosen);//, unique);
+        chosen += k;
     }
 }
