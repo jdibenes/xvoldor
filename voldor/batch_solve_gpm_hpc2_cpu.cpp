@@ -58,7 +58,7 @@ int batch_solve_gpm_hpc2_cpu(std::vector<cv::Point3f> const& pts0, std::vector<c
 		pb2.y = ((pb2.y - cy) / fy) * pb2.z;
 		pc2.y = ((pc2.y - cy) / fy) * pc2.z;
 
-		bool ok = solver_gpm_hpc2((float*)p1, (float*)p2, (float*)&r, (float*)&t, refine_iterations);
+		bool ok = solver_gpm_hpc2((float*)p1, (float*)p2, (float*)&r, (float*)&t);
 		if (!ok) { continue; }
 
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = r;
