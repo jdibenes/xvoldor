@@ -16,6 +16,7 @@
 #include "lock.h"
 
 bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01);
+bool solver_relative_pose_easy(float const* p1, float const* p2);
 
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
@@ -93,11 +94,14 @@ int main(int argc, char* argv[])
     bool ok;
 
     //ok = solver_gpm_hpc0(p11.data(), p21.data(), r.data(), t.data()); // OK
-    //ok = solver_gpm_hpc1(p11.data(), p21.data(), r.data(), t.data()); // Ok
-    ok = solver_gpm_hpc2(p11.data(), p21.data(), r.data(), t.data()); // OK
+    //ok = solver_gpm_hpc1(p11.data(), p21.data(), r.data(), t.data()); // OK
+    //ok = solver_gpm_hpc2(p11.data(), p21.data(), r.data(), t.data()); // OK
     //ok = solver_gpm_nm5(p11.data(), p21.data(), r.data(), t.data()); // OK
     //ok = solver_gpm_nm6(p11.data(), p21.data(), r.data(), t.data()); // OK
     //ok = solver_gpm_nm7(p11.data(), p21.data(), r.data(), t.data()); // OK
+    //ok = solver_gpm_m4(p11.data(), p21.data(), r.data(), t.data()); // OK
+    // 
+    ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data());
     // 
     // 
     //ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
