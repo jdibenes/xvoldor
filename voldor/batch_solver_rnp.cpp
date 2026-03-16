@@ -46,10 +46,10 @@ static void block_cpu_solver_rnp(void* data, job_descriptor& jd, std::atomic<int
 
 		switch (ja->solver)
 		{
-		case 1:  ok = solver_r6p2l(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ja->direction, ja->r0,                     r, t); break;
-		case 2:  ok = solver_r6pi( reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ja->direction, ja->r0, ja->max_iterations, r, t); break;
+		case 1:  ok = solver_r6p2l(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ja->direction, ja->r0, r, t);                     break;
+		case 2:  ok = solver_r6p2i(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ja->direction, ja->r0, r, t, ja->max_iterations); break;
 		case 0:  
-		default: ok = solver_r6p1l(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ja->direction, ja->r0, ja->max_pow,        r, t); break;
+		default: ok = solver_r6p1l(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ja->direction, ja->r0, r, t);                     break;
 		}
 
 		if (!ok) { continue; }
