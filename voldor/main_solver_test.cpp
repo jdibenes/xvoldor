@@ -1,5 +1,5 @@
 
-#define ENABLE_SOLVER_TEST
+//#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -46,9 +46,9 @@ void make_planar(Eigen::Matrix<float, 3, 4>& pose)
 
 int main(int argc, char* argv[])
 {
-    Eigen::Matrix<float, 4, 4> pose0 = load_pose("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000062.bin").transpose();
-    Eigen::Matrix<float, 4, 4> pose1 = load_pose("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000072.bin").transpose();
-    Eigen::Matrix<float, 4, 4> pose2 = load_pose("D:/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000082.bin").transpose();
+    Eigen::Matrix<float, 4, 4> pose0 = load_pose("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000062.bin").transpose();
+    Eigen::Matrix<float, 4, 4> pose1 = load_pose("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000072.bin").transpose();
+    Eigen::Matrix<float, 4, 4> pose2 = load_pose("C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose/000082.bin").transpose();
 
     Eigen::Matrix<float, 4, 4> pose00h = pose0 * pose0.inverse();
     Eigen::Matrix<float, 4, 4> pose01h = pose1 * pose0.inverse();
