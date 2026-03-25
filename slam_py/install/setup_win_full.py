@@ -8,15 +8,15 @@ import numpy
 import shutil
 
 # Change these folders
-opencv_include_dir = 'D:/jcds/SDK2/opencv_3_4_16/build/include'
+opencv_include_dir = 'C:/Users/jcds/SDK/opencv_3_4_16/build/include'
 ceres_include_dirs = [
-    'D:/jcds/Documents/GitHub/vcpkg/packages/ceres_x64-windows/include',
-    'D:/jcds/Documents/GitHub/vcpkg/packages/eigen3_x64-windows/include/eigen3',
-    'D:/jcds/Documents/GitHub/vcpkg/packages/glog_x64-windows/include'
+    'C:/Users/jcds/Documents/GitHub/vcpkg/packages/ceres_x64-windows/include',
+    'C:/Users/jcds/Documents/GitHub/vcpkg/packages/eigen3_x64-windows/include/eigen3',
+    'C:/Users/jcds/Documents/GitHub/vcpkg/packages/glog_x64-windows/include'
 ]
 
-opencv_lib_dir = 'D:/jcds/SDK2/opencv_3_4_16/build/x64/vc15/lib'
-ceres_lib_dirs = ['D:/jcds/Documents/GitHub/vcpkg/packages/ceres_x64-windows/lib', 'D:/jcds/Documents/GitHub/vcpkg/packages/glog_x64-windows/lib']
+opencv_lib_dir = 'C:/Users/jcds/SDK/opencv_3_4_16/build/x64/vc15/lib'
+ceres_lib_dirs = ['C:/Users/jcds/Documents/GitHub/vcpkg/packages/ceres_x64-windows/lib', 'C:/Users/jcds/Documents/GitHub/vcpkg/packages/glog_x64-windows/lib']
 
 opencv_lib_name = 'opencv_world3416'
 ceres_lib_names = ['ceres', 'glog']
