@@ -1,7 +1,6 @@
 
 #include <limits>
 #include <Eigen/Eigen>
-#include <iostream>
 #include "polynomial.h"
 #include "algebra.h"
 #include "helpers_eigen.h"
@@ -36,11 +35,7 @@ static bool solver_rpe_easy(float const* p3d_1, float const* p2h_2, float* r_12,
     }
     else
     {
-        Eigen::PermutationMatrix<4> p;
-        p.indices() = { 3, 2, 0, 1 };
-    e = Q.fullPivLu().kernel() * p;
-    
-    
+    e = Q.fullPivLu().kernel();
     }
 
     Eigen::Matrix<x38::polynomial<float, 3>, 3, 3> E = x38::matrix_to_polynomial_grevlex<float, 3, 3, 3>(e);
@@ -92,45 +87,16 @@ static bool solver_rpe_easy(float const* p3d_1, float const* p2h_2, float* r_12,
     x38::polynomial<float, 1> S3_0 =  S3_135.determinant();
 
     x38::polynomial<float, 1> hidden_univariate = S3_3 + S3_2 + S3_1 + S3_0;
-
-
-
-
-    /*
-    x38::polynomial<float, 1> hidden_variable = x38::monomial<float, 1>{ 1, { 1 } };
-
-    S6.row(1) = (S6.row(1) * hidden_variable) - S6.row(0);
-    S6.row(3) = (S6.row(3) * hidden_variable) - S6.row(2);
-    S6.row(5) = (S6.row(5) * hidden_variable) - S6.row(4);
-
-    S6.row(1).swap(S6.row(2));
-    S6.row(2).swap(S6.row(4));
-
-    Eigen::Matrix<x38::polynomial<float, 1>, 3, 3> S3 = S6(Eigen::seqN(3, 3), Eigen::seqN(3, 3));
-
-    x38::polynomial<float, 1> hidden_univariate = S3.determinant();
-    */
     
     //
 
-    
-
     Eigen::Matrix<float, 1, 11> polynomial = x38::matrix_from_polynomial_grevlex<float, 1, 11>(hidden_univariate);
 
-    //polynomial.normalize();
-
-    std::cout << "poly: " << polynomial << std::endl;
+    polynomial.normalize();
 
     float roots[10];
     int nroots = find_real_roots(polynomial.data(), 10, roots);
     if (nroots <= 0) { return false; }
-
-    std::cout << "roots " << std::endl;
-    for (int i = 0; i < nroots; ++i)
-    {
-        std::cout << roots[i] << " ";
-    }
-    std::cout << std::endl;
 
     result_R_t_from_E<float> result;
 
