@@ -1,4 +1,6 @@
-
+    //Eigen::PermutationMatrix<4> p;
+        //p.indices() = { 3, 2, 0, 1 };
+    // *p;
     std::cout << "rotation errors: " << (ea1.angle() * (180.0 / 3.141592653589793238463)) << " | " << (ea2.angle() * (180.0 / 3.141592653589793238463)) << std::endl;
     std::cout << "translation errors: " << (e01.col(3).hnormalized().norm()) << " | " << (e02.col(3).hnormalized().norm()) << std::endl;
 
