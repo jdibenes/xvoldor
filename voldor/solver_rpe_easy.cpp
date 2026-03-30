@@ -65,8 +65,6 @@ static bool solver_rpe_easy(float const* p3d_1, float const* p2h_2, float* r_12,
     x38::row_echelon_step(S6, 4, 2, { 1 }, true);
     x38::row_echelon_step(S6, 5, 2, { 0 }, true);
 
-    //
-
     Eigen::Matrix<x38::polynomial<float, 1>, 3, 3> S3_024 = S6({ 1, 3, 5 }, Eigen::seqN(3, 3)); // z^3
     Eigen::Matrix<x38::polynomial<float, 1>, 3, 3> S3_025 = S6({ 1, 3, 4 }, Eigen::seqN(3, 3)); // z^2
 
@@ -87,8 +85,6 @@ static bool solver_rpe_easy(float const* p3d_1, float const* p2h_2, float* r_12,
     x38::polynomial<float, 1> S3_0 =  S3_135.determinant();
 
     x38::polynomial<float, 1> hidden_univariate = S3_3 + S3_2 + S3_1 + S3_0;
-    
-    //
 
     Eigen::Matrix<float, 1, 11> polynomial = x38::matrix_from_polynomial_grevlex<float, 1, 11>(hidden_univariate);
 
