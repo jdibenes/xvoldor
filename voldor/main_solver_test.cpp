@@ -9,15 +9,9 @@
 #include "polynomial.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
-#include "solver_gpm.h"
+#include "solvers.h"
 #include "solver_4p3v_para.h"
-#include "solver_rnp.h"
-#include "trifocal.h"
 #include "lock.h"
-
-bool solver_rpe_easy(float const* p1, float const* p2, float* r01, float* t01);
-bool solver_relative_pose_easy(float const* p1, float const* p2);
-
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
 {
@@ -60,8 +54,8 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 4> pose02 = pose02h(Eigen::seqN(0, 3), Eigen::indexing::all);
     Eigen::Matrix<float, 3, 4> pose12 = pose12h(Eigen::seqN(0, 3), Eigen::indexing::all);
  
-    make_planar(pose01);
-    make_planar(pose02);
+     //make_planar(pose01);
+    //make_planar(pose02);
 
     Eigen::Matrix<float, 4, 7> p1h{
         {1,   2, -3, -1.5, 4, -5, 1.5},
@@ -101,11 +95,11 @@ int main(int argc, char* argv[])
     //ok = solver_gpm_nm7(p11.data(), p21.data(), r.data(), t.data()); // OK
     //ok = solver_gpm_m4(p11.data(), p21.data(), r.data(), t.data()); // OK
     // 
-    ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data());
+    //ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data());
     // 
     // 
     //ok = trifocal_R_t_linear(x11.data(), x21.data(), x31.data(), p11.data(), 7, true, r.data(), t.data(), r2.data(), t2.data());
-    //ok = trifocal_R_t_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data());
+    ok = solver_tft_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data());
     //ok = solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
     // 
     //ok = solver_rpe_easy(p11.data(), p21.data(), r.data(), t.data());

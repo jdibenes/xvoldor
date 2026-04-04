@@ -16,12 +16,13 @@ struct job_arguments
 	float r0;
 	int max_pow;
 	int max_iterations;
-	float* out;
 };
 
-static void block_cpu_solver_rnp(void* data, job_descriptor& jd, std::atomic<int>& valid)
+static void block_cpu_solver_rnp(job_descriptor& jd)
 {
-	job_arguments* ja = static_cast<job_arguments*>(data);
+	job_arguments* ja = static_cast<job_arguments*>(jd.inputs);
+
+	float* out = &((float*)jd.output)[jd.start * 6];
 
 	for (int i = jd.start; i < jd.end; ++i)
 	{
@@ -54,14 +55,14 @@ static void block_cpu_solver_rnp(void* data, job_descriptor& jd, std::atomic<int
 
 		if (!ok) { continue; }
 
-		int index = valid++;
+		int index = jd.valid++;
 
-		ja->out[6 * index + 0] = r[0];
-		ja->out[6 * index + 1] = r[1];
-		ja->out[6 * index + 2] = r[2];
-		ja->out[6 * index + 3] = t[0];
-		ja->out[6 * index + 4] = t[1];
-		ja->out[6 * index + 5] = t[2];
+		out[6 * index + 0] = r[0];
+		out[6 * index + 1] = r[1];
+		out[6 * index + 2] = r[2];
+		out[6 * index + 3] = t[0];
+		out[6 * index + 4] = t[1];
+		out[6 * index + 5] = t[2];
 	}
 }
 
@@ -80,7 +81,6 @@ int batch_cpu_solver_rnp(cv::Point2f const* p2d, cv::Point3f const* p3d, int poi
 	ja.r0 = r0;
 	ja.max_pow = max_pow;
 	ja.max_iterations = max_iterations;
-	ja.out = poses;
 
-	return batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ja, point_count, sample_size);
+	return batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ja, point_count, sample_size, poses, 6*sizeof(float));
 }

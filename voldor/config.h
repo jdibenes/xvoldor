@@ -5,8 +5,8 @@
 struct Config 
 {
 	//vector<string> flow_names;
-	int multiview_mode = 3; // 2: binocular, 3: trifocal
-	int solver_select = 5;
+	int multiview_mode = 2; // 2: binocular, 3: trifocal
+	int solver_select = 1;
 	int disparities_enable = 1;
 	int trifocal_enable_flow_2 = 1;
 	int root_refine_interations = 2;

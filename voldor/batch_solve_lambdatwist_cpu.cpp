@@ -4,7 +4,7 @@
 #include "batch_solve_cpu.h"
 #include "../lambdatwist/lambdatwist_p4p.h"
 
-struct job_arguments
+struct job_inputs
 {
 	cv::Point2f const* p2d;
 	cv::Point3f const* p3d;
@@ -12,12 +12,12 @@ struct job_arguments
 	float fy;
 	float cx;
 	float cy;
-	float* out;
 };
 
-static void block_cpu_solver_p4p_lambdatwist(void* data, job_descriptor& jd, std::atomic<int>& valid)
+
+static void block_cpu_solver_p4p_lambdatwist(job_descriptor& jd)
 {
-	job_arguments* ja = static_cast<job_arguments*>(data);
+	job_inputs* ja = static_cast<job_inputs*>(jd.inputs);
 
 	float R_temp[3][3];
 	float t_temp[3];
@@ -26,6 +26,8 @@ static void block_cpu_solver_p4p_lambdatwist(void* data, job_descriptor& jd, std
 	cv::Vec3f tvec_temp;
 
 	//std::cout << "JOB: " << jd.id << "(" << jd.start << "->" << jd.end << ") : " << jd.seed << std::endl;
+
+	float* out = &((float*)jd.output)[jd.start * 6];
 
 	for (int i = jd.start; i < jd.end; ++i)
 	{
@@ -48,21 +50,21 @@ static void block_cpu_solver_p4p_lambdatwist(void* data, job_descriptor& jd, std
 		float x_sum = t_sum + r_sum;
 
 		if (!std::isfinite(x_sum)) { continue; }
-
-		int index = valid++;
 		
-		ja->out[6 * index + 0] = rvec_temp[0];
-		ja->out[6 * index + 1] = rvec_temp[1];
-		ja->out[6 * index + 2] = rvec_temp[2];
-		ja->out[6 * index + 3] = tvec_temp[0];
-		ja->out[6 * index + 4] = tvec_temp[1];
-		ja->out[6 * index + 5] = tvec_temp[2];
+		out[6 * jd.valid + 0] = rvec_temp[0];
+		out[6 * jd.valid + 1] = rvec_temp[1];
+		out[6 * jd.valid + 2] = rvec_temp[2];
+		out[6 * jd.valid + 3] = tvec_temp[0];
+		out[6 * jd.valid + 4] = tvec_temp[1];
+		out[6 * jd.valid + 5] = tvec_temp[2];
+
+		jd.valid++;
 	}
 }
 
 int batch_cpu_solver_p4p_lambdatwist(cv::Point2f const* p2d, cv::Point3f const* p3d, int point_count, cv::Mat const& K, int poses_to_sample, float* poses, int workers)
 {
-	job_arguments ja;
+	job_inputs ja;
 
 	ja.p2d = p2d;
 	ja.p3d = p3d;
@@ -70,12 +72,12 @@ int batch_cpu_solver_p4p_lambdatwist(cv::Point2f const* p2d, cv::Point3f const* 
 	ja.fy = K.at<float>(1, 1);
 	ja.cx = K.at<float>(0, 2);
 	ja.cy = K.at<float>(1, 2);
-	ja.out = poses;
 
-	int valid =  batch_solve(poses_to_sample, workers, block_cpu_solver_p4p_lambdatwist, &ja, point_count, 4);
-	//std::cout << "VALID: " << valid << std::endl;
+	int valid =  batch_solve(poses_to_sample, workers, block_cpu_solver_p4p_lambdatwist, &ja, point_count, 4, poses, 6*sizeof(float));
+	std::cout << "VALID: " << valid << std::endl;
 	return valid;
 }
+
 
 
 
