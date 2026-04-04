@@ -1,6 +1,6 @@
 
 #include <Eigen/Eigen>
-#include "solver_gpm.h"
+#include "solvers.h"
 #include "algebra.h"
 #include "helpers.h"
 #include "helpers_eigen.h"

@@ -1,7 +1,7 @@
 
 #include <opencv2/calib3d.hpp>
 #include "batch_solve_cpu.h"
-#include "solver_rnp.h"
+#include "solvers.h"
 
 struct job_arguments
 {

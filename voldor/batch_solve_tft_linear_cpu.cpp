@@ -3,7 +3,7 @@
 #include <Eigen/Eigen>
 #include <opencv2/calib3d.hpp>
 #include "batch_solve_common.h"
-#include "trifocal.h"
+#include "solvers.h"
 
 // points in format [u, v, z]
 int batch_solve_tft_linear_cpu(std::vector<cv::Point3f> const& pts0, std::vector<cv::Point3f> const& pts1, std::vector<cv::Point3f> const& pts2, cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool, std::vector<cv::Vec6f>* next_pool)

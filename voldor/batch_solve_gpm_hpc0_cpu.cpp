@@ -1,6 +1,6 @@
 
 #include <opencv2/calib3d.hpp>
-#include "solver_gpm.h"
+#include "solvers.h"
 #include "batch_solve_common.h"
 
 // points in format [u, v, z]

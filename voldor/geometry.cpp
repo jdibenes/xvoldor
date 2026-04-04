@@ -2,7 +2,7 @@
 #include "geometry.h"
 #include "../gpu-kernels/gpu_kernels.h"
 #include "../lambdatwist/lambdatwist_p4p.h"
-#include "trifocal.h"
+#include "solvers.h"
 #include "batch_solve.h"
 //#include "trifocal_poselib.h"
 

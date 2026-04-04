@@ -81,12 +81,6 @@
     <ClInclude Include="..\..\voldor\kitti.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\trifocal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_gpm.h">
-      <Filter>Header Files\solvers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_eigen.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
@@ -113,9 +107,6 @@
     </ClInclude>
     <ClInclude Include="..\..\voldor\algebra.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_rnp.h">
-      <Filter>Header Files\solvers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
       <Filter>Libraries\lambdatwist</Filter>
@@ -160,7 +151,10 @@
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\batch_solve_cpu.h">
-      <Filter>Header Files\batch_solve</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\solvers.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -180,9 +174,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\kitti.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\trifocal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\PoseLib\misc\colmap_models.cc">
@@ -438,6 +429,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_tft_linear.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
