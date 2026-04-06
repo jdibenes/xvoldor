@@ -299,7 +299,7 @@ solve_p3p_pool
 	switch (cfg.solver_select)
 	{
 	case 0:  poses_pool_used = batch_solve_ap3p_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-	case 1:  poses_pool_used = batch_cpu_solver_p4p_lambdatwist(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers); break;
+	case 1:  poses_pool_used = batch_cpu_solver_p4p_lambdatwist(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
 	case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	

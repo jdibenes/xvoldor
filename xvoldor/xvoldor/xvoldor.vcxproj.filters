@@ -99,9 +99,6 @@
     <ClInclude Include="..\..\voldor\batch_solve.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\batch_solve_common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_geometry.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
@@ -150,7 +147,7 @@
     <ClInclude Include="..\..\voldor\polynomial.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\batch_solve_cpu.h">
+    <ClInclude Include="..\..\voldor\batch_cpu_solver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\solvers.h">
@@ -347,23 +344,11 @@
     <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc0_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc2_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc1_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp">
       <Filter>Source Files\solvers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rnp_r6p1l.cpp">
       <Filter>Source Files\solvers</Filter>
@@ -419,9 +404,6 @@
     <ClCompile Include="..\..\voldor\algebra.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\py_export.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -433,6 +415,12 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_tft_linear.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp">
+      <Filter>Source Files\batch_solve</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

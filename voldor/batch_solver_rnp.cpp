@@ -1,6 +1,6 @@
 
 #include <opencv2/calib3d.hpp>
-#include "batch_solve_cpu.h"
+#include "batch_cpu_solver.h"
 #include "solvers.h"
 
 struct job_arguments
@@ -82,5 +82,5 @@ int batch_cpu_solver_rnp(cv::Point2f const* p2d, cv::Point3f const* p3d, int poi
 	ja.max_pow = max_pow;
 	ja.max_iterations = max_iterations;
 
-	return batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ja, point_count, sample_size, poses, 6*sizeof(float));
+	return batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ja, point_count, sample_size, false, poses, 6);
 }

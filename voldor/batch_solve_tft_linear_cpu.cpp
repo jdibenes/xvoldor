@@ -2,7 +2,7 @@
 #include <iostream>
 #include <Eigen/Eigen>
 #include <opencv2/calib3d.hpp>
-#include "batch_solve_common.h"
+//#include "batch_solve_common.h"
 #include "solvers.h"
 
 // points in format [u, v, z]

@@ -34,8 +34,7 @@
     <ClInclude Include="..\..\thirdparty\rnp\utils.h" />
     <ClInclude Include="..\..\voldor\algebra.h" />
     <ClInclude Include="..\..\voldor\batch_solve.h" />
-    <ClInclude Include="..\..\voldor\batch_solve_common.h" />
-    <ClInclude Include="..\..\voldor\batch_solve_cpu.h" />
+    <ClInclude Include="..\..\voldor\batch_cpu_solver.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
     <ClInclude Include="..\..\voldor\helpers.h" />
@@ -212,14 +211,11 @@
     <ClCompile Include="..\..\thirdparty\rnp\utils.cpp" />
     <ClCompile Include="..\..\voldor\algebra.cpp" />
     <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_common.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_cpu.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc1_cpu.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc2_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_ap3p_gpu.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc0_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_cpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_gpu.cpp" />
     <ClCompile Include="..\..\voldor\geometry.cpp" />
