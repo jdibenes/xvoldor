@@ -303,16 +303,18 @@ solve_p3p_pool
 	case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	
-	case 5:  poses_pool_used = batch_solve_tft_linear_cpu(trifocal_0_map, trifocal_1_map, trifocal_2_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, next_pool); break;
+	//case 5:  poses_pool_used = batch_cpu_solver_tft(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_2_map.data(), trifocal_0_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, (float*)next_pool->data(), cfg.batch_workers, false); break;
 
-	case 4:  poses_pool_used = batch_solve_gpm_hpc0_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-	case 6:  poses_pool_used = batch_solve_gpm_hpc1_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, cfg.root_refine_interations); break;
-	case 7:  poses_pool_used = batch_solve_gpm_hpc2_cpu(trifocal_0_map, trifocal_1_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool, cfg.root_refine_interations); break;
+	case 4:  poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break; // cams[active_idx].K,
+	case 6:  poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break; // cams[active_idx].K, 
+	case 7:  poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), 2, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break; // cams[active_idx].K, 
 
 
-	case 16: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 7, cams[active_idx].K, 0, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers); break;
-	case 17: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 7, cams[active_idx].K, 1, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers); break;
-	case 18: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 6, cams[active_idx].K, 2, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers); break;
+
+
+	case 16: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 7, cams[active_idx].K, 0, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+	case 17: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 7, cams[active_idx].K, 1, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+	case 18: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 6, cams[active_idx].K, 2, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
 
 	default: poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 	}

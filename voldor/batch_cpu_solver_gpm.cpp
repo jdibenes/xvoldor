@@ -46,8 +46,11 @@ static void batch_cpu_solver_gpm(job_descriptor& jd)
 		}
 
 		if (!ok) { continue; }
+		if (!is_valid_solution_6(r, t)) { continue; }
 
-		if (is_valid_solution_6(r, t)) { put_solution_6(jd, r, t); }
+		put_solution_6(jd, (float*)jd.output, r, t);
+
+		jd.valid++;
 	}
 }
 
@@ -74,8 +77,10 @@ int batch_cpu_solver_gpm(cv::Point3f const* p3d_1, cv::Point3f const* p3d_2, int
 	default: return 0;
 	}
 
-	return batch_solve(poses_to_sample, workers, batch_cpu_solver_gpm, &ja, point_count, sample_size, unique, poses, 6);
+	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_gpm, &ja, point_count, sample_size, unique, poses);
+	return batch_finalize(jr, poses, 6);
 }
+
 
 
 

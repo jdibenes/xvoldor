@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include <opencv2/calib3d.hpp>
 #include "batch_cpu_solver.h"
 #include "helpers_geometry.h"
@@ -36,7 +37,10 @@ static void batch_cpu_solver_p4p_lambdatwist(job_descriptor& jd)
 		
 		Rodrigues(cv::Matx33f((float*)R), r);
 		
-		if (is_valid_solution_6(r.val, t)) { put_solution_6(jd, r.val, t); }		
+		if (!is_valid_solution_6(r.val, t)) { continue; }
+
+		put_solution_6(jd, (float*)jd.output, r.val, t);
+		jd.valid++;
 	}
 }
 
@@ -51,5 +55,8 @@ int batch_cpu_solver_p4p_lambdatwist(cv::Point2f const* p2d, cv::Point3f const* 
 	ja.cx = K.at<float>(0, 2);
 	ja.cy = K.at<float>(1, 2);
 
-	return batch_solve(poses_to_sample, workers, batch_cpu_solver_p4p_lambdatwist, &ja, point_count, 4, unique, poses, 6);
+	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_p4p_lambdatwist, &ja, point_count, 4, unique, poses);
+	int valid = batch_finalize(jr, poses, 6);
+	std::cout << "VALID: " << valid << std::endl;
+	return valid;
 }

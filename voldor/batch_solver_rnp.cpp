@@ -22,26 +22,24 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 {
 	job_arguments* ja = static_cast<job_arguments*>(jd.inputs);
 
-	float* out = &((float*)jd.output)[jd.start * 6];
+	cv::Point2f p2d[7];
+	cv::Point3f p3d[7];
+
+	float r[3];
+	float t[3];
 
 	for (int i = jd.start; i < jd.end; ++i)
 	{
-		cv::Point2f p2d[7];
-		cv::Point3f p3d[7];
+		int const* p = get_sample_indices(jd, i);
 
-		for (int j = 0; j < jd.sample_size; ++j)
+		for (int m = 0; m < jd.sample_size; ++m)
 		{
-			int s = jd.rng[(i * jd.sample_size) + j];
+			p2d[m] = ja->p2d[p[m]];
+			p3d[m] = ja->p3d[p[m]];
 
-			p2d[j] = ja->p2d[s];
-			p3d[j] = ja->p3d[s];
-
-			p2d[j].x = (p2d[j].x - ja->cx) / ja->fx;
-			p2d[j].y = (p2d[j].y - ja->cy) / ja->fy;
+			p2d[m].x = (p2d[m].x - ja->cx) / ja->fx;
+			p2d[m].y = (p2d[m].y - ja->cy) / ja->fy;
 		}
-
-		float r[3];
-		float t[3];
 
 		bool ok;
 
@@ -54,19 +52,15 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 		}
 
 		if (!ok) { continue; }
+		if (!is_valid_solution_6(r, t)) { continue; }
 
-		int index = jd.valid++;
+		put_solution_6(jd, (float*)jd.output, r, t);
 
-		out[6 * index + 0] = r[0];
-		out[6 * index + 1] = r[1];
-		out[6 * index + 2] = r[2];
-		out[6 * index + 3] = t[0];
-		out[6 * index + 4] = t[1];
-		out[6 * index + 5] = t[2];
+		jd.valid++;
 	}
 }
 
-int batch_cpu_solver_rnp(cv::Point2f const* p2d, cv::Point3f const* p3d, int point_count, int sample_size, cv::Mat const& K, int solver, bool direction, float r0, int max_pow, int max_iterations, int poses_to_sample, float* poses, int workers)
+int batch_cpu_solver_rnp(cv::Point2f const* p2d, cv::Point3f const* p3d, int point_count, int sample_size, cv::Mat const& K, int solver, bool direction, float r0, int max_pow, int max_iterations, int poses_to_sample, float* poses, int workers, bool unique)
 {
 	job_arguments ja;
 
@@ -82,5 +76,6 @@ int batch_cpu_solver_rnp(cv::Point2f const* p2d, cv::Point3f const* p3d, int poi
 	ja.max_pow = max_pow;
 	ja.max_iterations = max_iterations;
 
-	return batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ja, point_count, sample_size, false, poses, 6);
+	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ja, point_count, sample_size, unique, poses);
+	return batch_finalize(jr, poses, 6);
 }

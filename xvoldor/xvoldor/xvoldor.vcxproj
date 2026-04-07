@@ -212,7 +212,7 @@
     <ClCompile Include="..\..\voldor\algebra.cpp" />
     <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_tft.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_ap3p_gpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp" />
