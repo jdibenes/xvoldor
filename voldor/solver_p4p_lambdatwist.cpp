@@ -5,10 +5,10 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-bool solver_p4p_lambdatwist(float* p3d_1, float* p2d_2, float* r_12, float* t_12)
+bool solver_p4p_lambdatwist(float const* p3d_1, float const* p2d_2, float* r_12, float* t_12)
 {
-	cv::Vec3f* p1 = reinterpret_cast<cv::Vec3f*>(p3d_1);
-	cv::Vec2f* p2 = reinterpret_cast<cv::Vec2f*>(p2d_2);
+	cv::Vec3f const* p1 = reinterpret_cast<cv::Vec3f const*>(p3d_1);
+	cv::Vec2f const* p2 = reinterpret_cast<cv::Vec2f const*>(p2d_2);
 
 	float R_s[3][3];
 
