@@ -428,6 +428,9 @@
     <ClCompile Include="..\..\voldor\solver_p4p_lambdatwist.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_p4p_ap3p.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\voldor\voldor_bin.txt">
