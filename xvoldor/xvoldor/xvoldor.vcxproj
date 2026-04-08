@@ -25,6 +25,7 @@
     <ClInclude Include="..\..\lambdatwist\refine_lambda.h" />
     <ClInclude Include="..\..\lambdatwist\solve_cubic.h" />
     <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
+    <ClInclude Include="..\..\thirdparty\polynomial\polynomial.h" />
     <ClInclude Include="..\..\thirdparty\rnp\danilevsky.h" />
     <ClInclude Include="..\..\thirdparty\rnp\hidden6.h" />
     <ClInclude Include="..\..\thirdparty\rnp\prepare_1lin.h" />

@@ -64,6 +64,9 @@
     <Filter Include="Libraries\rnp">
       <UniqueIdentifier>{46b4a89f-e445-4518-8015-309e8b07bbd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries\polynomial">
+      <UniqueIdentifier>{ec3d1ec1-c6da-45c1-9cc7-9793152f843b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\voldor\config.h">
@@ -152,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="..\..\voldor\py_export.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\polynomial\polynomial.h">
+      <Filter>Libraries\polynomial</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
