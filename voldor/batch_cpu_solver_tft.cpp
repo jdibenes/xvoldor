@@ -12,6 +12,7 @@ struct job_inputs
 	float fy;
 	float cx;
 	float cy;
+	int solver;
 	float threshold;
 };
 
@@ -26,9 +27,9 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	job_inputs* ji = static_cast<job_inputs*>(jd.inputs);
 	job_output* jo = static_cast<job_output*>(jd.output);
 
-	cv::Point3f p1[7];
-	cv::Point2f p2[7];
-	cv::Point2f p3[7];
+	cv::Point3f p3d_1[7];
+	cv::Point2f p2d_2[7];
+	cv::Point2f p2d_3[7];
 
 	float r1[3];
 	float t1[3];
@@ -43,12 +44,18 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	{
 	int im = p[m];
 
-	p1[m] = p2z_to_p3d(ji->p2z_1[im], ji->fx, ji->fy, ji->cx, ji->cy);
-	p2[m] = p2z_to_p2d(ji->p2z_2[im], ji->fx, ji->fy, ji->cx, ji->cy);
-	p3[m] = p2z_to_p2d(ji->p2z_3[im], ji->fx, ji->fy, ji->cx, ji->cy);
+	p3d_1[m] = p2z_to_p3d(ji->p2z_1[im], ji->fx, ji->fy, ji->cx, ji->cy);
+	p2d_2[m] = p2z_to_p2d(ji->p2z_2[im], ji->fx, ji->fy, ji->cx, ji->cy);
+	p2d_3[m] = p2z_to_p2d(ji->p2z_3[im], ji->fx, ji->fy, ji->cx, ji->cy);
 	}
 
-	bool ok = solver_tft_linear(reinterpret_cast<float*>(p1), reinterpret_cast<float*>(p2), reinterpret_cast<float*>(p3), jd.sample_size, r1, t1, r2, t2, ji->threshold);
+	bool ok;
+	
+	switch (ji->solver)
+	{
+	case 0:  ok = solver_tft_linear(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), reinterpret_cast<float*>(p2d_3), jd.sample_size, r1, t1, r2, t2, ji->threshold); break;
+	default: ok = false;                                                                                                                                                               break;
+	}
 
 	if (!ok) { continue; }
 	if (!is_valid_solution_6(r1, t1) || !is_valid_solution_6(r2, t2)) { continue; }
@@ -72,14 +79,23 @@ int batch_cpu_solver_tft(cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv:
 	ji.fy = K.at<float>(1, 1);
 	ji.cx = K.at<float>(0, 2);
 	ji.cy = K.at<float>(1, 2);
+	ji.solver = solver;
 	ji.threshold = threshold;
 
 	jo.poses = poses;
 	jo.next_pool = next_pool;
 
-	if (point_count < 7) { return 0; }
+	int sample_size;
 
-	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_tft, &ji, point_count, 7, unique, &jo);
+	switch (solver)
+	{
+	case 0:  sample_size = 7; break;
+	default: return 0;
+	}
+
+	if (point_count < sample_size) { return 0; }
+
+	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_tft, &ji, point_count, sample_size, unique, &jo);
 	if (next_pool) { batch_finalize(jr, next_pool, 6); }
 	return batch_finalize(jr, poses, 6);
 }
