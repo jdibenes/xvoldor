@@ -34,7 +34,7 @@
     <ClInclude Include="..\..\thirdparty\rnp\sturm.h" />
     <ClInclude Include="..\..\thirdparty\rnp\utils.h" />
     <ClInclude Include="..\..\voldor\algebra.h" />
-    <ClInclude Include="..\..\voldor\batch_solve.h" />
+    <ClInclude Include="..\..\voldor\batch_solver.h" />
     <ClInclude Include="..\..\voldor\batch_cpu_solver.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
@@ -214,11 +214,9 @@
     <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_tft.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_ap3p_gpu.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_cpu.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_gpu.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_p4p.cpp" />
+    <ClCompile Include="..\..\voldor\batch_gpu_solver_p4p.cpp" />
     <ClCompile Include="..\..\voldor\geometry.cpp" />
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\lock.cpp" />

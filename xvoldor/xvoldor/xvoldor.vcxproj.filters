@@ -93,9 +93,6 @@
     <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\batch_solve.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_geometry.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
@@ -155,6 +152,9 @@
     </ClInclude>
     <ClInclude Include="..\..\thirdparty\lambdatwist\solve_eig0.h">
       <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\batch_solver.h">
+      <Filter>Header Files\batch_solve</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -332,18 +332,6 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_ap3p_gpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_gpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -430,6 +418,12 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_p4p_ap3p.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_p4p.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_gpu_solver_p4p.cpp">
+      <Filter>Source Files\batch_solve</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
