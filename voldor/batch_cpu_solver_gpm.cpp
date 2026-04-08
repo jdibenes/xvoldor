@@ -52,7 +52,6 @@ static void batch_cpu_solver_gpm(job_descriptor& jd)
 	}
 
 	if (!ok) { continue; }
-	if (!is_valid_solution_6(r, t)) { continue; }
 
 	put_solution_6(jd, static_cast<float*>(jd.output), r, t);
 

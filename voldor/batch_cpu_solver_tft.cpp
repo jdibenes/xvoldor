@@ -58,7 +58,6 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	}
 
 	if (!ok) { continue; }
-	if (!is_valid_solution_6(r1, t1) || !is_valid_solution_6(r2, t2)) { continue; }
 
 	put_solution_6(jd, jo->poses, r1, t1);
 	if (jo->next_pool) { put_solution_6(jd, jo->next_pool, r2, t2); }
