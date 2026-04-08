@@ -87,9 +87,6 @@
     <ClInclude Include="..\..\voldor\helpers.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\py_export.h">
-      <Filter>Header Files\wrapper</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\lock.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
@@ -144,14 +141,17 @@
     <ClInclude Include="..\..\thirdparty\rnp\utils.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\polynomial.h">
-      <Filter>Header Files\helpers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\solvers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\batch_cpu_solver.h">
       <Filter>Header Files\batch_solve</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\helpers_opencv.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\py_export.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
