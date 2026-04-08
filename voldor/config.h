@@ -105,7 +105,7 @@ struct Config
 	int kitti_ground_holo_width = 5;
 	float kitti_ground_roi = 0.4f;
 	float kitti_ground_meanshift_kernel_var = 0.01f;
-
+	/*
 	template <typename T>
 	static void str_to_arg(std::string str, T& arg) {
 		switch (*(typeid(arg).name()))
@@ -116,6 +116,32 @@ struct Config
 		case 'd': arg = stod(str); break;
 		}
 	}
+	*/
+	template <typename T>
+	static void str_to_arg(std::string str, T& arg)
+	{
+		std::cout << "Config unsupported parameter type." << std::endl;
+		exit(1);
+	}
+
+	template <>
+	static void str_to_arg(std::string str, int& arg)
+	{
+		arg = stoi(str);
+	}
+
+	template <>
+	static void str_to_arg(std::string str, float& arg)
+	{
+		arg = stof(str);
+	}
+
+	template <>
+	static void str_to_arg(std::string str, double& arg)
+	{
+		arg = stod(str);
+	}
+
 
 	template <typename T>
 	static T safe_arr_access(std::vector<T> arr, size_t i) 
