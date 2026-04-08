@@ -18,5 +18,5 @@ bool solver_rpe_m5(float const* p3d_1, float const* p2h_2, float* r_12, float* t
 
 bool solver_tft_linear(float const* p3d_1, float const* p2d_2, float const* p2d_3, int N, float* r_12, float* t_12, float* r_23, float* t_23, float threshold);
 
-bool solver_p4p_lambdatwist(float* p3d_1, float* p2d_2, float* r_12, float* t_12);
-bool solver_p4p_ap3p(float* p3d_1, float* p2d_2, float* r_12, float* t_12);
+bool solver_p4p_lambdatwist(float const* p3d_1, float const* p2d_2, float* r_12, float* t_12);
+bool solver_p4p_ap3p(float const* p3d_1, float const* p2d_2, float* r_12, float* t_12);
