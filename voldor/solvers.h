@@ -9,9 +9,9 @@ bool solver_gpm_nm5(float const* p3d_1, float const* p2h_2, float* r_12, float* 
 bool solver_gpm_nm6(float const* p3d_1, float const* p2h_2, float* r_12, float* t_12);
 bool solver_gpm_nm7(float const* p3d_1, float const* p2h_2, float* r_12, float* t_12);
 
-bool solver_r6p1l(float* p3d_1, float* p2d_2, bool direction, float r0, float* r_12, float* t_12);
-bool solver_r6p2l(float* p3d_1, float* p2d_2, bool direction, float r0, float* r_12, float* t_12);
-bool solver_r6p2i(float* p3d_1, float* p2d_2, bool direction, float r0, float* r_12, float* t_12, int max_iterations);
+bool solver_r6p1l(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12);
+bool solver_r6p2l(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12);
+bool solver_r6p2i(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12, int max_iterations);
 
 bool solver_gpm_m4(float const* p3d_1, float const* p2h_2, float* r_12, float* t_12);
 bool solver_rpe_m5(float const* p3d_1, float const* p2h_2, float* r_12, float* t_12);
