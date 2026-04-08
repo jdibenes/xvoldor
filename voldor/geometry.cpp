@@ -1,9 +1,9 @@
 
 #include "geometry.h"
 #include "../gpu-kernels/gpu_kernels.h"
-#include "../lambdatwist/lambdatwist_p4p.h"
+//#include "../lambdatwist/lambdatwist_p4p.h"
 #include "solvers.h"
-#include "batch_solve.h"
+#include "batch_solver.h"
 //#include "trifocal_poselib.h"
 
 
@@ -298,25 +298,26 @@ solve_p3p_pool
 
 	switch (cfg.solver_select)
 	{
-	case 0:  poses_pool_used = batch_solve_ap3p_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-	case 1:  poses_pool_used = batch_cpu_solver_p4p_lambdatwist(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-	case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-	case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	case 0: poses_pool_used = batch_cpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+	case 1: poses_pool_used = batch_cpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+	case 2: poses_pool_used = batch_gpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data); break;
+	case 3: poses_pool_used = batch_gpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data); break;
+
 	
 	//case 5:  poses_pool_used = batch_cpu_solver_tft(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_2_map.data(), trifocal_0_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, (float*)next_pool->data(), cfg.batch_workers, false); break;
 
-	case 4:  poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break; // cams[active_idx].K,
-	case 6:  poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break; // cams[active_idx].K, 
-	case 7:  poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), 2, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break; // cams[active_idx].K, 
+	// gpm
+	case  8: poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+	case  9: poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+	case 10: poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_0_map.size(), cams[active_idx].K, 2, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
 
+	// rnp
+	case 16: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
+	case 17: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
+	case 18: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 2, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
 
-
-
-	case 16: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 7, cams[active_idx].K, 0, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-	case 17: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 7, cams[active_idx].K, 1, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-	case 18: poses_pool_used = batch_cpu_solver_rnp(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), 6, cams[active_idx].K, 2, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_pow, cfg.rs_max_iterations, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-
-	default: poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+	// default: gpu p4p lambdatwist
+	default: poses_pool_used = batch_gpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data); break;
 	}
 
 	for (cv::Vec6f const &v : cams[active_idx].trifocal_1_2_pool)
@@ -333,6 +334,10 @@ solve_p3p_pool
 }
 
 
+//case 0:  poses_pool_used = batch_solve_ap3p_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+//case 1:  poses_pool_used = batch_cpu_solver_p4p_lambdatwist(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+//case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+//case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
 
 
 int 
