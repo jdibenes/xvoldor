@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <cmath>
+
 // OK
 template <typename T>
 T clamp(T v, T l, T r)
