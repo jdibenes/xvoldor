@@ -59,12 +59,12 @@ collect_p3p_instances
 	float const trifocal_squared_error_max_thresh
 );
 
-DLL_EXPORT int solve_batch_p3p_ap3p_gpu(float* h_p3s, float* h_p2s,
+DLL_EXPORT int solve_batch_p3p_ap3p_gpu(float const* h_p3s, float const* h_p2s,
 	float* h_o_rvecs, float* h_o_tvecs,
-	float* h_K, int N_pts, int N_poses);
-DLL_EXPORT int solve_batch_p3p_lambdatwist_gpu(float* h_p3s, float* h_p2s,
+	float const* h_K, int N_pts, int N_poses);
+DLL_EXPORT int solve_batch_p3p_lambdatwist_gpu(float const* h_p3s, float const* h_p2s,
 	float* h_o_rvecs, float* h_o_tvecs,
-	float* h_K, int N_pts, int N_poses);
+	float const* h_K, int N_pts, int N_poses);
 
 DLL_EXPORT int optimize_depth_gpu(
 	float* h_flows[],
