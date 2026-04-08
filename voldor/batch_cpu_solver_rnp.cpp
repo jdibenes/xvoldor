@@ -27,6 +27,9 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 	float r[3];
 	float t[3];
 
+	float dr[3]; // TODO: return velocities
+	float dt[3];
+
 	for (int i = jd.start; i < jd.end; ++i)
 	{
 	int const* p = get_sample_indices(jd, i);
@@ -43,10 +46,10 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 
 	switch (ji->solver)
 	{
-	case 0:  ok = solver_r6p1l(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t);                     break;
-	case 1:  ok = solver_r6p2l(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t);                     break;
-	case 2:  ok = solver_r6p2i(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t, ji->max_iterations); break;
-	default: ok = false;                                                                                                                           break;
+	case 0:  ok = solver_r6p1l(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t, dr, dt);                     break;
+	case 1:  ok = solver_r6p2l(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t, dr, dt);                     break;
+	case 2:  ok = solver_r6p2i(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t, dr, dt, ji->max_iterations); break;
+	default: ok = false;                                                                                                                                   break;
 	}
 
 	if (!ok) { continue; }
