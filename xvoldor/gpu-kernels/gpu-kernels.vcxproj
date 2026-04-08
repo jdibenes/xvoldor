@@ -35,12 +35,12 @@
     <ClInclude Include="..\..\gpu-kernels\svd3_cuda.h" />
     <ClInclude Include="..\..\gpu-kernels\utils.h" />
     <ClInclude Include="..\..\gpu-kernels\vops.h" />
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h" />
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h" />
-    <ClInclude Include="..\..\lambdatwist\matrix.h" />
-    <ClInclude Include="..\..\lambdatwist\refine_lambda.h" />
-    <ClInclude Include="..\..\lambdatwist\solve_cubic.h" />
-    <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p3p.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p4p.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\matrix.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\refine_lambda.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_cubic.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_eig0.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0657129-07DF-437B-BD66-DC2EDEC5E3A7}</ProjectGuid>
@@ -97,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3_4_16\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3_4_16\build\include;C:\Users\jcds\Documents\GitHub\xvoldor\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

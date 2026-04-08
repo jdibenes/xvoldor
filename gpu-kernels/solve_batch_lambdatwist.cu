@@ -1,7 +1,7 @@
 #include "utils.h"
 #include "gpu_kernels.h"
 #include "rodrigues.h"
-#include "../lambdatwist/lambdatwist_p4p.h"
+#include <lambdatwist/lambdatwist_p4p.h>
 
 #define N_THREADS 32
 
