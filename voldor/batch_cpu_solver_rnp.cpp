@@ -14,7 +14,6 @@ struct job_inputs
 	int solver;
 	bool direction;
 	float r0;
-	int max_pow;
 	int max_iterations;
 };
 
@@ -59,7 +58,7 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 	}
 }
 
-int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, int workers, bool unique, bool direction, float r0, int max_pow, int max_iterations)
+int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, int workers, bool unique, bool direction, float r0, int max_iterations)
 {
 	job_inputs ji;
 
@@ -72,7 +71,6 @@ int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int
 	ji.solver = solver;
 	ji.direction = direction;
 	ji.r0 = r0;
-	ji.max_pow = max_pow;
 	ji.max_iterations = max_iterations;
 
 	int sample_size;
