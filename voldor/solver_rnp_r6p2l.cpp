@@ -6,21 +6,21 @@
 #include "helpers_geometry.h"
 
 // OK
-bool solver_r6p2l(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12)
+bool solver_r6p2l(float* p3d_1, float* p2d_2, bool direction, float r0, float* r_12, float* t_12)
 {
 	cv::Mat r_initial;
 	cv::Mat t_initial;
 
-	bool ok = cv::solvePnP(cv::Mat(4, 3, CV_32FC1, (void*)p3d_1), cv::Mat(4, 2, CV_32FC1, (void*)p2d_2), cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
+	bool ok = cv::solvePnP(cv::Mat(4, 3, CV_32FC1, p3d_1), cv::Mat(4, 2, CV_32FC1, p2d_2), cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
 	if (!ok) { return false; }
 
-	Eigen::Matrix<double, 3, 3> R_initial = matrix_R_rodrigues(matrix_from_buffer<double, 3, 1>((double*)r_initial.data));
+	Eigen::Matrix<double, 3, 3> R_initial = matrix_R_rodrigues(matrix_from_buffer<double, 3, 1>(reinterpret_cast<double*>(r_initial.data)));
 
-	Eigen::MatrixXd X7 = R_initial * matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d_1, 3, 7).cast<double>();
-	Eigen::MatrixXd u7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d_2, 2, 7).cast<double>();
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> X7 = R_initial * matrix_from_buffer<double, Eigen::Dynamic, Eigen::Dynamic>(p3d_1, 3, 7);
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> u7 =             matrix_from_buffer<double, Eigen::Dynamic, Eigen::Dynamic>(p2d_2, 2, 7);
 
-	Eigen::MatrixXd X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
-	Eigen::MatrixXd u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
 
 	RSDoublelinCameraPoseVector solutions;
 
@@ -46,8 +46,8 @@ bool solver_r6p2l(float const* p3d_1, float const* p2d_2, bool direction, float 
 	td = tc;
 	}
 
-	Eigen::Matrix<float, 3, 1> r = vector_r_rodrigues(Rd * R_initial).cast<float>();
-	Eigen::Matrix<float, 3, 1> t = td.cast<float>();
+	Eigen::Matrix<double, 3, 1> r = vector_r_rodrigues(Rd * R_initial);
+	Eigen::Matrix<double, 3, 1> t = td;
 
 	matrix_to_buffer(r, r_12);
 	matrix_to_buffer(t, t_12);

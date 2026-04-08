@@ -6,17 +6,17 @@
 #include "helpers_geometry.h"
 
 // OK
-bool solver_r6p1l(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12)
+bool solver_r6p1l(float* p3d_1, float* p2d_2, bool direction, float r0, float* r_12, float* t_12)
 {
 	int const max_pow = 2;
 
 	RSSinglelinCameraPoseVector solutions;
 
-	Eigen::MatrixXd X7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p3d_1, 3, 7).cast<double>();
-	Eigen::MatrixXd u7 = matrix_from_buffer<float, Eigen::Dynamic, Eigen::Dynamic>(p2d_2, 2, 7).cast<double>();
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> X7 = matrix_from_buffer<double, Eigen::Dynamic, Eigen::Dynamic>(p3d_1, 3, 7);
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> u7 = matrix_from_buffer<double, Eigen::Dynamic, Eigen::Dynamic>(p2d_2, 2, 7);
 	
-	Eigen::MatrixXd X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
-	Eigen::MatrixXd u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> X = X7(Eigen::indexing::all, Eigen::seqN(0, 6));
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> u = u7(Eigen::indexing::all, Eigen::seqN(0, 6));
 
 	R6P1Lin(X, u, direction, r0, max_pow, &solutions); // always returns 0
 
@@ -24,8 +24,8 @@ bool solver_r6p1l(float const* p3d_1, float const* p2d_2, bool direction, float 
 
 	double max_error = std::numeric_limits<double>::infinity();
 
-	Eigen::Matrix<double, 3, 1> rd;
-	Eigen::Matrix<double, 3, 1> td;
+	Eigen::Matrix<double, 3, 1> r;
+	Eigen::Matrix<double, 3, 1> t;
 
 	for (auto const& solution : solutions)
 	{
@@ -36,12 +36,9 @@ bool solver_r6p1l(float const* p3d_1, float const* p2d_2, bool direction, float 
 	if (error >= max_error) { continue; }
 	max_error = error;
 
-	rd = solution.v;
-	td = tc;
+	r = solution.v;
+	t = tc;
 	}
-
-	Eigen::Matrix<float, 3, 1> r = rd.cast<float>();
-	Eigen::Matrix<float, 3, 1> t = td.cast<float>();
 
 	matrix_to_buffer(r, r_12);
 	matrix_to_buffer(t, t_12);
