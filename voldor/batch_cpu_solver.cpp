@@ -80,7 +80,25 @@ int const* get_sample_indices(job_descriptor const& jd, int index)
     return jd.rng + (index * jd.sample_size);
 }
 
-void put_solution_6(job_descriptor& jd, float* base, float const r[3], float const t[3])
+bool is_valid_solution_6(float const* r, float const* t)
+{
+    float r_sum = r[0] + r[1] + r[2];
+    float t_sum = t[0] + t[1] + t[2];
+    float x_sum = r_sum + t_sum;
+
+    return std::isfinite(x_sum);
+}
+
+bool is_valid_solution_7(float const* r, float const* t, float f)
+{
+    float r_sum = r[0] + r[1] + r[2];
+    float t_sum = t[0] + t[1] + t[2];
+    float x_sum = r_sum + t_sum + f;
+
+    return std::isfinite(x_sum) && (f > 0);
+}
+
+void put_solution_6(job_descriptor& jd, float* base, float const* r, float const* t)
 {
     float* out = &base[6 * (jd.start + jd.valid)];
 
@@ -92,7 +110,7 @@ void put_solution_6(job_descriptor& jd, float* base, float const r[3], float con
     out[5] = t[2];
 }
 
-void put_solution_7(job_descriptor& jd, float* base, float const r[3], float const t[3], float f)
+void put_solution_7(job_descriptor& jd, float* base, float const* r, float const* t, float f)
 {
     float* out = &base[7 * (jd.start + jd.valid)];
 
