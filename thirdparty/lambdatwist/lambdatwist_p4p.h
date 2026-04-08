@@ -5,8 +5,8 @@
 template <typename _T, typename T, int refinement_iterations = 5>
 __mlib_host_device
 bool lambdatwist_p4p(
-	T* y1, T* y2, T* y3, T* y4,
-	T* x1, T* x2, T* x3, T* x4,
+	T const* y1, T const* y2, T const* y3, T const* y4,
+	T const* x1, T const* x2, T const* x3, T const* x4,
 	T fx, T fy, T cx, T cy,
 	T R[3][3],
 	T t[3]) {
