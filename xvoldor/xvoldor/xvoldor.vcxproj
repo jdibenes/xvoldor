@@ -211,7 +211,7 @@
     <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\utils.cpp" />
     <ClCompile Include="..\..\voldor\algebra.cpp" />
-    <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_tft.cpp" />
     <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp" />

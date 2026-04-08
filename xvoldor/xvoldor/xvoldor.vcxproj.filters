@@ -144,9 +144,6 @@
     <ClInclude Include="..\..\thirdparty\rnp\utils.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\solvers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\batch_cpu_solver.h">
       <Filter>Header Files\batch_solve</Filter>
     </ClInclude>
@@ -158,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="..\..\thirdparty\polynomial\polynomial.h">
       <Filter>Libraries\polynomial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\solvers.h">
+      <Filter>Header Files\solvers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -425,7 +425,7 @@
     <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp">
       <Filter>Source Files\batch_solve</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solver_rnp.cpp">
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp">
       <Filter>Source Files\batch_solve</Filter>
     </ClCompile>
   </ItemGroup>
