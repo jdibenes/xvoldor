@@ -41,8 +41,8 @@ static void batch_cpu_solver_p4p_lambdatwist(job_descriptor& jd)
 
 	switch (ji->solver)
 	{
-	case 0:  ok = solver_p4p_lambdatwist(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), r, t); break;
-	case 1:  ok = solver_p4p_ap3p(       reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), r, t); break;
+	case 0:  ok = solver_p4p_ap3p(       reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), r, t); break;
+	case 1:  ok = solver_p4p_lambdatwist(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), r, t); break;	
 	default: ok = false;                                                                                          break;
 	}
 

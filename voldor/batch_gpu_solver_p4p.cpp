@@ -4,7 +4,7 @@
 #include "batch_cpu_solver.h"
 #include "helpers_opencv.h"
 
-int batch_gpu_solver_p4p(cv::Point3f* p3d_1, cv::Point2f* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses)
+int batch_gpu_solver_p4p(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses)
 {
     if (point_count < 4) { return 0; }
 
@@ -13,8 +13,8 @@ int batch_gpu_solver_p4p(cv::Point3f* p3d_1, cv::Point2f* p2k_2, int point_count
 
     switch (solver)
     {
-    case 0:  solve_batch_p3p_lambdatwist_gpu(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2k_2), reinterpret_cast<float*>(r_s.get()), reinterpret_cast<float*>(t_s.get()), reinterpret_cast<float*>(K.data), point_count, poses_to_sample); break;
-    case 1:  solve_batch_p3p_ap3p_gpu(       reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2k_2), reinterpret_cast<float*>(r_s.get()), reinterpret_cast<float*>(t_s.get()), reinterpret_cast<float*>(K.data), point_count, poses_to_sample); break;
+    case 0:  solve_batch_p3p_ap3p_gpu(       reinterpret_cast<float const*>(p3d_1), reinterpret_cast<float const*>(p2k_2), reinterpret_cast<float*>(r_s.get()), reinterpret_cast<float*>(t_s.get()), reinterpret_cast<float*>(K.data), point_count, poses_to_sample); break;
+    case 1:  solve_batch_p3p_lambdatwist_gpu(reinterpret_cast<float const*>(p3d_1), reinterpret_cast<float const*>(p2k_2), reinterpret_cast<float*>(r_s.get()), reinterpret_cast<float*>(t_s.get()), reinterpret_cast<float*>(K.data), point_count, poses_to_sample); break;
     default: return 0;
     }
 
