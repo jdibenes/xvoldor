@@ -49,9 +49,6 @@
     <Filter Include="Header Files\wrapper">
       <UniqueIdentifier>{8ba73cb3-a2a7-4db9-bc82-fa58602ba132}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\helpers">
-      <UniqueIdentifier>{449fbbfb-c129-484f-829e-1f2636fb7c21}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\batch_solve">
       <UniqueIdentifier>{238d0488-2951-4de2-b126-17fcf3c30908}</UniqueIdentifier>
     </Filter>
@@ -105,24 +102,6 @@
     <ClInclude Include="..\..\voldor\algebra.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
-      <Filter>Libraries\lambdatwist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h">
-      <Filter>Libraries\lambdatwist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\matrix.h">
-      <Filter>Libraries\lambdatwist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\refine_lambda.h">
-      <Filter>Libraries\lambdatwist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_cubic.h">
-      <Filter>Libraries\lambdatwist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
-      <Filter>Libraries\lambdatwist</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\thirdparty\rnp\danilevsky.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
@@ -158,6 +137,24 @@
     </ClInclude>
     <ClInclude Include="..\..\voldor\solvers.h">
       <Filter>Header Files\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p3p.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p4p.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\matrix.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\refine_lambda.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_cubic.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_eig0.h">
+      <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -427,6 +424,9 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp">
       <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_p4p_lambdatwist.cpp">
+      <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
