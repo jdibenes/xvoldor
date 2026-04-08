@@ -1,5 +1,4 @@
 
-#include <iostream>
 #include "helpers_opencv.h"
 #include "batch_cpu_solver.h"
 #include "solvers.h"
@@ -78,75 +77,5 @@ int batch_cpu_solver_p4p(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int
 	if (point_count < sample_size) { return 0; }
 
 	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_p4p_lambdatwist, &ji, point_count, sample_size, unique, poses);
-
-
-
-	int valid = batch_finalize(jr, poses, 6);
-	std::cout << "VALID: " << valid << std::endl;
-	return valid;
+	return batch_finalize(jr, poses, 6);
 }
-
-
-
-
-
-
-
-//float R[3][3];
-//float t[3];
-//cv::Vec3f r;
-//int i1 = p[0];
-		//int i2 = p[1];
-		//int i3 = p[2];
-		//int i4 = p[3];
-
-		//bool ok = lambdatwist_p4p<double, float, 5>((float*)&ja->p2k[i1], (float*)&ja->p2k[i2], (float*)&ja->p2k[i3], (float*)&ja->p2k[i4], (float*)&ja->p3d[i1], (float*)&ja->p3d[i2], (float*)&ja->p3d[i3], (float*)&ja->p3d[i4], ja->fx, ja->fy, ja->cx, ja->cy, R, t);
-		//if (!ok) { continue; }
-
-		//Rodrigues(cv::Matx33f((float*)R), r);
-
-
-
-		//if (!is_valid_solution_6(r.val, t)) { continue; }
-
-
-/*
-#include <opencv2/calib3d.hpp>
-
-int batch_solve_ap3p_cpu(std::vector<cv::Point2f> const& pts2, std::vector<cv::Point3f> const& pts3, cv::Mat const& K, int poses_to_sample, cv::Mat& poses_pool)
-{
-	int n_points = (int)pts2.size();
-	int poses_pool_used = 0;
-
-	cv::Vec3d rvec_temp;
-	cv::Vec3d tvec_temp;
-
-	for (int i = 0; i < poses_to_sample; ++i)
-	{
-		int i1 = (int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
-		int i2 = (int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
-		int i3 = (int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
-		int i4 = (int)(((float)rand() / (float)RAND_MAX) * (n_points - 1));
-
-		cv::Point2f p2s_tmp[4] = { pts2[i1], pts2[i2], pts2[i3], pts2[i4] };
-		cv::Point3f p3s_tmp[4] = { pts3[i1], pts3[i2], pts3[i3], pts3[i4] };
-
-		//bool ok = solvePnP(cv::_InputArray(p3s_tmp, 4), cv::_InputArray(p2s_tmp, 4), K, cv::Mat(), rvec_temp, tvec_temp, false, cv::SOLVEPNP_AP3P);
-
-		//if (!ok) { continue; }
-
-		double t_sum = tvec_temp[0] + tvec_temp[1] + tvec_temp[2];
-		double r_sum = rvec_temp[0] + rvec_temp[1] + rvec_temp[2];
-
-		double x_sum = t_sum + r_sum;
-
-		if (!isfinite(x_sum)) { continue; }
-
-		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = rvec_temp;
-		poses_pool.at<cv::Vec3f>(poses_pool_used, 1) = tvec_temp;
-		poses_pool_used++;
-	}
-
-	return poses_pool_used;
-}
-*/
