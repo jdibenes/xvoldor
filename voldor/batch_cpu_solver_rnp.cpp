@@ -5,8 +5,8 @@
 
 struct job_inputs
 {
-	cv::Point2f const* p2k;
-	cv::Point3f const* p3d;
+	cv::Point3f const* p3d_1;
+	cv::Point2f const* p2k_2;
 	float fx;
 	float fy;
 	float cx;
@@ -22,8 +22,8 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 {
 	job_inputs* ji = static_cast<job_inputs*>(jd.inputs);
 
-	cv::Point2f p2d[7];
-	cv::Point3f p3d[7];
+	cv::Point3f p3d_1[7];
+	cv::Point2f p2d_2[7];	
 
 	float r[3];
 	float t[3];
@@ -36,18 +36,18 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 	{
 	int im = p[m];
 
-	p3d[m] =            ji->p3d[im];
-	p2d[m] = p2k_to_p2d(ji->p2k[im], ji->fx, ji->fy, ji->cx, ji->cy);
+	p3d_1[m] =            ji->p3d_1[im];
+	p2d_2[m] = p2k_to_p2d(ji->p2k_2[im], ji->fx, ji->fy, ji->cx, ji->cy);
 	}
 
 	bool ok;
 
 	switch (ji->solver)
 	{
-	case 0:  ok = solver_r6p1l(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ji->direction, ji->r0, r, t);                     break;
-	case 1:  ok = solver_r6p2l(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ji->direction, ji->r0, r, t);                     break;
-	case 2:  ok = solver_r6p2i(reinterpret_cast<float*>(p3d), reinterpret_cast<float*>(p2d), ji->direction, ji->r0, r, t, ji->max_iterations); break;
-	default: ok = false;                                                                                                                       break;
+	case 0:  ok = solver_r6p1l(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t);                     break;
+	case 1:  ok = solver_r6p2l(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t);                     break;
+	case 2:  ok = solver_r6p2i(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), ji->direction, ji->r0, r, t, ji->max_iterations); break;
+	default: ok = false;                                                                                                                           break;
 	}
 
 	if (!ok) { continue; }
@@ -63,8 +63,8 @@ int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int
 {
 	job_inputs ji;
 
-	ji.p3d = p3d_1;
-	ji.p2k = p2k_2;	
+	ji.p3d_1 = p3d_1;
+	ji.p2k_2 = p2k_2;	
 	ji.fx = K.at<float>(0, 0);
 	ji.fy = K.at<float>(1, 1);
 	ji.cx = K.at<float>(0, 2);
