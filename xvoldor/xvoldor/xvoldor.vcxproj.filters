@@ -64,6 +64,9 @@
     <Filter Include="Libraries\polynomial">
       <UniqueIdentifier>{ec3d1ec1-c6da-45c1-9cc7-9793152f843b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\helpers">
+      <UniqueIdentifier>{8ac624ac-b811-4c21-8b1d-52b79d68755b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\voldor\config.h">
@@ -392,9 +395,6 @@
     <ClCompile Include="..\..\voldor\py_export.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\lock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
@@ -424,6 +424,9 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\batch_gpu_solver_p4p.cpp">
       <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\lock.cpp">
+      <Filter>Source Files\helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
