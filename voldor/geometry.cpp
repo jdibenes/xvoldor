@@ -275,51 +275,69 @@ collect_p3p_correspondences
 
 
 
+
 int
-solve_p3p_pool
+solve_pose_pool
 (
-	std::vector<Camera>& cams,
-	std::vector<cv::Point2f> const& pts2_map,
-	std::vector<cv::Point3f> const& pts3_map,
-	int active_idx,
-	Config const& cfg,
-	cv::Mat& poses_pool,
-	std::vector<cv::Point3f> const& trifocal_0_map,
-	std::vector<cv::Point3f> const& trifocal_1_map,
-	std::vector<cv::Point3f> const& trifocal_2_map
+	cv::Mat const& K,
+	cv::Point3f const* p3d_1,
+	cv::Point2f const* p2d_2,
+	int bifocal_count,
+	cv::Point3f const* p2z_1,
+	cv::Point3f const* p2z_2,
+	cv::Point3f const* p2z_3,
+	int trifocal_count,
+	Config const& options,
+	float* poses_pool,
+	float* velocities_pool,
+	float* next_pool,
+	float* focals_pool
 )
 {
 	int poses_pool_used = 0;
 
-	std::vector<cv::Vec6f>* next_pool = (active_idx < (cams.size() - 1)) ? &cams[active_idx + 1].trifocal_1_2_pool : NULL;
-
-	//cams[active_idx + 1].trifocal_1_2_pool.clear(); // active_idx + 1 might not exist
-	if (next_pool) { next_pool->clear(); }
-
-	switch (cfg.solver_select)
+	switch (options.solver_select)
 	{
-	case 0: poses_pool_used = batch_cpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-	case 1: poses_pool_used = batch_cpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-	case 2: poses_pool_used = batch_gpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data); break;
-	case 3: poses_pool_used = batch_gpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data); break;
-
-	
-	//case 5:  poses_pool_used = batch_cpu_solver_tft(trifocal_0_map.data(), trifocal_1_map.data(), trifocal_2_map.data(), trifocal_0_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, (float*)next_pool->data(), cfg.batch_workers, false); break;
+	// p4p
+	case  0: poses_pool_used = batch_cpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 0, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case  1: poses_pool_used = batch_cpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case  2: poses_pool_used = batch_gpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 0, options.n_poses_to_sample, poses_pool); break;
+	case  3: poses_pool_used = batch_gpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool); break;
 
 	// gpm
-	case  8: poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), (int)trifocal_0_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-	case  9: poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), (int)trifocal_0_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-	case 10: poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), (int)trifocal_0_map.size(), cams[active_idx].K, 2, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
+	case  8: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 0, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case  9: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 1, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case 10: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 2, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
 
 	// rnp
-	case 16: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, nullptr, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
-	case 17: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, nullptr, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
-	case 18: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 2, cfg.n_poses_to_sample, (float*)poses_pool.data, nullptr, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
+	case 16: poses_pool_used = batch_cpu_solver_rnp(p3d_1, p2d_2, bifocal_count, K, 0, options.n_poses_to_sample, poses_pool, velocities_pool, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_max_iterations); break;
+	case 17: poses_pool_used = batch_cpu_solver_rnp(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool, velocities_pool, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_max_iterations); break;
+	case 18: poses_pool_used = batch_cpu_solver_rnp(p3d_1, p2d_2, bifocal_count, K, 2, options.n_poses_to_sample, poses_pool, velocities_pool, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_max_iterations); break;
+
+	// tft
+	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1, p2z_2, p2z_3, trifocal_count, K, 0, options.n_poses_to_sample, poses_pool, next_pool, options.batch_workers, options.sample_unique, options.trifocal_threshold); break;
 
 	// default: gpu p4p lambdatwist
-	default: poses_pool_used = batch_gpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data); break;
+	default: poses_pool_used = batch_gpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool); break;
 	}
 
+	return poses_pool_used;
+}
+
+
+
+
+
+
+
+
+
+
+//std::vector<cv::Vec6f>* next_pool = (active_idx < (cams.size() - 1)) ? &cams[active_idx + 1].trifocal_pool_1_2 : NULL;
+
+//cams[active_idx + 1].trifocal_1_2_pool.clear(); // active_idx + 1 might not exist
+//if (next_pool) { next_pool->clear(); }
+	/*
 	for (cv::Vec6f const &v : cams[active_idx].trifocal_1_2_pool)
 	{
 		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = ((cv::Vec3f*)&v)[0];
@@ -329,15 +347,12 @@ solve_p3p_pool
 
 		//std::cout << "active_idx: " << active_idx << " | " << v << std::endl;
 	}
-
-	return poses_pool_used;
-}
+	*/
 
 
-//case 0:  poses_pool_used = batch_solve_ap3p_cpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-//case 1:  poses_pool_used = batch_cpu_solver_p4p_lambdatwist(pts2_map.data(), pts3_map.data(), (int)pts2_map.size(), cams[active_idx].K, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
-//case 2:  poses_pool_used = batch_solve_ap3p_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
-//case 3:  poses_pool_used = batch_solve_lambdatwist_gpu(pts2_map, pts3_map, cams[active_idx].K, cfg.n_poses_to_sample, poses_pool); break;
+
+
+
 
 
 int 
@@ -382,7 +397,7 @@ optimize_camera_pose
 	time_stamp = std::chrono::high_resolution_clock::now();
 
 	cv::Mat poses_pool(2 * cfg.n_poses_to_sample, 6, CV_32F);
-	int poses_pool_used = solve_p3p_pool(cams, pts2_map, pts3_map, active_idx, cfg, poses_pool, trifocal_0_map, trifocal_1_map, trifocal_2_map);
+	int poses_pool_used = solve_pose_pool(cams[active_idx].K, pts3_map.data(), pts2_map.data(), (int)pts3_map.size(), trifocal_0_map.data(), trifocal_1_map.data(), trifocal_2_map.data(), (int)trifocal_0_map.size(), cfg, (float*)poses_pool.data, nullptr, nullptr, nullptr); //(cams, pts2_map, pts3_map, active_idx, cfg, poses_pool, trifocal_0_map, trifocal_1_map, trifocal_2_map);
 
 	if (poses_pool_used <= 0) { return 0; }
 
@@ -427,6 +442,7 @@ optimize_camera_pose
 	{
 		std::cout << "meanshift time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 	}
+
 
 	//-------------------------------------------------------------------------
 
