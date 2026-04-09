@@ -17,9 +17,16 @@ struct job_inputs
 	int max_iterations;
 };
 
+struct job_output
+{
+	float* poses;
+	float* velocities;
+};
+
 static void block_cpu_solver_rnp(job_descriptor& jd)
 {
 	job_inputs* ji = static_cast<job_inputs*>(jd.inputs);
+	job_output* jo = static_cast<job_output*>(jd.output);
 
 	cv::Point3f p3d_1[7];
 	cv::Point2f p2d_2[7];	
@@ -27,7 +34,7 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 	float r[3];
 	float t[3];
 
-	float dr[3]; // TODO: return velocities
+	float dr[3];
 	float dt[3];
 
 	for (int i = jd.start; i < jd.end; ++i)
@@ -54,15 +61,17 @@ static void block_cpu_solver_rnp(job_descriptor& jd)
 
 	if (!ok) { continue; }
 
-	put_solution_6(jd, static_cast<float*>(jd.output), r, t);
+	put_solution_6(jd, jo->poses, r, t);
+	if (jo->velocities) { put_solution_6(jd, jo->velocities, dr, dt); }
 
 	jd.valid++;
 	}
 }
 
-int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, int workers, bool unique, bool direction, float r0, int max_iterations)
+int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, float* velocities, int workers, bool unique, bool direction, float r0, int max_iterations)
 {
 	job_inputs ji;
+	job_output jo;
 
 	ji.p3d_1 = p3d_1;
 	ji.p2k_2 = p2k_2;	
@@ -74,6 +83,9 @@ int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int
 	ji.direction = direction;
 	ji.r0 = r0;
 	ji.max_iterations = max_iterations;
+
+	jo.poses = poses;
+	jo.velocities = velocities;
 
 	int sample_size;
 
@@ -87,6 +99,7 @@ int batch_cpu_solver_rnp(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int
 
 	if (point_count < sample_size) { return 0; }
 
-	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ji, point_count, sample_size, unique, poses);
+	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, block_cpu_solver_rnp, &ji, point_count, sample_size, unique, &jo);
+	if (velocities) { batch_finalize(jr, velocities, 6); }
 	return batch_finalize(jr, poses, 6);
 }
