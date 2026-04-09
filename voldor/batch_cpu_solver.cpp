@@ -11,7 +11,7 @@ static void sample(int n, int k, int* chosen, bool unique)
     int i = 0;
     while (i < k)
     {
-    int s = (int)(((float)rand() / (float)RAND_MAX) * (n - 1));
+    int s = static_cast<int>((static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) * (n - 1));
     if ((n >= k) && unique)
     {
     int j;
