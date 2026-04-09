@@ -12,6 +12,8 @@ struct Config
 	int root_refine_interations = 2;
 	int batch_workers = 12;
 
+	bool sample_unique = false;
+
 	// rolling shutter
 	int rs_direction = 0;
 	float rs_r0 = 0;
@@ -23,6 +25,7 @@ struct Config
 	int trifocal_index_2 = 0;
 	float trifocal_squared_error_min_thresh = 0;//0.01f;
 	float trifocal_squared_error_max_thresh = 65536;//2.0f;
+	float trifocal_threshold = 0;
 
 	// OLD
 
