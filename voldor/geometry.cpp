@@ -312,9 +312,9 @@ solve_p3p_pool
 	case 10: poses_pool_used = batch_cpu_solver_gpm(trifocal_0_map.data(), trifocal_1_map.data(), (int)trifocal_0_map.size(), cams[active_idx].K, 2, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false); break;
 
 	// rnp
-	case 16: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
-	case 17: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
-	case 18: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 2, cfg.n_poses_to_sample, (float*)poses_pool.data, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
+	case 16: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 0, cfg.n_poses_to_sample, (float*)poses_pool.data, nullptr, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
+	case 17: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data, nullptr, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
+	case 18: poses_pool_used = batch_cpu_solver_rnp(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 2, cfg.n_poses_to_sample, (float*)poses_pool.data, nullptr, cfg.batch_workers, false, cfg.rs_direction, cfg.rs_r0, cfg.rs_max_iterations); break;
 
 	// default: gpu p4p lambdatwist
 	default: poses_pool_used = batch_gpu_solver_p4p(pts3_map.data(), pts2_map.data(), (int)pts2_map.size(), cams[active_idx].K, 1, cfg.n_poses_to_sample, (float*)poses_pool.data); break;
