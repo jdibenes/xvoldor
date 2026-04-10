@@ -397,7 +397,7 @@ optimize_camera_pose
 	time_stamp = std::chrono::high_resolution_clock::now();
 
 	cv::Mat poses_pool(2 * cfg.n_poses_to_sample, 6, CV_32F);
-	int poses_pool_used = solve_pose_pool(cams[active_idx].K, pts3_map.data(), pts2_map.data(), (int)pts3_map.size(), trifocal_0_map.data(), trifocal_1_map.data(), trifocal_2_map.data(), (int)trifocal_0_map.size(), cfg, (float*)poses_pool.data, nullptr, nullptr, nullptr); //(cams, pts2_map, pts3_map, active_idx, cfg, poses_pool, trifocal_0_map, trifocal_1_map, trifocal_2_map);
+	int poses_pool_used = solve_pose_pool(cams[active_idx].K, pts3_map.data(), pts2_map.data(), (int)pts3_map.size(), trifocal_0_map.data(), trifocal_1_map.data(), trifocal_2_map.data(), (int)trifocal_0_map.size(), cfg, (float*)poses_pool.data, nullptr, nullptr, nullptr);
 
 	if (poses_pool_used <= 0) { return 0; }
 
