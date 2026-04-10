@@ -276,23 +276,7 @@ collect_p3p_correspondences
 
 
 
-int
-solve_pose_pool
-(
-	cv::Mat const& K,
-	cv::Point3f const* p3d_1,
-	cv::Point2f const* p2d_2,
-	int bifocal_count,
-	cv::Point3f const* p2z_1,
-	cv::Point3f const* p2z_2,
-	cv::Point3f const* p2z_3,
-	int trifocal_count,
-	Config const& options,
-	float* poses_pool,
-	float* velocities_pool,
-	float* next_pool,
-	float* focals_pool
-)
+int solve_pose_pool(cv::Mat const& K, cv::Point3f const* p3d_1, cv::Point2f const* p2d_2, int bifocal_count, cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv::Point3f const* p2z_3, int trifocal_count, Config const& options, float* poses_pool, float* velocities_pool, float* next_pool, float* focals_pool)
 {
 	int poses_pool_used = 0;
 
@@ -308,6 +292,11 @@ solve_pose_pool
 	case  8: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 0, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
 	case  9: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 1, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
 	case 10: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 2, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case 11: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 3, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case 12: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 4, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case 13: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 5, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case 14: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 6, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case 15: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 7, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
 
 	// rnp
 	case 16: poses_pool_used = batch_cpu_solver_rnp(p3d_1, p2d_2, bifocal_count, K, 0, options.n_poses_to_sample, poses_pool, velocities_pool, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_max_iterations); break;
@@ -323,6 +312,7 @@ solve_pose_pool
 
 	return poses_pool_used;
 }
+
 
 
 
