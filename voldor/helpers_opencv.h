@@ -54,3 +54,13 @@ inline cv::Point2f p2k_to_p2d(cv::Point2f const& p, float fx, float fy, float cx
 	cv::Point2f r{ (p.x - cx) / fx, (p.y - cy) / fy };
 	return r;
 }
+
+inline bool is_valid_point(cv::Point3f const& p)
+{
+	return std::isfinite(p.x + p.y + p.z);
+}
+
+inline bool is_valid_point(cv::Point2f const& p)
+{
+	return std::isfinite(p.x + p.y);
+}
