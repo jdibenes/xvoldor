@@ -1,10 +1,9 @@
 
 #include "geometry.h"
 #include "../gpu-kernels/gpu_kernels.h"
-//#include "../lambdatwist/lambdatwist_p4p.h"
 #include "solvers.h"
 #include "batch_solver.h"
-//#include "trifocal_poselib.h"
+#include "helpers_opencv.h"
 
 
 
@@ -27,12 +26,12 @@ collect_p3p_correspondences
 	bool update_batch_instance,
 	bool update_iter_instance,
 	Config const& cfg,
-	std::vector<cv::Point2f>& pts2_map,
-	std::vector<cv::Point3f>& pts3_map,
-	std::vector<cv::Point3f>& trifocal_0_map,
-	std::vector<cv::Point3f>& trifocal_1_map,
-	std::vector<cv::Point3f>& trifocal_2_map,
-	std::vector<float>& trifocal_squared_error
+	std::vector<cv::Point2f>& p2k_2,
+	std::vector<cv::Point3f>& p3d_1,
+	std::vector<cv::Point3f>& p2z_1,
+	std::vector<cv::Point3f>& p2z_2,
+	std::vector<cv::Point3f>& p2z_3,
+	std::vector<float>& tf_squared_error
 )
 {
 	int const w = flows_1[0].cols;
@@ -74,14 +73,14 @@ collect_p3p_correspondences
 		h_ts[i] = (float*)cams[i].t.data;
 	}
 
-	pts2_map.resize(w * h);
-	pts3_map.resize(w * h);
+	p2k_2.resize(w * h);
+	p3d_1.resize(w * h);
 
-	trifocal_0_map.resize(w * h);
-	trifocal_1_map.resize(w * h);
-	trifocal_2_map.resize(w * h);
+	p2z_1.resize(w * h);
+	p2z_2.resize(w * h);
+	p2z_3.resize(w * h);
 
-	trifocal_squared_error.resize(w * h);
+	tf_squared_error.resize(w * h);
 
 	if (update_batch_instance) {
 		collect_p3p_instances
@@ -92,8 +91,8 @@ collect_p3p_correspondences
 			(float*)cams[0].K.data,
 			h_Rs,
 			h_ts,
-			(float*)pts2_map.data(),
-			(float*)pts3_map.data(),
+			(float*)p2k_2.data(),
+			(float*)p3d_1.data(),
 			n_flows,
 			w,
 			h,
@@ -104,11 +103,11 @@ collect_p3p_correspondences
 			cfg.pose_sample_max_depth,
 			cfg.max_trace_on_flow,
 			h_flows_2,
-			(float*)trifocal_0_map.data(),
-			(float*)trifocal_1_map.data(),
-			(float*)trifocal_2_map.data(),
+			(float*)p2z_1.data(),
+			(float*)p2z_2.data(),
+			(float*)p2z_3.data(),
 			h_disparities,
-			trifocal_squared_error.data(),
+			tf_squared_error.data(),
 			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
 			cfg.tf_index_0,
@@ -128,8 +127,8 @@ collect_p3p_correspondences
 			NULL,
 			h_Rs,
 			h_ts,
-			(float*)pts2_map.data(),
-			(float*)pts3_map.data(),
+			(float*)p2k_2.data(),
+			(float*)p3d_1.data(),
 			n_flows,
 			w,
 			h,
@@ -140,11 +139,11 @@ collect_p3p_correspondences
 			cfg.pose_sample_max_depth,
 			cfg.max_trace_on_flow,
 			NULL,
-			(float*)trifocal_0_map.data(),
-			(float*)trifocal_1_map.data(),
-			(float*)trifocal_2_map.data(),
+			(float*)p2z_1.data(),
+			(float*)p2z_2.data(),
+			(float*)p2z_3.data(),
 			NULL,
-			trifocal_squared_error.data(),
+			tf_squared_error.data(),
 			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
 			cfg.tf_index_0,
@@ -164,8 +163,8 @@ collect_p3p_correspondences
 			NULL,
 			h_Rs,
 			h_ts,
-			(float*)pts2_map.data(),
-			(float*)pts3_map.data(),
+			(float*)p2k_2.data(),
+			(float*)p3d_1.data(),
 			n_flows,
 			w,
 			h,
@@ -176,11 +175,11 @@ collect_p3p_correspondences
 			cfg.pose_sample_max_depth,
 			cfg.max_trace_on_flow,
 			NULL,
-			(float*)trifocal_0_map.data(),
-			(float*)trifocal_1_map.data(),
-			(float*)trifocal_2_map.data(),
+			(float*)p2z_1.data(),
+			(float*)p2z_2.data(),
+			(float*)p2z_3.data(),
 			NULL,
-			trifocal_squared_error.data(),
+			tf_squared_error.data(),
 			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
 			cfg.tf_index_0,
@@ -200,82 +199,39 @@ collect_p3p_correspondences
 	if (h_ts) { delete[] h_ts; }
 	
 
+	int bf_count = 0;
+	int tf_count = 0;
 
-	// pts2 is related to frame(active_idx)
-	// pts3 is related to frame(active_idx-1)
-	// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
-
-	int n_p3p_points = 0;
-	int n_p3v_points = 0;
-
-	cv::Point2f const* pts2_src = pts2_map.data();
-	cv::Point3f const* pts3_src = pts3_map.data();
-	cv::Point3f const* p3v0_src = trifocal_0_map.data();
-	cv::Point3f const* p3v1_src = trifocal_1_map.data();
-	cv::Point3f const* p3v2_src = trifocal_2_map.data();
-	float const* tse2_src = trifocal_squared_error.data();
-
-	cv::Point2f* pts2_dst = pts2_map.data();
-	cv::Point3f* pts3_dst = pts3_map.data();
-	cv::Point3f* p3v0_dst = trifocal_0_map.data();
-	cv::Point3f* p3v1_dst = trifocal_1_map.data();
-	cv::Point3f* p3v2_dst = trifocal_2_map.data();
-	float* tse2_dst = trifocal_squared_error.data();
-
-	for (int i = 0; i < w * h; i++)
+	for (int i = 0; i < (w * h); ++i)
 	{
-		float pts2_sum = pts2_src->x + pts2_src->y;
-		float pts3_sum = pts3_src->x + pts3_src->y + pts3_src->z;
-
-		float ptsX_sum = pts2_sum + pts3_sum;
-
-		float p3v0_sum = p3v0_src->x + p3v0_src->y + p3v0_src->z;
-		float p3v1_sum = p3v1_src->x + p3v1_src->y + p3v1_src->z;
-		float p3v2_sum = p3v2_src->x + p3v2_src->y + p3v2_src->z;
-
-		float p3vX_sum = p3v0_sum + p3v1_sum + ((cfg.multiview_mode == 3) ? p3v2_sum : 0.0f);
-
-		if (isfinite(ptsX_sum) && isfinite(p3vX_sum))
+		if (is_valid_point(p3d_1[i]) && is_valid_point(p2k_2[i]))
 		{
-			pts2_dst[n_p3p_points] = *pts2_src;
-			pts3_dst[n_p3p_points] = *pts3_src;
+			p3d_1[bf_count] = p3d_1[i];
+			p2k_2[bf_count] = p2k_2[i];
 
-			p3v0_dst[n_p3v_points] = *p3v0_src;
-			p3v1_dst[n_p3v_points] = *p3v1_src;
-			p3v2_dst[n_p3v_points] = *p3v2_src;
-			tse2_dst[n_p3v_points] = *tse2_src;
-
-			//std::cout << "trifocal_error: " << *tse2_src << std::endl;
-
-			n_p3v_points++;
-
-			n_p3p_points++;
+			bf_count++;
 		}
 
-		pts2_src++;
-		pts3_src++;
+		if (is_valid_point(p2z_1[i]) && is_valid_point(p2z_2[i]) && is_valid_point(p2z_3[i]))
+		{
+			p2z_1[tf_count] = p2z_1[i];
+			p2z_2[tf_count] = p2z_2[i];
+			p2z_3[tf_count] = p2z_3[i];
 
-		
+			tf_squared_error[tf_count] = tf_squared_error[i];
 
-		//if ()
-		//{
-			
-		//}
-
-		p3v0_src++;
-		p3v1_src++;
-		p3v2_src++;
-		tse2_src++;
+			tf_count++;
+		}
 	}
 
-	pts2_map.resize(n_p3p_points);
-	pts3_map.resize(n_p3p_points);
+	p3d_1.resize(bf_count);
+	p2k_2.resize(bf_count);
+	
+	p2z_1.resize(tf_count);
+	p2z_2.resize(tf_count);
+	p2z_3.resize(tf_count);
 
-	trifocal_0_map.resize(n_p3v_points);
-	trifocal_1_map.resize(n_p3v_points);
-	trifocal_2_map.resize(n_p3v_points);
-
-	trifocal_squared_error.resize(n_p3v_points);
+	tf_squared_error.resize(tf_count);
 }
 
 
@@ -286,7 +242,9 @@ collect_p3p_correspondences
 
 
 
-int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d_1, std::vector<cv::Point2f> const& p2k_2, std::vector<cv::Point3f> const& p2z_1, std::vector<cv::Point3f> const& p2z_2, std::vector<cv::Point3f> const& p2z_3, Config const& options, cv::Mat& poses_pool, cv::Mat& velocities_pool, cv::Mat& focals_pool, cv::Mat& next_pool, int& next_pool_used)
+
+// OK
+static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d_1, std::vector<cv::Point2f> const& p2k_2, std::vector<cv::Point3f> const& p2z_1, std::vector<cv::Point3f> const& p2z_2, std::vector<cv::Point3f> const& p2z_3, Config const& options, cv::Mat& poses_pool, cv::Mat& velocities_pool, cv::Mat& focals_pool, cv::Mat& next_pool, int& next_pool_used)
 {
 	cv::Point3f const* p3d_1_data = p3d_1.data();
 	cv::Point2f const* p2k_2_data = p2k_2.data();
@@ -433,6 +391,7 @@ int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d_1, std
 
 
 
+
 int 
 optimize_camera_pose
 (
@@ -444,8 +403,8 @@ optimize_camera_pose
 	int active_idx,
 	bool successive_pose,
 	bool rg_refine,
-	bool update_batch_instance,
-	bool update_iter_instance,
+	bool update_batch_instance, // !cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0)
+	bool update_iter_instance, // i == 0 : true for first flow
 	Config const& cfg,
 	std::vector<cv::Mat> const& flows_2,
 	std::vector<cv::Mat> const& disparities,
@@ -486,6 +445,10 @@ optimize_camera_pose
 	if (!cfg.silent) { std::cout << "solver computing time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
 
 	//----------------------------------------------------------------------------
+
+
+
+
 
 	cams[active_idx].pose_sample_count = poses_pool_used;
 
@@ -709,6 +672,7 @@ estimate_camera_pose_epipolar
 
 
 
+
 //void apply_meanshift(cv::Mat& poses_pool, cv::Mat& velocities_pool, cv::Mat& focals_pool, Config const& options, cv::Mat& pose_opm, cv::Mat& velocity_opm, float focal_opm)
 //{
 	// pose: 6 | 3+3
@@ -759,3 +723,73 @@ estimate_camera_pose_epipolar
 	*/
 
 	//}
+
+/*
+	int n_p3p_points = 0;
+	int n_p3v_points = 0;
+
+	cv::Point2f const* pts2_src = p2k_2.data();
+	cv::Point3f const* pts3_src = p3d_1.data();
+	cv::Point3f const* p3v0_src = p2z_1.data();
+	cv::Point3f const* p3v1_src = p2z_2.data();
+	cv::Point3f const* p3v2_src = p2z_3.data();
+	float const* tse2_src = trifocal_squared_error.data();
+
+	cv::Point2f* pts2_dst = p2k_2.data();
+	cv::Point3f* pts3_dst = p3d_1.data();
+	cv::Point3f* p3v0_dst = p2z_1.data();
+	cv::Point3f* p3v1_dst = p2z_2.data();
+	cv::Point3f* p3v2_dst = p2z_3.data();
+	float* tse2_dst = trifocal_squared_error.data();
+
+	for (int i = 0; i < w * h; i++)
+	{
+		float pts2_sum = pts2_src->x + pts2_src->y;
+		float pts3_sum = pts3_src->x + pts3_src->y + pts3_src->z;
+
+		float ptsX_sum = pts2_sum + pts3_sum;
+
+		float p3v0_sum = p3v0_src->x + p3v0_src->y + p3v0_src->z;
+		float p3v1_sum = p3v1_src->x + p3v1_src->y + p3v1_src->z;
+		float p3v2_sum = p3v2_src->x + p3v2_src->y + p3v2_src->z;
+
+		float p3vX_sum = p3v0_sum + p3v1_sum + ((cfg.multiview_mode == 3) ? p3v2_sum : 0.0f);
+
+		if (isfinite(ptsX_sum) && isfinite(p3vX_sum))
+		{
+			pts2_dst[n_p3p_points] = *pts2_src;
+			pts3_dst[n_p3p_points] = *pts3_src;
+
+			p3v0_dst[n_p3v_points] = *p3v0_src;
+			p3v1_dst[n_p3v_points] = *p3v1_src;
+			p3v2_dst[n_p3v_points] = *p3v2_src;
+			tse2_dst[n_p3v_points] = *tse2_src;
+
+			n_p3v_points++;
+
+			n_p3p_points++;
+		}
+
+		pts2_src++;
+		pts3_src++;
+
+
+		p3v0_src++;
+		p3v1_src++;
+		p3v2_src++;
+		tse2_src++;
+	}
+
+	p2k_2.resize(n_p3p_points);
+	p3d_1.resize(n_p3p_points);
+
+	p2z_1.resize(n_p3v_points);
+	p2z_2.resize(n_p3v_points);
+	p2z_3.resize(n_p3v_points);
+
+	trifocal_squared_error.resize(n_p3v_points);
+	*/
+
+	// pts2 is related to frame(active_idx)
+		// pts3 is related to frame(active_idx-1)
+		// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
