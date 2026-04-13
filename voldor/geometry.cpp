@@ -37,34 +37,45 @@ collect_p3p_correspondences
 	int const w = flows_1[0].cols;
 	int const h = flows_1[0].rows;
 
-	float const** h_flows_1 = NULL;
-	float const** h_flows_2 = NULL;
-	float const** h_disparities = NULL;
-	float const** h_rigidnesses = NULL;
-	float const** h_Rs = NULL;
-	float const** h_ts = NULL;
+	//float const** h_flows_1 = NULL;
+	//float const** h_flows_2 = NULL;
+	//float const** h_disparities = NULL;
+	//float const** h_rigidnesses = NULL;
+	//float const** h_Rs = NULL;
+	//float const** h_ts = NULL;
+
+	std::unique_ptr<float const* []> h_flows_1;
+	std::unique_ptr<float const* []> h_flows_2;
+	std::unique_ptr<float const* []> h_disparities;
+
+	std::unique_ptr<float const* []> h_rigidnesses;
+	std::unique_ptr<float const* []> h_Rs;
+	std::unique_ptr<float const* []> h_ts;
 	
 	if (flows_1.size() > 0)
 	{
-		h_flows_1 = new float const* [flows_1.size()];
+		//h_flows_1 = new float const* [flows_1.size()];
+		h_flows_1 = std::make_unique<float const* []>(flows_1.size());
 		for (int i = 0; i < flows_1.size(); ++i) { h_flows_1[i] = (float*)flows_1[i].data; }
 	}
 
 	if (flows_2.size() > 0)
 	{
-		h_flows_2 = new float const* [flows_2.size()];
+		//h_flows_2 = new float const* [flows_2.size()];
+		h_flows_2 = std::make_unique<float const* []>(flows_2.size());
 		for (int i = 0; i < flows_2.size(); ++i) { h_flows_2[i] = (float*)flows_2[i].data; }
 	}
 
 	if (disparities.size() > 0)
 	{
-		h_disparities = new float const* [disparities.size()];
+		//h_disparities = new float const* [disparities.size()];
+		h_disparities = std::make_unique<float const* []>(disparities.size());
 		for (int i = 0; i < disparities.size(); ++i) { h_disparities[i] = (float*)disparities[i].data; }
 	}
 
-	h_rigidnesses = new float const* [n_flows];
-	h_Rs = new float const* [n_flows];
-	h_ts = new float const* [n_flows];
+	h_rigidnesses = std::make_unique<float const* []>(n_flows); //new float const* [n_flows];
+	h_Rs = std::make_unique<float const* []>(n_flows); //new float const* [n_flows];
+	h_ts = std::make_unique<float const* []>(n_flows); //new float const* [n_flows];
 
 	for (int i = 0; i < n_flows; ++i)
 	{ 
@@ -85,12 +96,12 @@ collect_p3p_correspondences
 	if (update_batch_instance) {
 		collect_p3p_instances
 		(
-			h_flows_1,
-			h_rigidnesses,
+			h_flows_1.get(),
+			h_rigidnesses.get(),
 			(float*)depth.data,
 			(float*)cams[0].K.data,
-			h_Rs,
-			h_ts,
+			h_Rs.get(),
+			h_ts.get(),
 			(float*)p2k_2.data(),
 			(float*)p3d_1.data(),
 			n_flows,
@@ -102,11 +113,11 @@ collect_p3p_correspondences
 			cfg.pose_sample_min_depth,
 			cfg.pose_sample_max_depth,
 			cfg.max_trace_on_flow,
-			h_flows_2,
+			h_flows_2.get(),
 			(float*)p2z_1.data(),
 			(float*)p2z_2.data(),
 			(float*)p2z_3.data(),
-			h_disparities,
+			h_disparities.get(),
 			tf_squared_error.data(),
 			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
@@ -122,11 +133,11 @@ collect_p3p_correspondences
 		collect_p3p_instances
 		(
 			NULL,
-			h_rigidnesses,
+			h_rigidnesses.get(),
 			(float*)depth.data,
 			NULL,
-			h_Rs,
-			h_ts,
+			h_Rs.get(),
+			h_ts.get(),
 			(float*)p2k_2.data(),
 			(float*)p3d_1.data(),
 			n_flows,
@@ -161,8 +172,8 @@ collect_p3p_correspondences
 			NULL,
 			NULL,
 			NULL,
-			h_Rs,
-			h_ts,
+			h_Rs.get(),
+			h_ts.get(),
 			(float*)p2k_2.data(),
 			(float*)p3d_1.data(),
 			n_flows,
@@ -191,13 +202,7 @@ collect_p3p_correspondences
 		);
 	}
 
-	if (h_flows_1) { delete[] h_flows_1; }
-	if (h_flows_2) { delete[] h_flows_2; }
-	if (h_disparities) { delete[] h_disparities; }
-	if (h_rigidnesses) { delete[] h_rigidnesses; }
-	if (h_Rs) { delete[] h_Rs; }
-	if (h_ts) { delete[] h_ts; }
-	
+	//
 
 	int bf_count = 0;
 	int tf_count = 0;
@@ -233,15 +238,6 @@ collect_p3p_correspondences
 
 	tf_squared_error.resize(tf_count);
 }
-
-
-
-
-
-
-
-
-
 
 // OK
 static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d_1, std::vector<cv::Point2f> const& p2k_2, std::vector<cv::Point3f> const& p2z_1, std::vector<cv::Point3f> const& p2z_2, std::vector<cv::Point3f> const& p2z_3, Config const& options, cv::Mat& poses_pool, cv::Mat& velocities_pool, cv::Mat& focals_pool, cv::Mat& next_pool, int& next_pool_used)
@@ -793,3 +789,10 @@ estimate_camera_pose_epipolar
 	// pts2 is related to frame(active_idx)
 		// pts3 is related to frame(active_idx-1)
 		// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
+
+	//if (h_flows_1) { delete[] h_flows_1; }
+	//if (h_flows_2) { delete[] h_flows_2; }
+	//if (h_disparities) { delete[] h_disparities; }
+	//if (h_rigidnesses) { delete[] h_rigidnesses; }
+	//if (h_Rs) { delete[] h_Rs; }
+	//if (h_ts) { delete[] h_ts; }
