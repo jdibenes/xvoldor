@@ -40,8 +40,7 @@ struct Camera
 	cv::Mat dr = cv::Mat::zeros(3, 1, CV_32F);
 	cv::Mat dt = cv::Mat::zeros(3, 1, CV_32F);
 
-	//std::unique_ptr<cv::Vec6f[]> trifocal_pool_1_2 =;
-	//int trifocal_pool_used;
+	
 
 
 	float pose_density = 0;
