@@ -11,7 +11,7 @@ bool solver_r6p2l(float const* p3d_1, float const* p2d_2, bool direction, float 
 	cv::Mat r_initial;
 	cv::Mat t_initial;
 
-	bool ok = cv::solvePnP(cv::_InputArray(reinterpret_cast<cv::Point3f const*>(p3d_1), 4), cv::_InputArray(reinterpret_cast<cv::Point2f const*>(p2d_2), 4), cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
+	bool ok = cv::solvePnP({ reinterpret_cast<cv::Point3f const*>(p3d_1), 4 }, { reinterpret_cast<cv::Point2f const*>(p2d_2), 4 }, cv::Mat::eye(3, 3, CV_32FC1), cv::Mat(), r_initial, t_initial, false, cv::SOLVEPNP_AP3P);
 	if (!ok) { return false; }
 
 	Eigen::Matrix<double, 3, 3> R_initial = matrix_R_rodrigues(matrix_from_buffer<double, 3, 1>(reinterpret_cast<double*>(r_initial.data)));
