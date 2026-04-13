@@ -209,6 +209,9 @@ void VOLDOR::optimize_cameras() {
 	tic();
 
 	bool allow_trunc = iters_cur > cfg.no_trunc_iters;
+	cv::Mat next_pool;
+	int next_pool_used = 0;
+
 
 	// optimize camera pose
 	for (int i = 0; i < n_flows; i++) {
@@ -229,7 +232,9 @@ void VOLDOR::optimize_cameras() {
 				i == 0, //update iter instance?
 				cfg,
 				flows_2,
-				disparities
+				disparities,
+				next_pool,
+				next_pool_used
 			);
 		}
 
