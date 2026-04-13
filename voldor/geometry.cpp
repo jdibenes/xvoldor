@@ -1,15 +1,10 @@
 
 #include "geometry.h"
-#include "../gpu-kernels/gpu_kernels.h"
 #include "solvers.h"
 #include "batch_solver.h"
 #include "helpers_opencv.h"
 
-
-
-
-
-
+#include "../gpu-kernels/gpu_kernels.h"
 
 static
 void
@@ -26,8 +21,8 @@ collect_p3p_correspondences
 	bool update_batch_instance,
 	bool update_iter_instance,
 	Config const& cfg,
-	std::vector<cv::Point2f>& p2k_2,
 	std::vector<cv::Point3f>& p3d_1,
+	std::vector<cv::Point2f>& p2k_2,	
 	std::vector<cv::Point3f>& p2z_1,
 	std::vector<cv::Point3f>& p2z_2,
 	std::vector<cv::Point3f>& p2z_3,
@@ -37,13 +32,6 @@ collect_p3p_correspondences
 	int const w = flows_1[0].cols;
 	int const h = flows_1[0].rows;
 
-	//float const** h_flows_1 = NULL;
-	//float const** h_flows_2 = NULL;
-	//float const** h_disparities = NULL;
-	//float const** h_rigidnesses = NULL;
-	//float const** h_Rs = NULL;
-	//float const** h_ts = NULL;
-
 	std::unique_ptr<float const* []> h_flows_1;
 	std::unique_ptr<float const* []> h_flows_2;
 	std::unique_ptr<float const* []> h_disparities;
@@ -51,31 +39,31 @@ collect_p3p_correspondences
 	std::unique_ptr<float const* []> h_rigidnesses;
 	std::unique_ptr<float const* []> h_Rs;
 	std::unique_ptr<float const* []> h_ts;
+
 	
+
+
 	if (flows_1.size() > 0)
-	{
-		//h_flows_1 = new float const* [flows_1.size()];
+	{		
 		h_flows_1 = std::make_unique<float const* []>(flows_1.size());
 		for (int i = 0; i < flows_1.size(); ++i) { h_flows_1[i] = (float*)flows_1[i].data; }
 	}
 
 	if (flows_2.size() > 0)
-	{
-		//h_flows_2 = new float const* [flows_2.size()];
+	{		
 		h_flows_2 = std::make_unique<float const* []>(flows_2.size());
 		for (int i = 0; i < flows_2.size(); ++i) { h_flows_2[i] = (float*)flows_2[i].data; }
 	}
 
 	if (disparities.size() > 0)
-	{
-		//h_disparities = new float const* [disparities.size()];
+	{		
 		h_disparities = std::make_unique<float const* []>(disparities.size());
 		for (int i = 0; i < disparities.size(); ++i) { h_disparities[i] = (float*)disparities[i].data; }
 	}
 
-	h_rigidnesses = std::make_unique<float const* []>(n_flows); //new float const* [n_flows];
-	h_Rs = std::make_unique<float const* []>(n_flows); //new float const* [n_flows];
-	h_ts = std::make_unique<float const* []>(n_flows); //new float const* [n_flows];
+	h_rigidnesses = std::make_unique<float const* []>(n_flows);
+	h_Rs = std::make_unique<float const* []>(n_flows);
+	h_ts = std::make_unique<float const* []>(n_flows);
 
 	for (int i = 0; i < n_flows; ++i)
 	{ 
@@ -119,7 +107,7 @@ collect_p3p_correspondences
 			(float*)p2z_3.data(),
 			h_disparities.get(),
 			tf_squared_error.data(),
-			cfg.disparities_enable,
+			cfg.enable_disparities,
 			cfg.multiview_mode == 3,
 			cfg.tf_index_0,
 			cfg.tf_index_1,
@@ -155,7 +143,7 @@ collect_p3p_correspondences
 			(float*)p2z_3.data(),
 			NULL,
 			tf_squared_error.data(),
-			cfg.disparities_enable,
+			cfg.enable_disparities,
 			cfg.multiview_mode == 3,
 			cfg.tf_index_0,
 			cfg.tf_index_1,
@@ -191,7 +179,7 @@ collect_p3p_correspondences
 			(float*)p2z_3.data(),
 			NULL,
 			tf_squared_error.data(),
-			cfg.disparities_enable,
+			cfg.enable_disparities,
 			cfg.multiview_mode == 3,
 			cfg.tf_index_0,
 			cfg.tf_index_1,
@@ -423,7 +411,7 @@ optimize_camera_pose
 	std::vector<cv::Point3f> p2z_3;
 	std::vector<float> trifocal_squared_error;
 
-	collect_p3p_correspondences(flows, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, p2d_2, p3d_1, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
+	collect_p3p_correspondences(flows, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
 
 	if (!cfg.silent) { std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
 
@@ -635,8 +623,8 @@ estimate_camera_pose_epipolar
 			if (use_external_mask && mask.at<float>(y, x) < 0.5)
 				continue;
 			N_used++;
-			*pts1_iter++ = x;
-			*pts1_iter++ = y;
+			*pts1_iter++ = x + 0.0f;
+			*pts1_iter++ = y + 0.0f;
 			*pts2_iter++ = x + flow.at<cv::Vec2f>(y, x)[0];
 			*pts2_iter++ = y + flow.at<cv::Vec2f>(y, x)[1];
 		}
@@ -796,3 +784,18 @@ estimate_camera_pose_epipolar
 	//if (h_rigidnesses) { delete[] h_rigidnesses; }
 	//if (h_Rs) { delete[] h_Rs; }
 	//if (h_ts) { delete[] h_ts; }
+
+	//float const** h_flows_1 = NULL;
+	//float const** h_flows_2 = NULL;
+	//float const** h_disparities = NULL;
+	//float const** h_rigidnesses = NULL;
+	//float const** h_Rs = NULL;
+	//float const** h_ts = NULL;
+
+//h_flows_1 = new float const* [flows_1.size()];
+	//h_flows_2 = new float const* [flows_2.size()];
+	//h_disparities = new float const* [disparities.size()];
+
+	//new float const* [n_flows];
+	 //new float const* [n_flows];
+	//new float const* [n_flows];
