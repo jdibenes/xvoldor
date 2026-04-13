@@ -8,7 +8,7 @@ struct Config
 	int multiview_mode = 2; // 2: binocular, 3: trifocal
 	int solver_select = 3;
 	int disparities_enable = 1;
-	int trifocal_enable_flow_2 = 1;
+	
 	int root_refine_interations = 2;
 	int batch_workers = 12;
 
@@ -17,15 +17,21 @@ struct Config
 	// rolling shutter
 	int rs_direction = 0;
 	float rs_r0 = 0;
-	int rs_max_pow = 2;
-	int rs_max_iterations = 5;
+	//int rs_max_pow = 2;
+	int rs_iterations = 5;
 
-	int trifocal_index_0 = 0;
-	int trifocal_index_1 = 0;
-	int trifocal_index_2 = 0;
-	float trifocal_squared_error_min_thresh = 0;//0.01f;
-	float trifocal_squared_error_max_thresh = 65536;//2.0f;
-	float trifocal_threshold = 0;
+	// trifocal
+	int tf_index_0 = 0;
+	int tf_index_1 = 0;
+	int tf_index_2 = 0;
+	float tf_squared_error_min_thresh = 0;//0.01f;
+	float tf_squared_error_max_thresh = 65536;//2.0f;
+	float tf_threshold = 0;
+	bool tf_enable_next_pool = true;
+	int tf_enable_flow_2 = 1;
+
+
+
 
 	// OLD
 
@@ -174,12 +180,14 @@ struct Config
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_direction);
 			else if (cfg_strs[i] == "--rs_r0")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_r0);
-			else if (cfg_strs[i] == "--rs_max_pow")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_pow);
-			else if (cfg_strs[i] == "--rs_max_iterations")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_iterations);
+			//else if (cfg_strs[i] == "--rs_max_pow")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_pow);
+			else if (cfg_strs[i] == "--rs_iterations")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_iterations);
 
-			// OLD
+
+
+			// OLD ------------------------------------------------------------
 
 			else if (cfg_strs[i] == "--basefocal")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->basefocal);
