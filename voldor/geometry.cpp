@@ -350,36 +350,12 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int 
 optimize_camera_pose
 (
-	std::vector<cv::Mat> const& flows,
+	std::vector<cv::Mat> const& flows_1,
+	std::vector<cv::Mat> const& flows_2,
+	std::vector<cv::Mat> const& disparities,
 	std::vector<cv::Mat> const& rigidnesses,
 	cv::Mat const& depth,
 	std::vector<Camera>& cams, // MODIFIED
@@ -390,15 +366,13 @@ optimize_camera_pose
 	bool update_batch_instance, // !cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0)
 	bool update_iter_instance, // i == 0 : true for first flow
 	Config const& cfg,
-	std::vector<cv::Mat> const& flows_2,
-	std::vector<cv::Mat> const& disparities,
 	cv::Mat& next_pool,
 	int& next_pool_used
 ) 
 {
 
-	int const w = flows[0].cols;
-	int const h = flows[0].rows;
+	int const w = flows_1[0].cols;
+	int const h = flows_1[0].rows;
 
 	//----------------------------------------------------------------------------
 
@@ -411,7 +385,7 @@ optimize_camera_pose
 	std::vector<cv::Point3f> p2z_3;
 	std::vector<float> trifocal_squared_error;
 
-	collect_p3p_correspondences(flows, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
+	collect_p3p_correspondences(flows_1, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
 
 	if (!cfg.silent) { std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
 
