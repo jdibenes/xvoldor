@@ -7,6 +7,11 @@
 //#include "trifocal_poselib.h"
 
 
+
+
+
+
+
 static
 void
 collect_p3p_correspondences
@@ -106,12 +111,12 @@ collect_p3p_correspondences
 			trifocal_squared_error.data(),
 			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
-			cfg.trifocal_index_0,
-			cfg.trifocal_index_1,
-			cfg.trifocal_index_2,
-			cfg.trifocal_enable_flow_2,
-			cfg.trifocal_squared_error_min_thresh,
-			cfg.trifocal_squared_error_max_thresh
+			cfg.tf_index_0,
+			cfg.tf_index_1,
+			cfg.tf_index_2,
+			cfg.tf_enable_flow_2,
+			cfg.tf_squared_error_min_thresh,
+			cfg.tf_squared_error_max_thresh
 		);
 	}
 	else if (update_iter_instance) {
@@ -142,12 +147,12 @@ collect_p3p_correspondences
 			trifocal_squared_error.data(),
 			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
-			cfg.trifocal_index_0,
-			cfg.trifocal_index_1,
-			cfg.trifocal_index_2,
-			cfg.trifocal_enable_flow_2,
-			cfg.trifocal_squared_error_min_thresh,
-			cfg.trifocal_squared_error_max_thresh
+			cfg.tf_index_0,
+			cfg.tf_index_1,
+			cfg.tf_index_2,
+			cfg.tf_enable_flow_2,
+			cfg.tf_squared_error_min_thresh,
+			cfg.tf_squared_error_max_thresh
 		);
 	}
 	else {
@@ -178,12 +183,12 @@ collect_p3p_correspondences
 			trifocal_squared_error.data(),
 			cfg.disparities_enable,
 			cfg.multiview_mode == 3,
-			cfg.trifocal_index_0,
-			cfg.trifocal_index_1,
-			cfg.trifocal_index_2,
-			cfg.trifocal_enable_flow_2,
-			cfg.trifocal_squared_error_min_thresh,
-			cfg.trifocal_squared_error_max_thresh
+			cfg.tf_index_0,
+			cfg.tf_index_1,
+			cfg.tf_index_2,
+			cfg.tf_enable_flow_2,
+			cfg.tf_squared_error_min_thresh,
+			cfg.tf_squared_error_max_thresh
 		);
 	}
 
@@ -276,41 +281,125 @@ collect_p3p_correspondences
 
 
 
-int solve_pose_pool(cv::Mat const& K, cv::Point3f const* p3d_1, cv::Point2f const* p2d_2, int bifocal_count, cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv::Point3f const* p2z_3, int trifocal_count, Config const& options, float* poses_pool, float* velocities_pool, float* next_pool, float* focals_pool)
+
+
+
+
+
+int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d_1, std::vector<cv::Point2f> const& p2d_2, std::vector<cv::Point3f> const& p2z_1, std::vector<cv::Point3f> const& p2z_2, std::vector<cv::Point3f> const& p2z_3, Config const& options, cv::Mat& poses_pool, cv::Mat& velocities_pool, cv::Mat& focals_pool, cv::Mat& next_pool, int& next_pool_used)
 {
+	cv::Point3f const* p3d_1_data = p3d_1.data();
+	cv::Point2f const* p2d_2_data = p2d_2.data();
+
+	cv::Point3f const* p2z_1_data = p2z_1.data();
+	cv::Point3f const* p2z_2_data = p2z_2.data();
+	cv::Point3f const* p2z_3_data = p2z_3.data();
+
+	int bf_count = static_cast<int>(p3d_1.size());
+	int tf_count = static_cast<int>(p2z_1.size());
+
+	bool set_velocities_pool = false;
+	bool set_next_pool = false;
+	bool set_focals_pool = false;
+
+	switch (options.solver_select)
+	{
+	case 16: set_velocities_pool = true; break;
+	case 17: set_velocities_pool = true; break;
+	case 18: set_velocities_pool = true; break;
+	case 24: set_next_pool = options.tf_enable_next_pool; break;
+	}
+
+	float* poses_pool_data = nullptr;
+	float* velocities_pool_data = nullptr;
+	float* focals_pool_data = nullptr;
+	float* next_pool_data = nullptr;
+	int next_pool_pushed = 0;
+
+	if (set_velocities_pool)
+	{
+		velocities_pool = cv::Mat(options.n_poses_to_sample, 6, CV_32F);
+		velocities_pool_data = reinterpret_cast<float*>(velocities_pool.data);
+	}
+	else
+	{
+		velocities_pool_data = nullptr;
+	}
+
+	if (set_focals_pool) 
+	{
+		focals_pool = cv::Mat(options.n_poses_to_sample, 1, CV_32F);
+		focals_pool_data = reinterpret_cast<float*>(focals_pool.data);
+	}
+	else
+	{
+		focals_pool_data = nullptr;
+	}
+
+	if (set_next_pool && (next_pool.total() <= 0))
+	{
+		next_pool = cv::Mat(1 * options.n_poses_to_sample, 6, CV_32F);
+		next_pool_used = 0;
+	}
+
+	if (set_next_pool)
+	{
+		poses_pool = cv::Mat(2 * options.n_poses_to_sample, 6, CV_32F);
+		memcpy(poses_pool.data, next_pool.data, sizeof(cv::Vec6f) * next_pool_used);
+		poses_pool_data = reinterpret_cast<float*>(poses_pool.data) + (6 * next_pool_used);
+		next_pool_data = reinterpret_cast<float*>(next_pool.data);
+		next_pool_pushed = next_pool_used;
+	}
+	else
+	{
+		poses_pool = cv::Mat(1 * options.n_poses_to_sample, 6, CV_32F);
+		poses_pool_data = reinterpret_cast<float*>(poses_pool.data);
+		next_pool_data = nullptr;
+		next_pool_pushed = 0;
+	}
+
 	int poses_pool_used = 0;
 
 	switch (options.solver_select)
 	{
 	// p4p
-	case  0: poses_pool_used = batch_cpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 0, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case  1: poses_pool_used = batch_cpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case  2: poses_pool_used = batch_gpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 0, options.n_poses_to_sample, poses_pool); break;
-	case  3: poses_pool_used = batch_gpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool); break;
+	case  0: poses_pool_used = batch_cpu_solver_p4p(p3d_1_data, p2d_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case  1: poses_pool_used = batch_cpu_solver_p4p(p3d_1_data, p2d_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case  2: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2d_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data); break;
+	case  3: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2d_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data); break;
 
 	// gpm
-	case  8: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 0, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case  9: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 1, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case 10: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 2, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case 11: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 3, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case 12: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 4, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case 13: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 5, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case 14: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 6, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
-	case 15: poses_pool_used = batch_cpu_solver_gpm(p2z_1, p2z_2, trifocal_count, K, 7, options.n_poses_to_sample, poses_pool, options.batch_workers, options.sample_unique); break;
+	case  8: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case  9: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 1, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case 10: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 2, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case 11: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 3, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case 12: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 4, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case 13: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 5, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case 14: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 6, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case 15: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 7, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
 
 	// rnp
-	case 16: poses_pool_used = batch_cpu_solver_rnp(p3d_1, p2d_2, bifocal_count, K, 0, options.n_poses_to_sample, poses_pool, velocities_pool, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_max_iterations); break;
-	case 17: poses_pool_used = batch_cpu_solver_rnp(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool, velocities_pool, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_max_iterations); break;
-	case 18: poses_pool_used = batch_cpu_solver_rnp(p3d_1, p2d_2, bifocal_count, K, 2, options.n_poses_to_sample, poses_pool, velocities_pool, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_max_iterations); break;
+	case 16: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2d_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
+	case 17: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2d_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
+	case 18: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2d_2_data, bf_count, K, 2, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
 
 	// tft
-	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1, p2z_2, p2z_3, trifocal_count, K, 0, options.n_poses_to_sample, poses_pool, next_pool, options.batch_workers, options.sample_unique, options.trifocal_threshold); break;
+	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.sample_unique, options.tf_threshold); break;
 
 	// default: gpu p4p lambdatwist
-	default: poses_pool_used = batch_gpu_solver_p4p(p3d_1, p2d_2, bifocal_count, K, 1, options.n_poses_to_sample, poses_pool); break;
+	default: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2d_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data); break;
 	}
 
-	return poses_pool_used;
+	if (set_next_pool)
+	{ 
+		next_pool_used = poses_pool_used;
+	}
+	else
+	{
+		next_pool_used = 0;
+	}
+
+	return next_pool_pushed + poses_pool_used;
 }
 
 
@@ -323,21 +412,17 @@ int solve_pose_pool(cv::Mat const& K, cv::Point3f const* p3d_1, cv::Point2f cons
 
 
 
-//std::vector<cv::Vec6f>* next_pool = (active_idx < (cams.size() - 1)) ? &cams[active_idx + 1].trifocal_pool_1_2 : NULL;
 
-//cams[active_idx + 1].trifocal_1_2_pool.clear(); // active_idx + 1 might not exist
-//if (next_pool) { next_pool->clear(); }
-	/*
-	for (cv::Vec6f const &v : cams[active_idx].trifocal_1_2_pool)
-	{
-		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = ((cv::Vec3f*)&v)[0];
-		poses_pool.at<cv::Vec3f>(poses_pool_used, 1) = ((cv::Vec3f*)&v)[1];
 
-		poses_pool_used++;
 
-		//std::cout << "active_idx: " << active_idx << " | " << v << std::endl;
-	}
-	*/
+
+
+
+
+
+
+
+
 
 
 
@@ -360,7 +445,9 @@ optimize_camera_pose
 	bool update_iter_instance,
 	Config const& cfg,
 	std::vector<cv::Mat> const& flows_2,
-	std::vector<cv::Mat> const& disparities
+	std::vector<cv::Mat> const& disparities,
+	cv::Mat& next_pool,
+	int& next_pool_used
 ) 
 {
 
@@ -371,14 +458,14 @@ optimize_camera_pose
 
 	auto time_stamp = std::chrono::high_resolution_clock::now();
 
-	std::vector<cv::Point2f> pts2_map;
-	std::vector<cv::Point3f> pts3_map;
-	std::vector<cv::Point3f> trifocal_0_map;
-	std::vector<cv::Point3f> trifocal_1_map;
-	std::vector<cv::Point3f> trifocal_2_map;
+	std::vector<cv::Point2f> p2d_2;
+	std::vector<cv::Point3f> p3d_1;
+	std::vector<cv::Point3f> p2z_1;
+	std::vector<cv::Point3f> p2z_2;
+	std::vector<cv::Point3f> p2z_3;
 	std::vector<float> trifocal_squared_error;
 
-	collect_p3p_correspondences(flows, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, pts2_map, pts3_map, trifocal_0_map, trifocal_1_map, trifocal_2_map, trifocal_squared_error);
+	collect_p3p_correspondences(flows, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, p2d_2, p3d_1, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
 
 	if (!cfg.silent) { std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
 
@@ -386,12 +473,14 @@ optimize_camera_pose
 
 	time_stamp = std::chrono::high_resolution_clock::now();
 
-	cv::Mat poses_pool(2 * cfg.n_poses_to_sample, 6, CV_32F);
-	int poses_pool_used = solve_pose_pool(cams[active_idx].K, pts3_map.data(), pts2_map.data(), (int)pts3_map.size(), trifocal_0_map.data(), trifocal_1_map.data(), trifocal_2_map.data(), (int)trifocal_0_map.size(), cfg, (float*)poses_pool.data, nullptr, nullptr, nullptr);
+	cv::Mat poses_pool;
+	cv::Mat velocities_pool;
+	cv::Mat focals_pool;
 
+	int poses_pool_used = solve_pose_pool(cams[active_idx].K, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, cfg, poses_pool, velocities_pool, focals_pool, next_pool, next_pool_used);
 	if (poses_pool_used <= 0) { return 0; }
 
-	if (!cfg.silent) { std::cout << "p3p computing time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
+	if (!cfg.silent) { std::cout << "solver computing time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
 
 	//----------------------------------------------------------------------------------
 
@@ -584,3 +673,21 @@ estimate_camera_pose_epipolar
 
 }
 
+//std::vector<cv::Vec6f>* next_pool = (active_idx < (cams.size() - 1)) ? &cams[active_idx + 1].trifocal_pool_1_2 : NULL;
+
+//cams[active_idx + 1].trifocal_1_2_pool.clear(); // active_idx + 1 might not exist
+//if (next_pool) { next_pool->clear(); }
+	/*
+	for (cv::Vec6f const &v : cams[active_idx].trifocal_1_2_pool)
+	{
+		poses_pool.at<cv::Vec3f>(poses_pool_used, 0) = ((cv::Vec3f*)&v)[0];
+		poses_pool.at<cv::Vec3f>(poses_pool_used, 1) = ((cv::Vec3f*)&v)[1];
+
+		poses_pool_used++;
+
+		//std::cout << "active_idx: " << active_idx << " | " << v << std::endl;
+	}
+	*/
+
+	//std::unique_ptr<cv::Vec6f[]> trifocal_pool_1_2 =;
+		//int trifocal_pool_used;
