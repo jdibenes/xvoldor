@@ -623,7 +623,3 @@ Eigen::Matrix<typename A::Scalar, 2, 1> compute_error(Eigen::MatrixBase<A> const
 
     return Eigen::Matrix<typename A::Scalar, 2, 1>{ r_error, t_error };
 }
-
-
-
-
