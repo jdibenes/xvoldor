@@ -39,6 +39,7 @@ struct Camera
 
 	cv::Mat dr = cv::Mat::zeros(3, 1, CV_32F);
 	cv::Mat dt = cv::Mat::zeros(3, 1, CV_32F);
+	float focal = 1;
 
 	
 
@@ -46,8 +47,8 @@ struct Camera
 	float pose_density = 0;
 	int pose_sample_count = 0;
 	float pose_rigidness_density = 0;
-	int last_used_ms_iters = 0;
-	int last_used_gu_iters = 0;
+	int last_used_ms_iters = 0; // statistics
+	int last_used_gu_iters = 0; // statistics
 
 	cv::Vec6f pose6() {
 		cv::Vec3f r = this->rvec();
