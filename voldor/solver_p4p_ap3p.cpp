@@ -9,7 +9,7 @@ bool solver_p4p_ap3p(float const* p3d_1, float const* p2d_2, float* r_12, float*
 	cv::Vec3d r_s;
 	cv::Vec3d t_s;
 
-	bool ok = cv::solvePnP(cv::_InputArray(reinterpret_cast<cv::Point3f const*>(p3d_1), 4), cv::_InputArray(reinterpret_cast<cv::Point2f const*>(p2d_2), 4), cv::Mat::eye(3, 3, CV_32F), cv::Mat(), r_s, t_s, false, cv::SOLVEPNP_AP3P);
+	bool ok = cv::solvePnP({ reinterpret_cast<cv::Point3f const*>(p3d_1), 4 }, { reinterpret_cast<cv::Point2f const*>(p2d_2), 4 }, cv::Mat::eye(3, 3, CV_32F), cv::Mat(), r_s, t_s, false, cv::SOLVEPNP_AP3P);
 	if (!ok) { return false; }
 
 	Eigen::Matrix<double, 3, 1> r = matrix_from_buffer<double, 3, 1>(r_s.val);
