@@ -221,6 +221,8 @@ void VOLDOR::optimize_cameras() {
 		if (!allow_trunc || cams[i].pose_rigidness_density > cfg.trunc_rigidness_density) {
 			optimize_success = optimize_camera_pose(
 				flows_1,
+				flows_2,
+				disparities,
 				rigidnesses,
 				depth,
 				cams,
@@ -231,8 +233,6 @@ void VOLDOR::optimize_cameras() {
 				!cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0),  //update batch instance?
 				i == 0, //update iter instance?
 				cfg,
-				flows_2,
-				disparities,
 				next_pool,
 				next_pool_used
 			);
