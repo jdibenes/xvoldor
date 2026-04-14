@@ -15,12 +15,12 @@ collect_point_correspondences
 	std::vector<cv::Mat> const& disparities,
 	std::vector<cv::Mat> const& rigidnesses,
 	cv::Mat const& depth,
-	std::vector<Camera> const& cams,
-	int n_flows,
-	int active_idx,
+	std::vector<Camera> const& cameras,
+	int batch_flows,
+	int active_index,
 	bool update_batch_instance,
-	bool update_iter_instance,
-	Config const& cfg,
+	bool update_loop_instance,
+	Config const& options,
 	std::vector<cv::Point3f>& p3d_1,
 	std::vector<cv::Point2f>& p2k_2,	
 	std::vector<cv::Point3f>& p2z_1,
@@ -29,7 +29,7 @@ collect_point_correspondences
 	std::vector<float>& tf_squared_error
 )
 {
-	bool tf_enable = cfg.multiview_mode == 3;
+	bool tf_enable = options.multiview_mode == 3;
 	int w = flows_1[0].cols;
 	int h = flows_1[0].rows;
 	int pixels = w * h;
@@ -60,15 +60,15 @@ collect_point_correspondences
 		for (int i = 0; i < disparities.size(); ++i) { h_disparities[i] = (float*)disparities[i].data; }
 	}
 
-	h_rigidnesses = std::make_unique<float const* []>(n_flows);
-	h_Rs = std::make_unique<float const* []>(n_flows);
-	h_ts = std::make_unique<float const* []>(n_flows);
+	h_rigidnesses = std::make_unique<float const* []>(batch_flows);
+	h_Rs = std::make_unique<float const* []>(batch_flows);
+	h_ts = std::make_unique<float const* []>(batch_flows);
 
-	for (int i = 0; i < n_flows; ++i)
+	for (int i = 0; i < batch_flows; ++i)
 	{ 
 		h_rigidnesses[i] = (float*)rigidnesses[i].data;
-		h_Rs[i] = (float*)cams[i].R.data;
-		h_ts[i] = (float*)cams[i].t.data;
+		h_Rs[i] = (float*)cameras[i].R.data;
+		h_ts[i] = (float*)cameras[i].t.data;
 	}
 
 	
@@ -88,35 +88,35 @@ collect_point_correspondences
 			h_flows_1.get(),
 			h_rigidnesses.get(),
 			(float*)depth.data,
-			(float*)cams[0].K.data,
+			(float*)cameras[active_index].K.data,
 			h_Rs.get(),
 			h_ts.get(),
 			(float*)p2k_2.data(),
 			(float*)p3d_1.data(),
-			n_flows,
+			batch_flows,
 			w,
 			h,
-			active_idx,
-			cfg.rigidness_threshold,
-			cfg.rigidness_sum_threshold,
-			cfg.pose_sample_min_depth,
-			cfg.pose_sample_max_depth,
-			cfg.max_trace_on_flow,
+			active_index,
+			options.rigidness_threshold,
+			options.rigidness_sum_threshold,
+			options.pose_sample_min_depth,
+			options.pose_sample_max_depth,
+			options.max_trace_on_flow,
 			h_flows_2.get(),
 			(float*)p2z_1.data(),
 			(float*)p2z_2.data(),
 			(float*)p2z_3.data(),
 			h_disparities.get(),
 			tf_squared_error.data(),
-			cfg.disparities_enable,
-			cfg.disparities_use_0,
+			options.disparities_enable,
+			options.disparities_use_0,
 			tf_enable,
-			cfg.tf_enable_flow_2,
-			cfg.tf_use_flow_2,
-			cfg.tf_squared_error_threshold
+			options.tf_enable_flow_2,
+			options.tf_use_flow_2,
+			options.tf_squared_error_threshold
 		);
 	}
-	else if (update_iter_instance) {
+	else if (update_loop_instance) {
 		collect_p3p_instances
 		(
 			NULL,
@@ -127,27 +127,27 @@ collect_point_correspondences
 			h_ts.get(),
 			(float*)p2k_2.data(),
 			(float*)p3d_1.data(),
-			n_flows,
+			batch_flows,
 			w,
 			h,
-			active_idx,
-			cfg.rigidness_threshold,
-			cfg.rigidness_sum_threshold,
-			cfg.pose_sample_min_depth,
-			cfg.pose_sample_max_depth,
-			cfg.max_trace_on_flow,
+			active_index,
+			options.rigidness_threshold,
+			options.rigidness_sum_threshold,
+			options.pose_sample_min_depth,
+			options.pose_sample_max_depth,
+			options.max_trace_on_flow,
 			NULL,
 			(float*)p2z_1.data(),
 			(float*)p2z_2.data(),
 			(float*)p2z_3.data(),
 			NULL,
 			tf_squared_error.data(),
-			cfg.disparities_enable,
-			cfg.disparities_use_0,
+			options.disparities_enable,
+			options.disparities_use_0,
 			tf_enable,
-			cfg.tf_enable_flow_2,
-			cfg.tf_use_flow_2,
-			cfg.tf_squared_error_threshold
+			options.tf_enable_flow_2,
+			options.tf_use_flow_2,
+			options.tf_squared_error_threshold
 		);
 	}
 	else {
@@ -161,31 +161,33 @@ collect_point_correspondences
 			h_ts.get(),
 			(float*)p2k_2.data(),
 			(float*)p3d_1.data(),
-			n_flows,
+			batch_flows,
 			w,
 			h,
-			active_idx,
-			cfg.rigidness_threshold,
-			cfg.rigidness_sum_threshold,
-			cfg.pose_sample_min_depth,
-			cfg.pose_sample_max_depth,
-			cfg.max_trace_on_flow,
+			active_index,
+			options.rigidness_threshold,
+			options.rigidness_sum_threshold,
+			options.pose_sample_min_depth,
+			options.pose_sample_max_depth,
+			options.max_trace_on_flow,
 			NULL,
 			(float*)p2z_1.data(),
 			(float*)p2z_2.data(),
 			(float*)p2z_3.data(),
 			NULL,
 			tf_squared_error.data(),
-			cfg.disparities_enable,
-			cfg.disparities_use_0,
+			options.disparities_enable,
+			options.disparities_use_0,
 			tf_enable,
-			cfg.tf_enable_flow_2,
-			cfg.tf_use_flow_2,
-			cfg.tf_squared_error_threshold
+			options.tf_enable_flow_2,
+			options.tf_use_flow_2,
+			options.tf_squared_error_threshold
 		);
 	}
 
 	//
+
+
 
 	int bf_count = 0;
 	int tf_count = 0;
