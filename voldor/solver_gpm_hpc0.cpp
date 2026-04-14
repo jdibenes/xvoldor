@@ -2,18 +2,22 @@
 #include <Eigen/Eigen>
 #include "helpers.h"
 #include "helpers_eigen.h"
+#include "helpers_geometry.h"
 
-bool solver_gpm_hpc0(float const* pa1, float const* pb1, float const* pa2, float const* pb2, float* r01, float* t01)
+bool solver_gpm_hpc0(float const* p3d_1, float const* p3d_2, float* r_12, float* t_12)
 {
-    Eigen::Matrix<float, 3, 1> PA1 = matrix_from_buffer<float, 3, 1>(pa1);
-    Eigen::Matrix<float, 3, 1> PB1 = matrix_from_buffer<float, 3, 1>(pb1);
-    Eigen::Matrix<float, 3, 1> PA2 = matrix_from_buffer<float, 3, 1>(pa2);
-    Eigen::Matrix<float, 3, 1> PB2 = matrix_from_buffer<float, 3, 1>(pb2);
+    Eigen::Matrix<float, 3, 2> P1 = matrix_from_buffer<float, 3, 2>(p3d_1);
+    Eigen::Matrix<float, 3, 2> P2 = matrix_from_buffer<float, 3, 2>(p3d_2);
+
+    Eigen::Matrix<float, 3, 1> PA1 = P1.col(0);
+    Eigen::Matrix<float, 3, 1> PB1 = P1.col(1);
+    Eigen::Matrix<float, 3, 1> PA2 = P2.col(0);
+    Eigen::Matrix<float, 3, 1> PB2 = P2.col(1);
 
     Eigen::Matrix<float, 3, 1> V1 = (PA1 - PB1).normalized();
     Eigen::Matrix<float, 3, 1> V2 = (PA2 - PB2).normalized();
 
-    float thetaF = std::acos(clamp(V1.dot(V2), -1.0f, 1.0f));
+    float thetaF = acos_small(clamp(V1.dot(V2), -1.0f, 1.0f));
 
     Eigen::Matrix<float, 3, 1> kF = V1.cross(V2).normalized();
 
@@ -41,18 +45,13 @@ bool solver_gpm_hpc0(float const* pa1, float const* pb1, float const* pa2, float
 
     Eigen::Matrix<float, 3, 1> kR = ((sF_2 * cs * kF) + (cF_2 * cc * V1) + (sF_2 * cc * kG)).normalized();
 
-    float thetaR = 2.0f * std::acos(clamp((cs * cF_2) / std::sqrt((cc * cc) + (cs * cs)), -1.0f, 1.0f));
+    float thetaR = 2.0f * acos_small(clamp((cs * cF_2) / std::sqrt((cc * cc) + (cs * cs)), -1.0f, 1.0f));
 
     Eigen::Matrix<float, 3, 1> r = kR * thetaR;
-    Eigen::Matrix<float, 3, 1> t = ((PA2 + PB2) - (Eigen::AngleAxis<float>(thetaR, kR).toRotationMatrix() * (PA1 + PB1))) / 2.0f;
+    Eigen::Matrix<float, 3, 1> t = ((PA2 + PB2) - (matrix_R_rodrigues(r) * (PA1 + PB1))) / 2.0f;
 
-    matrix_to_buffer(r, r01);
-    matrix_to_buffer(t, t01);
+    matrix_to_buffer(r, r_12);
+    matrix_to_buffer(t, t_12);
 
-    float r_sum = r01[0] + r01[1] + r01[2];
-    float t_sum = t01[0] + t01[1] + t01[2];
-
-    float x_sum = r_sum + t_sum;
-
-    return std::isfinite(x_sum);
+    return is_valid_pose(r, t);
 }

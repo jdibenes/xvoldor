@@ -1,7 +1,7 @@
 #include "utils.h"
 #include "gpu_kernels.h"
 #include "rodrigues.h"
-#include "../lambdatwist/lambdatwist_p4p.h"
+#include <lambdatwist/lambdatwist_p4p.h>
 
 #define N_THREADS 32
 
@@ -48,7 +48,7 @@ __global__ static void init_rand_states(curandState* d_rand_states, int N) {
 }
 
 
-int solve_batch_p3p_lambdatwist_gpu(float* h_p3s, float* h_p2s, float* h_o_rvecs, float* h_o_tvecs, float* h_K, int N_pts, int N_poses) {
+int solve_batch_p3p_lambdatwist_gpu(float const* h_p3s, float const* h_p2s, float* h_o_rvecs, float* h_o_tvecs, float const* h_K, int N_pts, int N_poses) {
 
 	// copy K to gpu constant memory
 	static float cache_symbols[4] = { 0 };
@@ -82,7 +82,7 @@ int solve_batch_p3p_lambdatwist_gpu(float* h_p3s, float* h_p2s, float* h_o_rvecs
 
 	// solve batch ap3p
 	float fx = h_K[0], cx = h_K[2], fy = h_K[4], cy = h_K[5];
-	solve << <DIV_CEIL(N_poses, N_THREADS), N_THREADS >> > (d_p2s, d_p3s, d_rvecs, d_tvecs, d_rand_states, N_pts, N_poses);
+	solve << <DIV_CEIL(N_poses, N_THREADS), N_THREADS >> > (d_p2s, d_p3s, d_rvecs, d_tvecs, d_rand_states, N_pts - 1, N_poses);
 	gpuErrchk;
 
 	// copy back R,t

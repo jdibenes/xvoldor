@@ -1,0 +1,22 @@
+
+#include <Eigen/Eigen>
+#include <opencv2/calib3d.hpp>
+#include "helpers_eigen.h"
+#include "helpers_geometry.h"
+
+bool solver_p4p_ap3p(float const* p3d_1, float const* p2d_2, float* r_12, float* t_12)
+{
+	cv::Vec3d r_s;
+	cv::Vec3d t_s;
+
+	bool ok = cv::solvePnP({ reinterpret_cast<cv::Point3f const*>(p3d_1), 4 }, { reinterpret_cast<cv::Point2f const*>(p2d_2), 4 }, cv::Mat::eye(3, 3, CV_32F), cv::Mat(), r_s, t_s, false, cv::SOLVEPNP_AP3P);
+	if (!ok) { return false; }
+
+	Eigen::Matrix<double, 3, 1> r = matrix_from_buffer<double, 3, 1>(r_s.val);
+	Eigen::Matrix<double, 3, 1> t = matrix_from_buffer<double, 3, 1>(t_s.val);
+
+	matrix_to_buffer(r, r_12);
+	matrix_to_buffer(t, t_12);
+
+	return is_valid_pose(r, t);
+}

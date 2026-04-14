@@ -35,12 +35,12 @@
     <ClInclude Include="..\..\gpu-kernels\svd3_cuda.h" />
     <ClInclude Include="..\..\gpu-kernels\utils.h" />
     <ClInclude Include="..\..\gpu-kernels\vops.h" />
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h" />
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h" />
-    <ClInclude Include="..\..\lambdatwist\matrix.h" />
-    <ClInclude Include="..\..\lambdatwist\refine_lambda.h" />
-    <ClInclude Include="..\..\lambdatwist\solve_cubic.h" />
-    <ClInclude Include="..\..\lambdatwist\solve_eig0.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p3p.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p4p.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\matrix.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\refine_lambda.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_cubic.h" />
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_eig0.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0657129-07DF-437B-BD66-DC2EDEC5E3A7}</ProjectGuid>
@@ -97,15 +97,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3414\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\jcds\SDK\opencv_3_4_16\build\include;C:\Users\jcds\Documents\GitHub\xvoldor\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opencv_world3414.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\jcds\SDK\opencv_3414\build\x64\vc15\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opencv_world3416.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\jcds\SDK\opencv_3_4_16\build\x64\vc15\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>

@@ -79,22 +79,22 @@
     <ClInclude Include="..\..\gpu-kernels\vops.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p3p.h">
       <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h">
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p4p.h">
       <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\matrix.h">
+    <ClInclude Include="..\..\thirdparty\lambdatwist\matrix.h">
       <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\refine_lambda.h">
+    <ClInclude Include="..\..\thirdparty\lambdatwist\refine_lambda.h">
       <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_cubic.h">
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_cubic.h">
       <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_eig0.h">
       <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
   </ItemGroup>

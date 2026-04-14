@@ -23,44 +23,36 @@ big_table = [
     ('hl2_5', 586.27075, 586.27075,  374.04108, 202.26265, 117.254150390625,  1.0, 1.0), # 18
     ('hl2_6', 586.27075, 586.27075,  374.04108, 202.26265, 117.254150390625,  1.0, 1.0), # 19
     ('hl2_7', 586.27075, 586.27075,  374.04108, 202.26265, 117.254150390625,  1.0, 1.0), # 20
+    ('hl2_5_2', 586.27075, 586.27075,  374.04108, 202.26265, 117.254150390625,  1.0, 1.0), # 21
+    ('zed_x_etna_1', 370.00048828125, 370.00048828125, 477.6654968261719, 270.8048095703125, 44.458960801608859567705078125, 1.0, 1.0) # 22
 ]
 
-'''
-[[352.01007   0.        0.        0.     ] 
- [  0.      359.45428   0.        0.     ] 
- [249.33237 292.87296   1.        0.     ] 
- [  0.        0.        0.        1.     ]]
-[[356.10004   0.        0.        0.     ]
- [  0.      360.17044   0.        0.     ]
- [238.04337 301.9479    1.        0.     ]
- [  0.        0.        0.        1.     ]]        
-[[ 0.99905    -0.03802227  0.02129362  0.        ] 
- [ 0.03747033  0.99896604  0.02574591  0.        ] 
- [-0.02225052 -0.02492357  0.9994417   0.        ] 
- [-0.09950941  0.00166177 -0.00128768  1.        ]]
-'''
-
 if __name__ == '__main__':
+    solver_id = 3
     sequence_index = 18
-    toolset = 'searaft'
+    toolset = 'gt'
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
-    set_enable_loop_closure = False    
+    set_enable_loop_closure = True    
+    set_png_depth = True
+    png_depth_scale = 1000
+
+    extra_args = f'--solver_select {solver_id}'
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
 
     path_base = './data' #'E:/voldor_data/data'#'./data'
     pose_base = './poses'
-    voc_file = 'hl2_5_ORBvoc.bin' #'./ORBvoc.bin'
+    voc_file = './ORBvoc.bin' #'./ORBvoc.bin'
     path_flow = os.path.join(path_base, sequence, f'flow_{toolset}')
     path_flow_2 = os.path.join(path_base, sequence, f'flow_2_{toolset}')
-    path_disp = os.path.join(path_base, sequence, f'disp_{toolset}')
-    #path_disp = os.path.join(path_base, sequence, f'disp')
+    path_disp = os.path.join(path_base, sequence, f'disp_{toolset}' if (not set_png_depth) else f'depth')
     path_img = os.path.join(path_base, sequence, 'img')
-    fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}.txt')
+    pose_depth_suffix = f'disp' if (not set_png_depth) else f'depth'
+    fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}_{pose_depth_suffix}_{solver_id}.txt')
 
-    cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe c:/Users/jcds/Documents/GitHub/xvoldor/demo/demo.py'
+    cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe demo.py'
     fx = f'--fx {fx_val}'
     fy = f'--fy {fy_val}'
     cx = f'--cx {cx_val}'
@@ -69,14 +61,13 @@ if __name__ == '__main__':
     flow_dir = f'--flow_dir {path_flow}'
     flow_2_dir = f'--flow_2_dir {path_flow_2}'
     img_dir = f'--img_dir {path_img}'
-    #disp_dir = f'--disp_dir {path_disp}'
-    disp_dir = ''
-    disp_dir = f'--disp_dir {path_disp}'
+    disp_dir = f'--disp_dir {path_disp}' if (mode_name != 'mono') else ''
     mode = f'--mode {mode_name}'
     enable_mapping = '--enable_mapping' if (set_enable_mapping) else ''
     enable_loop_closure = f'--enable_loop_closure {voc_file}' if (set_enable_loop_closure) else ''
     resize = f'--resize {resize_val}'
     abs_resize = f'--abs_resize {abs_resize_val}'
     save_pose = f'--save_pose {fname_pose}' if (set_save_pose) else ''
+    depth_scale = f'--depth_scale {png_depth_scale}'
 
-    os.system(f'{cmd} {fx} {fy} {cx} {cy} {bf} {flow_dir} {flow_2_dir} {img_dir} {disp_dir} {mode} {enable_mapping} {enable_loop_closure} {resize} {abs_resize} {save_pose}')
+    os.system(f'{cmd} {fx} {fy} {cx} {cy} {bf} {flow_dir} {flow_2_dir} {img_dir} {disp_dir} {mode} {enable_mapping} {enable_loop_closure} {resize} {abs_resize} {save_pose} {extra_args}')

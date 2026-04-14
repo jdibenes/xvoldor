@@ -26,7 +26,8 @@
 #define div_ceil(x, y) ( (x) / (y) + ((x) % (y) > 0) )
 
 
-struct Camera {
+struct Camera
+{
 	cv::Mat F;
 	cv::Mat E;
 
@@ -36,18 +37,18 @@ struct Camera {
 	cv::Mat t = cv::Mat::zeros(3, 1, CV_32F);
 	cv::Mat pose_covar = cv::Mat::zeros(6, 6, CV_32F);
 
-	std::vector<cv::Vec6f> trifocal_1_2_pool;
+	cv::Mat dr = cv::Mat::zeros(3, 1, CV_32F);
+	cv::Mat dt = cv::Mat::zeros(3, 1, CV_32F);
+	float focal = 1;
+
+	
 
 
-
-
-	//Mat _R2;
-	//Mat pose_sample_mask;
 	float pose_density = 0;
 	int pose_sample_count = 0;
 	float pose_rigidness_density = 0;
-	int last_used_ms_iters = 0;
-	int last_used_gu_iters = 0;
+	int last_used_ms_iters = 0; // statistics
+	int last_used_gu_iters = 0; // statistics
 
 	cv::Vec6f pose6() {
 		cv::Vec3f r = this->rvec();

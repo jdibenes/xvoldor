@@ -49,14 +49,23 @@
     <Filter Include="Header Files\wrapper">
       <UniqueIdentifier>{8ba73cb3-a2a7-4db9-bc82-fa58602ba132}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\helpers">
-      <UniqueIdentifier>{449fbbfb-c129-484f-829e-1f2636fb7c21}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\batch_solve">
       <UniqueIdentifier>{238d0488-2951-4de2-b126-17fcf3c30908}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\batch_solve">
       <UniqueIdentifier>{0e0c3bf8-69c4-4a75-b194-7b63f5d0be4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\lambdatwist">
+      <UniqueIdentifier>{7f4d6162-ac5c-4985-8c18-0869b841e9c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\rnp">
+      <UniqueIdentifier>{46b4a89f-e445-4518-8015-309e8b07bbd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\polynomial">
+      <UniqueIdentifier>{ec3d1ec1-c6da-45c1-9cc7-9793152f843b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\helpers">
+      <UniqueIdentifier>{8ac624ac-b811-4c21-8b1d-52b79d68755b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -66,38 +75,14 @@
     <ClInclude Include="..\..\voldor\geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\utils.h">
+    <ClInclude Include="..\..\voldor\voldor_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\voldor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p3p.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\lambdatwist_p4p.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\matrix.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\refine_lambda.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_cubic.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lambdatwist\solve_eig0.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\kitti.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\trifocal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc0.h">
-      <Filter>Header Files\solvers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_eigen.h">
       <Filter>Header Files\helpers</Filter>
@@ -105,29 +90,74 @@
     <ClInclude Include="..\..\voldor\helpers.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\py_export.h">
-      <Filter>Header Files\wrapper</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\lock.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc1.h">
-      <Filter>Header Files\solvers</Filter>
+    <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_gpm_hpc2.h">
-      <Filter>Header Files\solvers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\algebra.h">
+    <ClInclude Include="..\..\voldor\helpers_geometry.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\batch_solve_common.h">
+    <ClInclude Include="..\..\voldor\algebra.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\danilevsky.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\hidden6.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\prepare_1lin.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\prepare_2lin.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\rnp.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\sturm.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\utils.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\batch_cpu_solver.h">
       <Filter>Header Files\batch_solve</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\batch_solve.h">
-      <Filter>Header Files\batch_solve</Filter>
+    <ClInclude Include="..\..\voldor\helpers_opencv.h">
+      <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
+    <ClInclude Include="..\..\voldor\py_export.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\polynomial\polynomial.h">
+      <Filter>Libraries\polynomial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\solvers.h">
       <Filter>Header Files\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p3p.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\lambdatwist_p4p.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\matrix.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\refine_lambda.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_cubic.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\lambdatwist\solve_eig0.h">
+      <Filter>Libraries\lambdatwist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\batch_solver.h">
+      <Filter>Header Files\batch_solve</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -137,7 +167,7 @@
     <ClCompile Include="..\..\voldor\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\utils.cpp">
+    <ClCompile Include="..\..\voldor\voldor_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\voldor.cpp">
@@ -147,9 +177,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\kitti.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\trifocal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\PoseLib\misc\colmap_models.cc">
@@ -302,53 +329,109 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\py_export.cpp">
-      <Filter>Source Files\wrapper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\lock.cpp">
-      <Filter>Source Files\helpers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\algebra.cpp">
-      <Filter>Source Files\helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_tft_linear.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_ap3p_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_ap3p_gpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_lambdatwist_gpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_tft_linear_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_common.cpp">
-      <Filter>Source Files\batch_solve</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc0_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc2_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\batch_solve_gpm_hpc1_cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rnp_r6p1l.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\benchmark.bak">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\iterative.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\python_bindings.bak">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_1lin.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_2lin.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r6p_iter.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r7pf.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\r7pfr.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\rnp.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\utils.cpp">
+      <Filter>Libraries\rnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_nm5.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rnp_r6p2i.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\algebra.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\py_export.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_tft_linear.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_tft.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_p4p_lambdatwist.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_p4p_ap3p.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_p4p.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_gpu_solver_p4p.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\lock.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\voldor\voldor_bin.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

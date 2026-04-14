@@ -1,24 +1,44 @@
 
 #pragma once
-#include "utils.h"
+#include "voldor_utils.h"
 
 struct Config 
 {
-	//vector<string> flow_names;
+	// solver selection
 	int multiview_mode = 2; // 2: binocular, 3: trifocal
-	int solver_select = 4;
-	int disparities_enable = 1;
-	int trifocal_enable_flow_2 = 0;
-	int root_refine_interations = 2;
+	int solver_select = 3;
+
+	// batch solve
+	int batch_workers = 12;
+	bool batch_unique = true;
+
+	// disparities
+	bool disparities_enable = true;
+	bool disparities_use_0 = true;
+	
+	// rolling shutter
+	int rs_direction = 0;
+	float rs_r0 = 0;
+	int rs_iterations = 5;
+
+	// trifocal
+	float tf_threshold = 0;
+	bool tf_enable_next_pool = true;
+	bool tf_enable_flow_2 = true;
+	bool tf_use_flow_2 = false;
+	float tf_squared_error_threshold = 100000;
+	
+	
+
+
+
+
+
+
+	// OLD
 
 	int cpu_p3p = false; //do p3p on cpu (deprecated)
 	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
-
-	int trifocal_index_0 = 0;
-	int trifocal_index_1 = 0;
-	int trifocal_index_2 = 0;
-	float trifocal_squared_error_min_thresh = 0;//0.01f;
-	float trifocal_squared_error_max_thresh = 2.0f;
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
@@ -96,7 +116,7 @@ struct Config
 	int kitti_ground_holo_width = 5;
 	float kitti_ground_roi = 0.4f;
 	float kitti_ground_meanshift_kernel_var = 0.01f;
-
+	/*
 	template <typename T>
 	static void str_to_arg(std::string str, T& arg) {
 		switch (*(typeid(arg).name()))
@@ -107,6 +127,32 @@ struct Config
 		case 'd': arg = stod(str); break;
 		}
 	}
+	*/
+	template <typename T>
+	static void str_to_arg(std::string str, T& arg)
+	{
+		std::cout << "Config unsupported parameter type." << std::endl;
+		exit(1);
+	}
+
+	template <>
+	static void str_to_arg(std::string str, int& arg)
+	{
+		arg = stoi(str);
+	}
+
+	template <>
+	static void str_to_arg(std::string str, float& arg)
+	{
+		arg = stof(str);
+	}
+
+	template <>
+	static void str_to_arg(std::string str, double& arg)
+	{
+		arg = stod(str);
+	}
+
 
 	template <typename T>
 	static T safe_arr_access(std::vector<T> arr, size_t i) 
@@ -125,6 +171,25 @@ struct Config
 
 			else if (cfg_strs[i] == "--multiview_mode")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->multiview_mode);
+			else if (cfg_strs[i] == "--solver_select")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->solver_select);
+
+			else if (cfg_strs[i] == "--batch_workers")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->batch_workers);
+
+
+			else if (cfg_strs[i] == "--rs_direction")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_direction);
+			else if (cfg_strs[i] == "--rs_r0")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_r0);
+			//else if (cfg_strs[i] == "--rs_max_pow")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_pow);
+			else if (cfg_strs[i] == "--rs_iterations")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_iterations);
+
+
+
+			// OLD ------------------------------------------------------------
 
 			else if (cfg_strs[i] == "--basefocal")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->basefocal);
