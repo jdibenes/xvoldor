@@ -1,6 +1,5 @@
 
 #include "geometry.h"
-#include "solvers.h"
 #include "batch_solver.h"
 #include "helpers_opencv.h"
 
