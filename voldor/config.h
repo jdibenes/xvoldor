@@ -12,7 +12,7 @@ struct Config
 	int root_refine_interations = 2;
 	int batch_workers = 12;
 
-	bool sample_unique = true;
+	bool sample_unique = false;
 
 	// rolling shutter
 	int rs_direction = 0;
@@ -24,7 +24,7 @@ struct Config
 	bool tf_enable_next_pool = true;
 	int tf_enable_flow_2 = 1;
 	int tf_index_2 = 0;
-	float tf_squared_error_max_thresh = 100;
+	float tf_squared_error_max_thresh = 100000;
 	
 	
 
