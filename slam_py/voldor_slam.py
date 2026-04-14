@@ -482,11 +482,14 @@ class VOLDOR_SLAM:
                     depth_prior_poses.append(T44_to_T6(np.linalg.inv(self.Twc_cur @ self.frames[fid].Tcw)))
             
             if not self.flow_loader_sync(min(self.fid_cur+self.voldor_winsize-1, self.N_FRAMES-2)):
+                print('MISSING FLOW 1')
                 raise 'Flow loader not working or files are missing.'
-            if not self.flow_2_loader_sync(min(self.fid_cur+self.voldor_winsize-1, self.N_FRAMES-2)):
+            if not self.flow_2_loader_sync(min(self.fid_cur+self.voldor_winsize-1, self.N_FRAMES-3)):
+                print('MISSING FLOW 2')
                 raise 'Flow 2 loader not working or files are missing.'
             if self.mode=='stereo':
                 if not self.disp_loader_sync(self.fid_cur):
+                    print('MISSING DISP')
                     raise 'Disparity loader not working or files are missing.'
             py_voldor_kwargs = {
                 'flows'   : np.stack(self.flows[  self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0),
