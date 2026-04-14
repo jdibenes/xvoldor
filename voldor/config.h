@@ -4,16 +4,18 @@
 
 struct Config 
 {
-	//vector<string> flow_names;
+	// solver selection
 	int multiview_mode = 3; // 2: binocular, 3: trifocal
 	int solver_select = 24;
-	int enable_disparities = 1;
-	
-	int root_refine_interations = 2;
+
+	// batch solve
 	int batch_workers = 12;
+	bool batch_unique = true;
 
-	bool sample_unique = false;
-
+	// disparities
+	bool disparities_enable = true;
+	bool disparities_use_0 = true;
+	
 	// rolling shutter
 	int rs_direction = 0;
 	float rs_r0 = 0;
@@ -22,9 +24,9 @@ struct Config
 	// trifocal
 	float tf_threshold = 0;
 	bool tf_enable_next_pool = true;
-	int tf_enable_flow_2 = 1;
-	int tf_index_2 = 0;
-	float tf_squared_error_max_thresh = 100000;
+	bool tf_enable_flow_2 = true;
+	bool tf_use_flow_2 = false;
+	float tf_squared_error_threshold = 100000;
 	
 	
 
