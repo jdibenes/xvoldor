@@ -29,9 +29,11 @@ collect_point_correspondences
 	std::vector<float>& tf_squared_error
 )
 {
-	int const w = flows_1[0].cols;
-	int const h = flows_1[0].rows;
-
+	bool tf_enable = cfg.multiview_mode == 3;
+	int w = flows_1[0].cols;
+	int h = flows_1[0].rows;
+	int pixels = w * h;
+	
 	std::unique_ptr<float const* []> h_flows_1;
 	std::unique_ptr<float const* []> h_flows_2;
 	std::unique_ptr<float const* []> h_disparities;
@@ -69,16 +71,16 @@ collect_point_correspondences
 		h_ts[i] = (float*)cams[i].t.data;
 	}
 
-	bool tf_enable = cfg.multiview_mode == 3;
+	
 
-	p2k_2.resize(w * h);
-	p3d_1.resize(w * h);
+	p2k_2.resize(pixels);
+	p3d_1.resize(pixels);
 
-	p2z_1.resize(w * h);
-	p2z_2.resize(w * h);
-	p2z_3.resize(w * h);
+	p2z_1.resize(pixels);
+	p2z_2.resize(pixels);
+	p2z_3.resize(pixels);
 
-	tf_squared_error.resize(w * h);
+	tf_squared_error.resize(pixels);
 
 	if (update_batch_instance) {
 		collect_p3p_instances
@@ -188,7 +190,7 @@ collect_point_correspondences
 	int bf_count = 0;
 	int tf_count = 0;
 
-	for (int i = 0; i < (w * h); ++i)
+	for (int i = 0; i < pixels; ++i)
 	{
 		if (is_valid_point(p3d_1[i]) && is_valid_point(p2k_2[i]))
 		{
@@ -373,7 +375,7 @@ optimize_camera_pose
 
 	collect_point_correspondences(flows_1, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_index, update_batch_instance, update_loop_instance, options, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
 
-	if (!options.silent) { std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
+	if (!options.silent) { std::cout << "sampling collection time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
 
 	//----------------------------------------------------------------------------
 
