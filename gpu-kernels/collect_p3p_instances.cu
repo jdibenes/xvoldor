@@ -76,7 +76,7 @@ __global__ static void compute_rigidnesses_sum()
 	for (int i = 0; i < _N; i++) { _d_rigidnesses_sum.at(x, y) += _d_rigidnesses.at(x, y, i); }
 }
 
-__global__ static void compute_p3p_map(int active_index, float rigidness_threshold, float rigidness_sum_threshold, float sample_min_depth, float sample_max_depth, int max_trace_on_flow, bool enable_disparities, bool trifocal_enable, bool trifocal_enable_flow_2, int trifocal_index_2, float trifocal_squared_error_threshold)
+__global__ static void compute_p3p_map(int active_index, float rigidness_threshold, float rigidness_sum_threshold, float sample_min_depth, float sample_max_depth, int max_trace_on_flow, bool disparities_enable, bool disparities_use_0, bool trifocal_enable, bool trifocal_enable_flow_2, bool tf_use_flow_2, float trifocal_squared_error_threshold)
 {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -151,8 +151,8 @@ __global__ static void compute_p3p_map(int active_index, float rigidness_thresho
 	if ((wx <= 0) || (wx >= _w) || (wy <= 0) || (wy >= _h)) { return; }
 	if ((px <= 0) || (px >= _w) || (py <= 0) || (py >= _h)) { return; }
 
-	_d_trifocal_0_map.at(x, y) = make_float3(wx, wy, enable_disparities ? _d_disparities.at_tex(wx, wy, active_index + 0) : 0.0f);//oz);
-	_d_trifocal_1_map.at(x, y) = make_float3(px, py, enable_disparities ? _d_disparities.at_tex(px, py, active_index + 1) : 0.0f);
+	_d_trifocal_0_map.at(x, y) = make_float3(wx, wy, (disparities_enable && disparities_use_0) ? _d_disparities.at_tex(wx, wy, active_index + 0) : oz);
+	_d_trifocal_1_map.at(x, y) = make_float3(px, py, disparities_enable ? _d_disparities.at_tex(px, py, active_index + 1) : 0.0f);
 
 	if (!trifocal_enable) { return; }
 
@@ -167,12 +167,7 @@ __global__ static void compute_p3p_map(int active_index, float rigidness_thresho
 	float2 d22 = _d_flows_2.at_tex(wx, wy, active_index + 0);
 	float2 p2b = make_float2(wx + d22.x, wy + d22.y);
 
-	switch (trifocal_index_2)
-	{
-	case 0:  p2 = p2a; break;
-	case 1:  p2 = p2b; break;
-	default: return;
-	}
+	p2 = tf_use_flow_2 ? p2b : p2a;
 
 	float dx = p2a.x - p2b.x;
 	float dy = p2a.y - p2b.y;
@@ -191,7 +186,7 @@ __global__ static void compute_p3p_map(int active_index, float rigidness_thresho
 
 	if ((qx <= 0) || (qx >= _w) || (qy <= 0) || (qy >= _h)) { return; }
 
-	_d_trifocal_2_map.at(x, y) = make_float3(qx, qy, enable_disparities ? _d_disparities.at_tex(qx, qy, active_index + 2) : 0.0f);
+	_d_trifocal_2_map.at(x, y) = make_float3(qx, qy, disparities_enable ? _d_disparities.at_tex(qx, qy, active_index + 2) : 0.0f);
 
 	_d_trifocal_squared_error.at(x, y) = squared_error;
 }
@@ -223,7 +218,8 @@ collect_p3p_instances
 	float* h_o_trifocal_2_map,
 	float const* h_disparities[],
 	float* h_o_trifocal_squared_error,
-	int enable_disparities,
+	int disparities_enable,
+	int disparities_use_0,
 	int trifocal_enable,
 	int trifocal_enable_flow_2,
 	int trifocal_index_2,
@@ -357,7 +353,7 @@ collect_p3p_instances
 	if (d_trifocal_squared_error.create(w, h, 1)) { cudaMemcpyToSymbol(_d_trifocal_squared_error, &d_trifocal_squared_error, sizeof(d_trifocal_squared_error)); }
 	gpuErrchk;
 
-	compute_p3p_map << <grid_size, block_size >> > (active_index, rigidness_threshold, rigidness_sum_threshold, sample_min_depth, sample_max_depth, max_trace_on_flow, enable_disparities, trifocal_enable, trifocal_enable_flow_2, trifocal_index_2, trifocal_squared_error_threshold);
+	compute_p3p_map << <grid_size, block_size >> > (active_index, rigidness_threshold, rigidness_sum_threshold, sample_min_depth, sample_max_depth, max_trace_on_flow, disparities_enable, disparities_use_0, trifocal_enable, trifocal_enable_flow_2, trifocal_index_2, trifocal_squared_error_threshold);
 	gpuErrchk;
 
 	if (h_o_p2_map) { d_p2_map.copy_to_host((float2*)h_o_p2_map, make_cudaPos(0, 0, 0), w, h, 1); }
