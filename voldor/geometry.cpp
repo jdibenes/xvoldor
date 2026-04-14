@@ -69,7 +69,7 @@ collect_point_correspondences
 		h_ts[i] = (float*)cams[i].t.data;
 	}
 
-	bool trifocal_enable = cfg.multiview_mode == 3;
+	bool tf_enable = cfg.multiview_mode == 3;
 
 	p2k_2.resize(w * h);
 	p3d_1.resize(w * h);
@@ -106,11 +106,12 @@ collect_point_correspondences
 			(float*)p2z_3.data(),
 			h_disparities.get(),
 			tf_squared_error.data(),
-			cfg.enable_disparities,
-			trifocal_enable,
+			cfg.disparities_enable,
+			cfg.disparities_use_0,
+			tf_enable,
 			cfg.tf_enable_flow_2,
-			cfg.tf_index_2,
-			cfg.tf_squared_error_max_thresh
+			cfg.tf_use_flow_2,
+			cfg.tf_squared_error_threshold
 		);
 	}
 	else if (update_iter_instance) {
@@ -139,11 +140,12 @@ collect_point_correspondences
 			(float*)p2z_3.data(),
 			NULL,
 			tf_squared_error.data(),
-			cfg.enable_disparities,
-			trifocal_enable,
+			cfg.disparities_enable,
+			cfg.disparities_use_0,
+			tf_enable,
 			cfg.tf_enable_flow_2,
-			cfg.tf_index_2,
-			cfg.tf_squared_error_max_thresh
+			cfg.tf_use_flow_2,
+			cfg.tf_squared_error_threshold
 		);
 	}
 	else {
@@ -172,11 +174,12 @@ collect_point_correspondences
 			(float*)p2z_3.data(),
 			NULL,
 			tf_squared_error.data(),
-			cfg.enable_disparities,
-			trifocal_enable,
+			cfg.disparities_enable,
+			cfg.disparities_use_0,
+			tf_enable,
 			cfg.tf_enable_flow_2,
-			cfg.tf_index_2,
-			cfg.tf_squared_error_max_thresh
+			cfg.tf_use_flow_2,
+			cfg.tf_squared_error_threshold
 		);
 	}
 
@@ -195,7 +198,7 @@ collect_point_correspondences
 			bf_count++;
 		}
 
-		if (is_valid_point(p2z_1[i]) && is_valid_point(p2z_2[i]) && (!trifocal_enable || is_valid_point(p2z_3[i])))
+		if (is_valid_point(p2z_1[i]) && is_valid_point(p2z_2[i]) && (!tf_enable || is_valid_point(p2z_3[i])))
 		{
 			p2z_1[tf_count] = p2z_1[i];
 			p2z_2[tf_count] = p2z_2[i];
@@ -295,28 +298,28 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	switch (options.solver_select)
 	{
 	// p4p
-	case  0: poses_pool_used = batch_cpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case  1: poses_pool_used = batch_cpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case  0: poses_pool_used = batch_cpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case  1: poses_pool_used = batch_cpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
 	case  2: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data); break;
 	case  3: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data); break;
 
 	// gpm
-	case  8: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case  9: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 1, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case 10: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 2, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case 11: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 3, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case 12: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 4, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case 13: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 5, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case 14: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 6, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
-	case 15: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 7, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.sample_unique); break;
+	case  8: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case  9: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 1, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case 10: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 2, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case 11: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 3, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case 12: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 4, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case 13: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 5, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case 14: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 6, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
+	case 15: poses_pool_used = batch_cpu_solver_gpm(p2z_1_data, p2z_2_data, tf_count, K, 7, options.n_poses_to_sample, poses_pool_data, options.batch_workers, options.batch_unique); break;
 
 	// rnp
-	case 16: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
-	case 17: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
-	case 18: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2k_2_data, bf_count, K, 2, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.sample_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
+	case 16: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.batch_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
+	case 17: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.batch_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
+	case 18: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2k_2_data, bf_count, K, 2, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.batch_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
 
 	// tft
-	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.sample_unique, options.tf_threshold); break;
+	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold); break;
 
 	// default: gpu p4p lambdatwist
 	default: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data); break;
