@@ -27,7 +27,7 @@ nvcc_machine_code = '' #'-m64 -arch=compute_61 -code=sm_61'
 gpu_sources_cpp = ' '.join(glob('../../gpu-kernels/*.cpp'))
 gpu_sources_cu = ' '.join(glob('../../gpu-kernels/*.cu'))
 
-gpu_kernel_build_cmd = f'nvcc {gpu_sources_cpp} {gpu_sources_cu} -I {opencv_include_dir} -L {opencv_lib_dir} -l {opencv_lib_name} \
+gpu_kernel_build_cmd = f'nvcc {gpu_sources_cpp} {gpu_sources_cu} -I {opencv_include_dir} -I ../../thirdparty -L {opencv_lib_dir} -l {opencv_lib_name} \
                         -shared -o ./gpu-kernels.dll -O3 -cudart static {nvcc_machine_code} -Xcompiler /wd4819'
 os.system(gpu_kernel_build_cmd)
 
