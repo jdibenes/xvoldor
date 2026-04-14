@@ -8,7 +8,7 @@
 
 static
 void
-collect_p3p_correspondences
+collect_point_correspondences
 (
 	std::vector<cv::Mat> const& flows_1,
 	std::vector<cv::Mat> const& flows_2,
@@ -40,9 +40,6 @@ collect_p3p_correspondences
 	std::unique_ptr<float const* []> h_Rs;
 	std::unique_ptr<float const* []> h_ts;
 
-	
-
-
 	if (flows_1.size() > 0)
 	{		
 		h_flows_1 = std::make_unique<float const* []>(flows_1.size());
@@ -71,6 +68,8 @@ collect_p3p_correspondences
 		h_Rs[i] = (float*)cams[i].R.data;
 		h_ts[i] = (float*)cams[i].t.data;
 	}
+
+	bool trifocal_enable = cfg.multiview_mode == 3;
 
 	p2k_2.resize(w * h);
 	p3d_1.resize(w * h);
@@ -108,12 +107,9 @@ collect_p3p_correspondences
 			h_disparities.get(),
 			tf_squared_error.data(),
 			cfg.enable_disparities,
-			cfg.multiview_mode == 3,
-			cfg.tf_index_0,
-			cfg.tf_index_1,
-			cfg.tf_index_2,
+			trifocal_enable,
 			cfg.tf_enable_flow_2,
-			cfg.tf_squared_error_min_thresh,
+			cfg.tf_index_2,
 			cfg.tf_squared_error_max_thresh
 		);
 	}
@@ -144,12 +140,9 @@ collect_p3p_correspondences
 			NULL,
 			tf_squared_error.data(),
 			cfg.enable_disparities,
-			cfg.multiview_mode == 3,
-			cfg.tf_index_0,
-			cfg.tf_index_1,
-			cfg.tf_index_2,
+			trifocal_enable,
 			cfg.tf_enable_flow_2,
-			cfg.tf_squared_error_min_thresh,
+			cfg.tf_index_2,
 			cfg.tf_squared_error_max_thresh
 		);
 	}
@@ -180,12 +173,9 @@ collect_p3p_correspondences
 			NULL,
 			tf_squared_error.data(),
 			cfg.enable_disparities,
-			cfg.multiview_mode == 3,
-			cfg.tf_index_0,
-			cfg.tf_index_1,
-			cfg.tf_index_2,
+			trifocal_enable,
 			cfg.tf_enable_flow_2,
-			cfg.tf_squared_error_min_thresh,
+			cfg.tf_index_2,
 			cfg.tf_squared_error_max_thresh
 		);
 	}
@@ -205,7 +195,7 @@ collect_p3p_correspondences
 			bf_count++;
 		}
 
-		if (is_valid_point(p2z_1[i]) && is_valid_point(p2z_2[i]) && is_valid_point(p2z_3[i]))
+		if (is_valid_point(p2z_1[i]) && is_valid_point(p2z_2[i]) && (!trifocal_enable || is_valid_point(p2z_3[i])))
 		{
 			p2z_1[tf_count] = p2z_1[i];
 			p2z_2[tf_count] = p2z_2[i];
@@ -350,6 +340,7 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 
 
 
+
 int 
 optimize_camera_pose
 (
@@ -358,18 +349,10 @@ optimize_camera_pose
 	std::vector<cv::Mat> const& disparities,
 	std::vector<cv::Mat> const& rigidnesses,
 	cv::Mat const& depth,
-	std::vector<Camera>& cams, // MODIFIED
-	int n_flows,
-	int active_idx,
-	bool successive_pose,
-	bool rg_refine,
-	bool update_batch_instance, // !cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0)
-	bool update_iter_instance, // i == 0 : true for first flow
-	Config const& cfg,
-	cv::Mat& next_pool,
-	int& next_pool_used
-) 
+	std::vector<Camera>& cams, int n_flows, int active_index, bool successive_pose, bool rg_refine, bool update_batch_instance, bool update_loop_instance, Config const& options, cv::Mat& next_pool, int& next_pool_used) 
 {
+	// update_batch_instance: !cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0)
+// update_iter_instance:  i == 0 : true for first flow
 
 	int const w = flows_1[0].cols;
 	int const h = flows_1[0].rows;
@@ -385,9 +368,9 @@ optimize_camera_pose
 	std::vector<cv::Point3f> p2z_3;
 	std::vector<float> trifocal_squared_error;
 
-	collect_p3p_correspondences(flows_1, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_idx, update_batch_instance, update_iter_instance, cfg, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
+	collect_point_correspondences(flows_1, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_index, update_batch_instance, update_loop_instance, options, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
 
-	if (!cfg.silent) { std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
+	if (!options.silent) { std::cout << "sampling collection time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
 
 	//----------------------------------------------------------------------------
 
@@ -397,10 +380,14 @@ optimize_camera_pose
 	cv::Mat velocities_pool;
 	cv::Mat focals_pool;
 
-	int poses_pool_used = solve_pose_pool(cams[active_idx].K, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, cfg, poses_pool, velocities_pool, focals_pool, next_pool, next_pool_used);
+	int poses_pool_used = solve_pose_pool(cams[active_index].K, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, options, poses_pool, velocities_pool, focals_pool, next_pool, next_pool_used);
 	if (poses_pool_used <= 0) { return 0; }
 
-	if (!cfg.silent) { std::cout << "solver computing time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
+	poses_pool = poses_pool.rowRange(0, poses_pool_used);
+	if (velocities_pool.total() > 0) { velocities_pool = velocities_pool.rowRange(0, poses_pool_used); }
+	if (focals_pool.total() > 0) { focals_pool = focals_pool.rowRange(0, poses_pool_used); }
+
+	if (!options.silent) { std::cout << "solver computing time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
 
 	//----------------------------------------------------------------------------
 
@@ -408,28 +395,22 @@ optimize_camera_pose
 
 
 
-	cams[active_idx].pose_sample_count = poses_pool_used;
+	cams[active_index].pose_sample_count = poses_pool_used;
 
-	poses_pool = poses_pool.rowRange(0, poses_pool_used);
-	
 	cv::Mat pose_opm(1, 6, CV_32F);
-	Rodrigues(cams[active_idx].R, pose_opm.at<cv::Vec3f>(0));
-	pose_opm.at<cv::Vec3f>(1) = cams[active_idx].t.at<cv::Vec3f>(0);
+	Rodrigues(cams[active_index].R, pose_opm.at<cv::Vec3f>(0));
+	pose_opm.at<cv::Vec3f>(1) = cams[active_index].t.at<cv::Vec3f>(0);
 
 	if (velocities_pool.total() > 0)
 	{
-		velocities_pool = velocities_pool.rowRange(0, poses_pool_used);
-
 		cv::Mat velocity_opm(1, 6, CV_32F);
-		velocity_opm.at<cv::Vec3f>(0) = cams[active_idx].dr.at<cv::Vec3f>(0);
-		velocity_opm.at<cv::Vec3f>(1) = cams[active_idx].dt.at<cv::Vec3f>(1);
+		velocity_opm.at<cv::Vec3f>(0) = cams[active_index].dr.at<cv::Vec3f>(0);
+		velocity_opm.at<cv::Vec3f>(1) = cams[active_index].dt.at<cv::Vec3f>(1);
 	}
 
 	if (focals_pool.total() > 0)
 	{
-		focals_pool = focals_pool.rowRange(0, poses_pool_used);
-
-		float focal_opm = cams[active_idx].focal;
+		float focal_opm = cams[active_index].focal;
 	}
 
 	//----------------------------------------------------------------------------
@@ -450,28 +431,28 @@ optimize_camera_pose
 	time_stamp = std::chrono::high_resolution_clock::now();
 
 	///*
-	poses_pool.colRange(0, 3) *= cfg.meanshift_rvec_scale; // depends on translation scale?
-	pose_opm.colRange(0, 3) *= cfg.meanshift_rvec_scale;
+	poses_pool.colRange(0, 3) *= options.meanshift_rvec_scale; // depends on translation scale?
+	pose_opm.colRange(0, 3) *= options.meanshift_rvec_scale;
 	meanshift_gpu
 	(
 		(float*)poses_pool.data,
-		cfg.meanshift_kernel_var,
+		options.meanshift_kernel_var,
 		(float*)pose_opm.data,
-		&cams[active_idx].pose_density,
-		&cams[active_idx].last_used_ms_iters,
+		&cams[active_index].pose_density,
+		&cams[active_index].last_used_ms_iters,
 		successive_pose,
 		poses_pool_used,
 		6,
-		cfg.meanshift_epsilon,
-		cfg.meanshift_max_iters,
-		cfg.meanshift_max_init_trials,
-		cfg.meanshift_good_init_confidence
+		options.meanshift_epsilon,
+		options.meanshift_max_iters,
+		options.meanshift_max_init_trials,
+		options.meanshift_good_init_confidence
 	);
 	//*/
 
 
 
-	if (!cfg.silent)
+	if (!options.silent)
 	{
 		std::cout << "meanshift time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 	}
@@ -482,13 +463,13 @@ optimize_camera_pose
 	if (rg_refine) {
 		time_stamp = std::chrono::high_resolution_clock::now();
 
-		cams[active_idx].pose_covar = 0;
+		cams[active_index].pose_covar = 0;
 		for (int d = 0; d < 6; d++)
-			cams[active_idx].pose_covar.at<float>(d, d) = cfg.meanshift_kernel_var;
+			cams[active_index].pose_covar.at<float>(d, d) = options.meanshift_kernel_var;
 
-		cams[active_idx].pose_covar *= (cfg.rg_pose_scaling* cfg.rg_pose_scaling);
-		pose_opm *= cfg.rg_pose_scaling;
-		poses_pool *= cfg.rg_pose_scaling;
+		cams[active_index].pose_covar *= (options.rg_pose_scaling* options.rg_pose_scaling);
+		pose_opm *= options.rg_pose_scaling;
+		poses_pool *= options.rg_pose_scaling;
 
 		/*
 		int rvec_zero_count = 0;
@@ -499,35 +480,35 @@ optimize_camera_pose
 		*/
 
 
-		int fit_rg_ret = fit_robust_gaussian((float*)poses_pool.data, (float*)pose_opm.data, (float*)cams[active_idx].pose_covar.data,
-			cfg.rg_trunc_sigma, cfg.rg_covar_reg_lambda, &cams[active_idx].pose_density, &cams[active_idx].last_used_gu_iters, poses_pool_used, 6, cfg.rg_epsilon, cfg.rg_max_iters);
+		int fit_rg_ret = fit_robust_gaussian((float*)poses_pool.data, (float*)pose_opm.data, (float*)cams[active_index].pose_covar.data,
+			options.rg_trunc_sigma, options.rg_covar_reg_lambda, &cams[active_index].pose_density, &cams[active_index].last_used_gu_iters, poses_pool_used, 6, options.rg_epsilon, options.rg_max_iters);
 
 		if (fit_rg_ret == 0) { // cudaSuccess==0 
-			cams[active_idx].pose_covar /= (cfg.rg_pose_scaling*cfg.rg_pose_scaling);
+			cams[active_index].pose_covar /= (options.rg_pose_scaling*options.rg_pose_scaling);
 			for (int i1 = 0; i1 < 6; i1++) {
 				for (int i2 = 0; i2 < 6; i2++) {
 					if (i1 < 3 || i2 < 3)
-						cams[active_idx].pose_covar.at<float>(i1, i2) /= cfg.meanshift_rvec_scale;
+						cams[active_index].pose_covar.at<float>(i1, i2) /= options.meanshift_rvec_scale;
 					if (i1 < 3 && i2 < 3)
-						cams[active_idx].pose_covar.at<float>(i1, i2) /= cfg.meanshift_rvec_scale;
+						cams[active_index].pose_covar.at<float>(i1, i2) /= options.meanshift_rvec_scale;
 				}
 			}
 
 		}
 		else {
-			cams[active_idx].pose_covar = 0;
+			cams[active_index].pose_covar = 0;
 		}
 
-		pose_opm /= cfg.rg_pose_scaling;
+		pose_opm /= options.rg_pose_scaling;
 		//poses_pool /= cfg.rg_pose_scaling; // this is not used later, no need scale back
 
 
-		if (!cfg.silent)
+		if (!options.silent)
 			std::cout << "gu fit time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 	}
 
 
-	pose_opm.colRange(0, 3) /= cfg.meanshift_rvec_scale;
+	pose_opm.colRange(0, 3) /= options.meanshift_rvec_scale;
 	//poses_pool.colRange(0, 3) /= cfg.meanshift_rvec_scale; // this is not used later, no need scale back
 
 
@@ -537,8 +518,8 @@ optimize_camera_pose
 
 	if (cv::checkRange(pose_opm)) { //check if gpu gives nan...
 		// copy back pose
-		Rodrigues(pose_opm.at<cv::Vec3f>(0), cams[active_idx].R);
-		cams[active_idx].t.at<cv::Vec3f>(0) = pose_opm.at<cv::Vec3f>(1);
+		Rodrigues(pose_opm.at<cv::Vec3f>(0), cams[active_index].R);
+		cams[active_index].t.at<cv::Vec3f>(0) = pose_opm.at<cv::Vec3f>(1);
 		return 1;
 	}
 	else
