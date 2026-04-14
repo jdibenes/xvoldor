@@ -151,7 +151,7 @@ __global__ static void compute_p3p_map(int active_index, float rigidness_thresho
 	if ((wx <= 0) || (wx >= _w) || (wy <= 0) || (wy >= _h)) { return; }
 	if ((px <= 0) || (px >= _w) || (py <= 0) || (py >= _h)) { return; }
 
-	_d_trifocal_0_map.at(x, y) = make_float3(wx, wy, oz);
+	_d_trifocal_0_map.at(x, y) = make_float3(wx, wy, enable_disparities ? _d_disparities.at_tex(wx, wy, active_index + 0) : 0.0f);//oz);
 	_d_trifocal_1_map.at(x, y) = make_float3(px, py, enable_disparities ? _d_disparities.at_tex(px, py, active_index + 1) : 0.0f);
 
 	if (!trifocal_enable) { return; }
