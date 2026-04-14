@@ -71,7 +71,11 @@ collect_point_correspondences
 		h_ts[i] = (float*)cameras[i].t.data;
 	}
 
-	
+	float const* h_depth = (float*)depth.data;
+	float const* h_K = (float*)cameras[active_index].K.data;
+
+
+
 
 	p2k_2.resize(pixels);
 	p3d_1.resize(pixels);
@@ -82,112 +86,15 @@ collect_point_correspondences
 
 	tf_squared_error.resize(pixels);
 
-	if (update_batch_instance) {
-		collect_p3p_instances
-		(
-			h_flows_1.get(),
-			h_rigidnesses.get(),
-			(float*)depth.data,
-			(float*)cameras[active_index].K.data,
-			h_Rs.get(),
-			h_ts.get(),
-			(float*)p2k_2.data(),
-			(float*)p3d_1.data(),
-			batch_flows,
-			w,
-			h,
-			active_index,
-			options.rigidness_threshold,
-			options.rigidness_sum_threshold,
-			options.pose_sample_min_depth,
-			options.pose_sample_max_depth,
-			options.max_trace_on_flow,
-			h_flows_2.get(),
-			(float*)p2z_1.data(),
-			(float*)p2z_2.data(),
-			(float*)p2z_3.data(),
-			h_disparities.get(),
-			tf_squared_error.data(),
-			options.disparities_enable,
-			options.disparities_use_0,
-			tf_enable,
-			options.tf_enable_flow_2,
-			options.tf_use_flow_2,
-			options.tf_squared_error_threshold
-		);
-	}
-	else if (update_loop_instance) {
-		collect_p3p_instances
-		(
-			NULL,
-			h_rigidnesses.get(),
-			(float*)depth.data,
-			NULL,
-			h_Rs.get(),
-			h_ts.get(),
-			(float*)p2k_2.data(),
-			(float*)p3d_1.data(),
-			batch_flows,
-			w,
-			h,
-			active_index,
-			options.rigidness_threshold,
-			options.rigidness_sum_threshold,
-			options.pose_sample_min_depth,
-			options.pose_sample_max_depth,
-			options.max_trace_on_flow,
-			NULL,
-			(float*)p2z_1.data(),
-			(float*)p2z_2.data(),
-			(float*)p2z_3.data(),
-			NULL,
-			tf_squared_error.data(),
-			options.disparities_enable,
-			options.disparities_use_0,
-			tf_enable,
-			options.tf_enable_flow_2,
-			options.tf_use_flow_2,
-			options.tf_squared_error_threshold
-		);
-	}
-	else {
-		collect_p3p_instances
-		(
-			NULL,
-			NULL,
-			NULL,
-			NULL,
-			h_Rs.get(),
-			h_ts.get(),
-			(float*)p2k_2.data(),
-			(float*)p3d_1.data(),
-			batch_flows,
-			w,
-			h,
-			active_index,
-			options.rigidness_threshold,
-			options.rigidness_sum_threshold,
-			options.pose_sample_min_depth,
-			options.pose_sample_max_depth,
-			options.max_trace_on_flow,
-			NULL,
-			(float*)p2z_1.data(),
-			(float*)p2z_2.data(),
-			(float*)p2z_3.data(),
-			NULL,
-			tf_squared_error.data(),
-			options.disparities_enable,
-			options.disparities_use_0,
-			tf_enable,
-			options.tf_enable_flow_2,
-			options.tf_use_flow_2,
-			options.tf_squared_error_threshold
-		);
-	}
+	float* h_p3d_1 = reinterpret_cast<float*>(p3d_1.data());
+	float* h_p2k_2 = reinterpret_cast<float*>(p2k_2.data());
+	float* h_p2z_1 = reinterpret_cast<float*>(p2z_1.data());
+	float* h_p2z_2 = reinterpret_cast<float*>(p2z_2.data());
+	float* h_p2z_3 = reinterpret_cast<float*>(p2z_3.data());
 
-	//
-
-
+	if      (update_batch_instance) { collect_p3p_instances(h_flows_1.get(), h_flows_2.get(), h_disparities.get(), h_rigidnesses.get(), h_depth, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, tf_squared_error.data()); }
+	else if (update_loop_instance)  { collect_p3p_instances(nullptr,         nullptr,         nullptr,             h_rigidnesses.get(), h_depth, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, tf_squared_error.data()); }
+	else                            { collect_p3p_instances(nullptr,         nullptr,         nullptr,             nullptr,             nullptr, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, tf_squared_error.data()); }
 
 	int bf_count = 0;
 	int tf_count = 0;

@@ -26,13 +26,15 @@ int
 collect_p3p_instances
 (
 	float const* h_flows_1[],
+	float const* h_flows_2[],
+	float const* h_disparities[],
+
 	float const* h_rigidnesses[],
 	float const* h_depth,
 	float const* h_K,
 	float const* h_Rs[],
 	float const* h_ts[],
-	float* h_o_p2_map,
-	float* h_o_p3_map,
+
 	int N, // n_flows
 	int w,
 	int h,
@@ -42,19 +44,20 @@ collect_p3p_instances
 	float sample_min_depth,
 	float sample_max_depth,
 	int max_trace_on_flow,
-
-	float const* h_flows_2[],
-	float* h_o_trifocal_0_map,
-	float* h_o_trifocal_1_map,
-	float* h_o_trifocal_2_map,
-	float const* h_disparities[],
-	float* h_o_trifocal_squared_error,
 	int disparities_enable,
 	int disparities_use_0,
 	int trifocal_enable,
 	int trifocal_enable_flow_2,
 	int trifocal_index_2,
-	float trifocal_squared_error_threshold
+	float trifocal_squared_error_threshold,
+
+	float* h_o_p3_map,
+	float* h_o_p2_map,	
+	float* h_o_trifocal_0_map,
+	float* h_o_trifocal_1_map,
+	float* h_o_trifocal_2_map,
+	float* h_o_trifocal_squared_error
+
 );
 
 DLL_EXPORT int solve_batch_p3p_ap3p_gpu(float const* h_p3s, float const* h_p2s,
