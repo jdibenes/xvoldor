@@ -6,80 +6,54 @@
 
 #include "../gpu-kernels/gpu_kernels.h"
 
-static
-void
-collect_point_correspondences
-(
-	std::vector<cv::Mat> const& flows_1,
-	std::vector<cv::Mat> const& flows_2,
-	std::vector<cv::Mat> const& disparities,
-	std::vector<cv::Mat> const& rigidnesses,
-	cv::Mat const& depth,
-	std::vector<Camera> const& cameras,
-	int batch_flows,
-	int active_index,
-	bool update_batch_instance,
-	bool update_loop_instance,
-	Config const& options,
-	std::vector<cv::Point3f>& p3d_1,
-	std::vector<cv::Point2f>& p2k_2,	
-	std::vector<cv::Point3f>& p2z_1,
-	std::vector<cv::Point3f>& p2z_2,
-	std::vector<cv::Point3f>& p2z_3,
-	std::vector<float>& tf_squared_error
-)
+// OK
+static void collect_point_correspondences(std::vector<cv::Mat> const& flows_1, std::vector<cv::Mat> const& flows_2, std::vector<cv::Mat> const& disparities, std::vector<cv::Mat> const& rigidnesses, cv::Mat const& depth, std::vector<Camera> const& cameras, int batch_flows, int active_index, bool update_batch_instance, bool update_loop_instance, Config const& options, std::vector<cv::Point3f>& p3d_1, std::vector<cv::Point2f>& p2k_2, std::vector<cv::Point3f>& p2z_1, std::vector<cv::Point3f>& p2z_2, std::vector<cv::Point3f>& p2z_3, std::vector<float>& tf_squared_error)
 {
 	bool tf_enable = options.multiview_mode == 3;
+
 	int w = flows_1[0].cols;
 	int h = flows_1[0].rows;
+	
 	int pixels = w * h;
 	
 	std::unique_ptr<float const* []> h_flows_1;
 	std::unique_ptr<float const* []> h_flows_2;
 	std::unique_ptr<float const* []> h_disparities;
 
-	std::unique_ptr<float const* []> h_rigidnesses;
-	std::unique_ptr<float const* []> h_Rs;
-	std::unique_ptr<float const* []> h_ts;
-
 	if (flows_1.size() > 0)
 	{		
 		h_flows_1 = std::make_unique<float const* []>(flows_1.size());
-		for (int i = 0; i < flows_1.size(); ++i) { h_flows_1[i] = (float*)flows_1[i].data; }
+		for (int i = 0; i < flows_1.size(); ++i) { h_flows_1[i] = reinterpret_cast<float*>(flows_1[i].data); }
 	}
 
 	if (flows_2.size() > 0)
 	{		
 		h_flows_2 = std::make_unique<float const* []>(flows_2.size());
-		for (int i = 0; i < flows_2.size(); ++i) { h_flows_2[i] = (float*)flows_2[i].data; }
+		for (int i = 0; i < flows_2.size(); ++i) { h_flows_2[i] = reinterpret_cast<float*>(flows_2[i].data); }
 	}
 
 	if (disparities.size() > 0)
 	{		
 		h_disparities = std::make_unique<float const* []>(disparities.size());
-		for (int i = 0; i < disparities.size(); ++i) { h_disparities[i] = (float*)disparities[i].data; }
+		for (int i = 0; i < disparities.size(); ++i) { h_disparities[i] = reinterpret_cast<float*>(disparities[i].data); }
 	}
 
-	h_rigidnesses = std::make_unique<float const* []>(batch_flows);
-	h_Rs = std::make_unique<float const* []>(batch_flows);
-	h_ts = std::make_unique<float const* []>(batch_flows);
+	std::unique_ptr<float const* []> h_rigidnesses = std::make_unique<float const* []>(batch_flows);
+	std::unique_ptr<float const* []> h_Rs = std::make_unique<float const* []>(batch_flows);
+	std::unique_ptr<float const* []> h_ts = std::make_unique<float const* []>(batch_flows);
 
 	for (int i = 0; i < batch_flows; ++i)
 	{ 
-		h_rigidnesses[i] = (float*)rigidnesses[i].data;
-		h_Rs[i] = (float*)cameras[i].R.data;
-		h_ts[i] = (float*)cameras[i].t.data;
+		h_rigidnesses[i] = reinterpret_cast<float*>(rigidnesses[i].data);
+		h_Rs[i] = reinterpret_cast<float*>(cameras[i].R.data);
+		h_ts[i] = reinterpret_cast<float*>(cameras[i].t.data);
 	}
 
-	float const* h_depth = (float*)depth.data;
-	float const* h_K = (float*)cameras[active_index].K.data;
+	float const* h_depth = reinterpret_cast<float*>(depth.data);
+	float const* h_K = reinterpret_cast<float*>(cameras[active_index].K.data);
 
-
-
-
-	p2k_2.resize(pixels);
 	p3d_1.resize(pixels);
-
+	p2k_2.resize(pixels);
 	p2z_1.resize(pixels);
 	p2z_2.resize(pixels);
 	p2z_3.resize(pixels);
@@ -92,9 +66,11 @@ collect_point_correspondences
 	float* h_p2z_2 = reinterpret_cast<float*>(p2z_2.data());
 	float* h_p2z_3 = reinterpret_cast<float*>(p2z_3.data());
 
-	if      (update_batch_instance) { collect_p3p_instances(h_flows_1.get(), h_flows_2.get(), h_disparities.get(), h_rigidnesses.get(), h_depth, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, tf_squared_error.data()); }
-	else if (update_loop_instance)  { collect_p3p_instances(nullptr,         nullptr,         nullptr,             h_rigidnesses.get(), h_depth, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, tf_squared_error.data()); }
-	else                            { collect_p3p_instances(nullptr,         nullptr,         nullptr,             nullptr,             nullptr, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, tf_squared_error.data()); }
+	float* h_tf_squared_error = tf_squared_error.data();
+
+	if      (update_batch_instance) { collect_p3p_instances(h_flows_1.get(), h_flows_2.get(), h_disparities.get(), h_rigidnesses.get(), h_depth, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, h_tf_squared_error); }
+	else if (update_loop_instance)  { collect_p3p_instances(nullptr,         nullptr,         nullptr,             h_rigidnesses.get(), h_depth, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, h_tf_squared_error); }
+	else                            { collect_p3p_instances(nullptr,         nullptr,         nullptr,             nullptr,             nullptr, h_K, h_Rs.get(), h_ts.get(), batch_flows, w, h, active_index, options.rigidness_threshold, options.rigidness_sum_threshold, options.pose_sample_min_depth, options.pose_sample_max_depth, options.max_trace_on_flow, options.disparities_enable, options.disparities_use_0, tf_enable, options.tf_enable_flow_2, options.tf_use_flow_2, options.tf_squared_error_threshold, h_p3d_1, h_p2k_2, h_p2z_1, h_p2z_2, h_p2z_3, h_tf_squared_error); }
 
 	int bf_count = 0;
 	int tf_count = 0;
@@ -248,26 +224,8 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	return next_pool_pushed + poses_pool_used;
 }
 
-
-
-
-
-
-
-
-int 
-optimize_camera_pose
-(
-	std::vector<cv::Mat> const& flows_1,
-	std::vector<cv::Mat> const& flows_2,
-	std::vector<cv::Mat> const& disparities,
-	std::vector<cv::Mat> const& rigidnesses,
-	cv::Mat const& depth,
-	std::vector<Camera>& cams, int n_flows, int active_index, bool successive_pose, bool rg_refine, bool update_batch_instance, bool update_loop_instance, Config const& options, cv::Mat& next_pool, int& next_pool_used) 
+int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Mat> const& flows_2, std::vector<cv::Mat> const& disparities, std::vector<cv::Mat> const& rigidnesses, cv::Mat const& depth, std::vector<Camera>& cameras, int batch_flows, int active_index, bool successive_pose, bool rg_refine, bool update_batch_instance, bool update_loop_instance, Config const& options, cv::Mat& next_pool, int& next_pool_used)
 {
-	// update_batch_instance: !cfg.exclusive_gpu_context || (iters_cur == 1 && i == 0)
-// update_iter_instance:  i == 0 : true for first flow
-
 	int const w = flows_1[0].cols;
 	int const h = flows_1[0].rows;
 
@@ -282,7 +240,7 @@ optimize_camera_pose
 	std::vector<cv::Point3f> p2z_3;
 	std::vector<float> trifocal_squared_error;
 
-	collect_point_correspondences(flows_1, flows_2, disparities, rigidnesses, depth, cams, n_flows, active_index, update_batch_instance, update_loop_instance, options, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
+	collect_point_correspondences(flows_1, flows_2, disparities, rigidnesses, depth, cameras, batch_flows, active_index, update_batch_instance, update_loop_instance, options, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, trifocal_squared_error);
 
 	if (!options.silent) { std::cout << "sampling collection time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;	}
 
@@ -294,7 +252,7 @@ optimize_camera_pose
 	cv::Mat velocities_pool;
 	cv::Mat focals_pool;
 
-	int poses_pool_used = solve_pose_pool(cams[active_index].K, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, options, poses_pool, velocities_pool, focals_pool, next_pool, next_pool_used);
+	int poses_pool_used = solve_pose_pool(cameras[active_index].K, p3d_1, p2d_2, p2z_1, p2z_2, p2z_3, options, poses_pool, velocities_pool, focals_pool, next_pool, next_pool_used);
 	if (poses_pool_used <= 0) { return 0; }
 
 	poses_pool = poses_pool.rowRange(0, poses_pool_used);
@@ -309,22 +267,22 @@ optimize_camera_pose
 
 
 
-	cams[active_index].pose_sample_count = poses_pool_used;
+	cameras[active_index].pose_sample_count = poses_pool_used;
 
 	cv::Mat pose_opm(1, 6, CV_32F);
-	Rodrigues(cams[active_index].R, pose_opm.at<cv::Vec3f>(0));
-	pose_opm.at<cv::Vec3f>(1) = cams[active_index].t.at<cv::Vec3f>(0);
+	Rodrigues(cameras[active_index].R, pose_opm.at<cv::Vec3f>(0));
+	pose_opm.at<cv::Vec3f>(1) = cameras[active_index].t.at<cv::Vec3f>(0);
 
 	if (velocities_pool.total() > 0)
 	{
 		cv::Mat velocity_opm(1, 6, CV_32F);
-		velocity_opm.at<cv::Vec3f>(0) = cams[active_index].dr.at<cv::Vec3f>(0);
-		velocity_opm.at<cv::Vec3f>(1) = cams[active_index].dt.at<cv::Vec3f>(1);
+		velocity_opm.at<cv::Vec3f>(0) = cameras[active_index].dr.at<cv::Vec3f>(0);
+		velocity_opm.at<cv::Vec3f>(1) = cameras[active_index].dt.at<cv::Vec3f>(1);
 	}
 
 	if (focals_pool.total() > 0)
 	{
-		float focal_opm = cams[active_index].focal;
+		float focal_opm = cameras[active_index].focal;
 	}
 
 	//----------------------------------------------------------------------------
@@ -352,8 +310,8 @@ optimize_camera_pose
 		(float*)poses_pool.data,
 		options.meanshift_kernel_var,
 		(float*)pose_opm.data,
-		&cams[active_index].pose_density,
-		&cams[active_index].last_used_ms_iters,
+		&cameras[active_index].pose_density,
+		&cameras[active_index].last_used_ms_iters,
 		successive_pose,
 		poses_pool_used,
 		6,
@@ -377,11 +335,11 @@ optimize_camera_pose
 	if (rg_refine) {
 		time_stamp = std::chrono::high_resolution_clock::now();
 
-		cams[active_index].pose_covar = 0;
+		cameras[active_index].pose_covar = 0;
 		for (int d = 0; d < 6; d++)
-			cams[active_index].pose_covar.at<float>(d, d) = options.meanshift_kernel_var;
+			cameras[active_index].pose_covar.at<float>(d, d) = options.meanshift_kernel_var;
 
-		cams[active_index].pose_covar *= (options.rg_pose_scaling* options.rg_pose_scaling);
+		cameras[active_index].pose_covar *= (options.rg_pose_scaling* options.rg_pose_scaling);
 		pose_opm *= options.rg_pose_scaling;
 		poses_pool *= options.rg_pose_scaling;
 
@@ -394,23 +352,23 @@ optimize_camera_pose
 		*/
 
 
-		int fit_rg_ret = fit_robust_gaussian((float*)poses_pool.data, (float*)pose_opm.data, (float*)cams[active_index].pose_covar.data,
-			options.rg_trunc_sigma, options.rg_covar_reg_lambda, &cams[active_index].pose_density, &cams[active_index].last_used_gu_iters, poses_pool_used, 6, options.rg_epsilon, options.rg_max_iters);
+		int fit_rg_ret = fit_robust_gaussian((float*)poses_pool.data, (float*)pose_opm.data, (float*)cameras[active_index].pose_covar.data,
+			options.rg_trunc_sigma, options.rg_covar_reg_lambda, &cameras[active_index].pose_density, &cameras[active_index].last_used_gu_iters, poses_pool_used, 6, options.rg_epsilon, options.rg_max_iters);
 
 		if (fit_rg_ret == 0) { // cudaSuccess==0 
-			cams[active_index].pose_covar /= (options.rg_pose_scaling*options.rg_pose_scaling);
+			cameras[active_index].pose_covar /= (options.rg_pose_scaling*options.rg_pose_scaling);
 			for (int i1 = 0; i1 < 6; i1++) {
 				for (int i2 = 0; i2 < 6; i2++) {
 					if (i1 < 3 || i2 < 3)
-						cams[active_index].pose_covar.at<float>(i1, i2) /= options.meanshift_rvec_scale;
+						cameras[active_index].pose_covar.at<float>(i1, i2) /= options.meanshift_rvec_scale;
 					if (i1 < 3 && i2 < 3)
-						cams[active_index].pose_covar.at<float>(i1, i2) /= options.meanshift_rvec_scale;
+						cameras[active_index].pose_covar.at<float>(i1, i2) /= options.meanshift_rvec_scale;
 				}
 			}
 
 		}
 		else {
-			cams[active_index].pose_covar = 0;
+			cameras[active_index].pose_covar = 0;
 		}
 
 		pose_opm /= options.rg_pose_scaling;
@@ -432,14 +390,15 @@ optimize_camera_pose
 
 	if (cv::checkRange(pose_opm)) { //check if gpu gives nan...
 		// copy back pose
-		Rodrigues(pose_opm.at<cv::Vec3f>(0), cams[active_index].R);
-		cams[active_index].t.at<cv::Vec3f>(0) = pose_opm.at<cv::Vec3f>(1);
+		Rodrigues(pose_opm.at<cv::Vec3f>(0), cameras[active_index].R);
+		cameras[active_index].t.at<cv::Vec3f>(0) = pose_opm.at<cv::Vec3f>(1);
 		return 1;
 	}
 	else
 		return 0;
 
 }
+
 
 void
 estimate_depth_closed_form
