@@ -32,7 +32,7 @@ int batch_finalize(std::vector<job_result> const& jr, void* output, int solution
 int const* get_sample_indices(job_descriptor const& jd, int index);
 
 bool is_valid_solution_6(float const* r, float const* t);
-bool is_valid_solution_7(float const* r, float const* t, float f);
+bool is_valid_solution_f(float f);
 
 void put_solution_6(job_descriptor& jd, float* base, float const* r, float const* t);
-void put_solution_7(job_descriptor& jd, float* base, float const* r, float const* t, float f);
+void put_solution_f(job_descriptor& jd, float* base, float f);

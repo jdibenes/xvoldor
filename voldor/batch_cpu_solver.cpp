@@ -89,13 +89,9 @@ bool is_valid_solution_6(float const* r, float const* t)
     return std::isfinite(x_sum);
 }
 
-bool is_valid_solution_7(float const* r, float const* t, float f)
+bool is_valid_solution_f(float f)
 {
-    float r_sum = r[0] + r[1] + r[2];
-    float t_sum = t[0] + t[1] + t[2];
-    float x_sum = r_sum + t_sum + f;
-
-    return std::isfinite(x_sum) && (f > 0);
+    return std::isfinite(f) && (f > 0);
 }
 
 void put_solution_6(job_descriptor& jd, float* base, float const* r, float const* t)
@@ -110,15 +106,9 @@ void put_solution_6(job_descriptor& jd, float* base, float const* r, float const
     out[5] = t[2];
 }
 
-void put_solution_7(job_descriptor& jd, float* base, float const* r, float const* t, float f)
+void put_solution_f(job_descriptor& jd, float* base, float f)
 {
-    float* out = &base[7 * (jd.start + jd.valid)];
+    float* out = &base[1 * (jd.start + jd.valid)];
 
-    out[0] = r[0];
-    out[1] = r[1];
-    out[2] = r[2];
-    out[3] = t[0];
-    out[4] = t[1];
-    out[5] = t[2];
-    out[6] = f;
+    out[0] = f;
 }
