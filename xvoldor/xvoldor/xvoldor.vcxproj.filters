@@ -311,8 +311,11 @@
     <ClCompile Include="..\..\thirdparty\PoseLib\misc\camera_models.cc">
       <Filter>Libraries\PoseLib\misc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_p4pf.cpp">
+    <ClCompile Include="..\..\voldor\solver_ppf_p4pf.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_ppf.cpp">
+      <Filter>Source Files\batch_solve</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

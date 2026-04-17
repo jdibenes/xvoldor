@@ -79,6 +79,7 @@
     <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\utils.cpp" />
     <ClCompile Include="..\..\voldor\algebra.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_ppf.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_tft.cpp" />
@@ -89,7 +90,7 @@
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\lock.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\main_solver_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -101,7 +102,7 @@
     <ClCompile Include="..\..\voldor\solver_gpm_nm5.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp" />
-    <ClCompile Include="..\..\voldor\solver_p4pf.cpp" />
+    <ClCompile Include="..\..\voldor\solver_ppf_p4pf.cpp" />
     <ClCompile Include="..\..\voldor\solver_p4p_ap3p.cpp" />
     <ClCompile Include="..\..\voldor\solver_p4p_lambdatwist.cpp" />
     <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp" />
