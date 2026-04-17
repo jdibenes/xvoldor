@@ -1,5 +1,5 @@
 
-//#define ENABLE_SOLVER_TEST
+#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -97,6 +97,7 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 1> t2;
     Eigen::Matrix<float, 3, 1> dr;
     Eigen::Matrix<float, 3, 1> dt;
+    float focal = -1;
     bool ok;
 
     //ok = solver_gpm_hpc0(p11.data(), p21.data(), r.data(), t.data()); // OK*
@@ -110,8 +111,9 @@ int main(int argc, char* argv[])
     //ok = solver_r6p2i(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data(), 5); // OK*
     //ok = solver_r6p2l(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data()); // OK*
     //ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data()); // OK*
-    ok = solver_tft_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data(), 0); // OK*
+    //ok = solver_tft_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data(), 0); // OK*
     //ok = solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
+    ok = solver_p4pf(p11.data(), x21.data(), 0, 0, r.data(), t.data(), &focal);
 
     std::cout << "GT" << std::endl;
 
@@ -123,6 +125,7 @@ int main(int argc, char* argv[])
     std::cout << t << std::endl;
     std::cout << Eigen::AngleAxis<float>(r2.norm(), r2.normalized()).toRotationMatrix() << std::endl;
     std::cout << t2 << std::endl;
+    std::cout << "focal " << focal << std::endl;
     std::cout << "Error 01" << std::endl;
     std::cout << compute_error(vector_r_rodrigues(R_gt), t_gt, r, t) << std::endl;
     std::cout << "Error 12" << std::endl;
