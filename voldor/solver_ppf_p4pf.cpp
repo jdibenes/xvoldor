@@ -3,7 +3,7 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-bool solver_p4pf(float* p3d_1, float* p2d_2, float cx, float cy, float* r_12, float* t_12, float* focal)
+bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12, float* t_12, float* focal)
 {
 	std::vector<Eigen::Matrix<double, 3, 1>> P1;
 	std::vector<Eigen::Matrix<double, 2, 1>> P2;
@@ -13,7 +13,7 @@ bool solver_p4pf(float* p3d_1, float* p2d_2, float cx, float cy, float* r_12, fl
 	for (int i = 0; i < 5; ++i)
 	{
 	P1.push_back(matrix_from_buffer<double, 3, 1>(p3d_1 + (i * 3)));
-	P2.push_back(matrix_from_buffer<double, 2, 1>(p2d_2 + (i * 2)) - pp);
+	P2.push_back(matrix_from_buffer<double, 2, 1>(p2k_2 + (i * 2)) - pp);
 	}
 
 	poselib::CameraPoseVector solutions;
@@ -45,7 +45,7 @@ bool solver_p4pf(float* p3d_1, float* p2d_2, float cx, float cy, float* r_12, fl
 
 	Eigen::Matrix<double, 3, 1> r = vector_r_rodrigues(Rd);
 	Eigen::Matrix<double, 3, 1> t = td;
-	float f = fd;
+	float f = static_cast<float>(fd);
 
 	matrix_to_buffer(r, r_12);
 	matrix_to_buffer(t, t_12);
