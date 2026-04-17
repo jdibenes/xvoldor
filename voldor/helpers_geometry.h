@@ -272,6 +272,13 @@ bool is_valid_pose(Eigen::MatrixBase<A> const& r, Eigen::MatrixBase<B> const& t)
 }
 
 // OK
+template <typename A>
+bool is_valid_focal(A f)
+{
+    return std::isfinite(f) && (f > 0);
+}
+
+// OK
 // p2d_1:  2xN
 // p2d_2:  2xN
 // p2d_3:  2xN
