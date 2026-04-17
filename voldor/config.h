@@ -6,7 +6,7 @@ struct Config
 {
 	// solver selection
 	int multiview_mode = 2; // 2: binocular, 3: trifocal
-	int solver_select = 3;
+	int solver_select = 32;
 
 	// batch solve
 	int batch_workers = 12;
