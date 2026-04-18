@@ -50,13 +50,25 @@
       <UniqueIdentifier>{8ac624ac-b811-4c21-8b1d-52b79d68755b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Libraries\PoseLib">
-      <UniqueIdentifier>{6c7867be-6fff-4b0a-a712-2323f7583ad5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Libraries\PoseLib\solvers">
-      <UniqueIdentifier>{0b54e200-9e03-4127-b971-e64b246c34ef}</UniqueIdentifier>
+      <UniqueIdentifier>{ddc936c5-cc99-4627-8eb4-c038595d390e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Libraries\PoseLib\misc">
-      <UniqueIdentifier>{13f70e69-537a-4f63-88df-b052900cb081}</UniqueIdentifier>
+      <UniqueIdentifier>{1ff0117f-e652-49b0-8052-81bbc10ddbaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\PoseLib\robust">
+      <UniqueIdentifier>{20933409-cde1-4e4a-a824-cf8d0bf80c49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\PoseLib\solvers">
+      <UniqueIdentifier>{697c748c-f2f1-4134-9f15-a5188a9e4c40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\PoseLib\robust\estimators">
+      <UniqueIdentifier>{3d0e8814-995f-4531-ba1f-095fdda37e7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\PoseLib\robust\hybrid_estimators">
+      <UniqueIdentifier>{251748d0-f641-4ca3-a898-c744a10ae060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\PoseLib\robust\optim">
+      <UniqueIdentifier>{3bbbe61c-1908-40fe-85f4-802774ce4b6e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -150,8 +162,32 @@
     <ClInclude Include="..\..\voldor\batch_solver.h">
       <Filter>Header Files\batch_solve</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p4pf.h">
-      <Filter>Libraries\PoseLib\solvers</Filter>
+    <ClInclude Include="..\..\thirdparty\PoseLib\alignment.h">
+      <Filter>Libraries\PoseLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\camera_pose.h">
+      <Filter>Libraries\PoseLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust.h">
+      <Filter>Libraries\PoseLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\types.h">
+      <Filter>Libraries\PoseLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\misc\camera_models.h">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\misc\constants.h">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\misc\decompositions.h">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\misc\essential.h">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\misc\qep.h">
+      <Filter>Libraries\PoseLib\misc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\thirdparty\PoseLib\misc\quaternion.h">
       <Filter>Libraries\PoseLib\misc</Filter>
@@ -162,20 +198,215 @@
     <ClInclude Include="..\..\thirdparty\PoseLib\misc\sturm.h">
       <Filter>Libraries\PoseLib\misc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\thirdparty\PoseLib\camera_pose.h">
-      <Filter>Libraries\PoseLib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\thirdparty\PoseLib\alignment.h">
-      <Filter>Libraries\PoseLib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\thirdparty\PoseLib\misc\camera_models.h">
+    <ClInclude Include="..\..\thirdparty\PoseLib\misc\univariate.h">
       <Filter>Libraries\PoseLib\misc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\thirdparty\PoseLib\misc\constants.h">
-      <Filter>Libraries\PoseLib\misc</Filter>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\bundle.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\thirdparty\PoseLib\types.h">
-      <Filter>Libraries\PoseLib</Filter>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\hybrid_ransac.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\hybrid_ransac_impl.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\ransac.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\ransac_impl.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\recalibrator.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\robust_loss.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\sampling.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\utils.h">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_5p1pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_6pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_upright_4pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\gp3p.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\gp4ps.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\homography_4pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p1p2ll.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p1p3llf.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p2p1ll.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p2p2llf.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p2p2pl.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p3ll.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p3p.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p3p_common.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p3p_lambdatwist.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p3p1llf.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p4llf.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p4pf.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p5lp_radial.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p5pf.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p5pfr.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p6lp.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\p35pf.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\pnplf_impl.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_5pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_6pt_focal.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_7pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_8pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_k2Fk1_10pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_kFk_9pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_monodepth_3pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_monodepth_3pt_shared_focal.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_monodepth_3pt_varying_focal.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_3pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_2pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_3pt.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\ugp2p.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\ugp3ps.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\ugp4pl.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\up1p1ll.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\up1p2pl.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\up2p.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\solvers\up4pl.h">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\estimators\absolute_pose.h">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\estimators\homography.h">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\estimators\hybrid_pose.h">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\estimators\relative_pose.h">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\hybrid_estimators\hybrid_point_line_absolute_pose.h">
+      <Filter>Libraries\PoseLib\robust\hybrid_estimators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\absolute.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\fundamental.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\generalized_absolute.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\generalized_relative.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\homography.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\hybrid.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\jacobian_accumulator.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\lm_impl.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\monodepth_relpose.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\optim_utils.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\refiner_base.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\relative.h">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -248,7 +479,7 @@
     <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp">
       <Filter>Libraries\rnp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\thirdparty\rnp\utils.cpp">
+    <ClCompile Include="..\..\thirdparty\rnp\rnp_utils.cpp">
       <Filter>Libraries\rnp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp">
@@ -302,20 +533,194 @@
     <ClCompile Include="..\..\voldor\lock.cpp">
       <Filter>Source Files\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p4pf.cc">
-      <Filter>Libraries\PoseLib\solvers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\thirdparty\PoseLib\misc\re3q3.cc">
-      <Filter>Libraries\PoseLib\misc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\thirdparty\PoseLib\misc\camera_models.cc">
-      <Filter>Libraries\PoseLib\misc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_ppf_p4pf.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\batch_cpu_solver_ppf.cpp">
       <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust.cc">
+      <Filter>Libraries\PoseLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\camera_models.cc">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\decompositions.cc">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\essential.cc">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\qep.cc">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\re3q3.cc">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\misc\univariate.cc">
+      <Filter>Libraries\PoseLib\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\bundle.cc">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\hybrid_ransac.cc">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\ransac.cc">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\recalibrator.cc">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\robust_loss.cc">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\sampling.cc">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\poselib_utils.cc">
+      <Filter>Libraries\PoseLib\robust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_5p1pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_6pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gen_relpose_upright_4pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gp3p.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\gp4ps.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\homography_4pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p1p2ll.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p1p3llf.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p2p1ll.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p2p2llf.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p2p2pl.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3ll.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3p.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3p_lambdatwist.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p3p1llf.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p4llf.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p4pf.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p5lp_radial.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p5pf.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p5pfr.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p6lp.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\p35pf.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_5pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_6pt_focal.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_7pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_8pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_k2Fk1_10pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_kFk_9pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_monodepth_3pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_monodepth_3pt_shared_focal.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_monodepth_3pt_varying_focal.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_3pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_2pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\relpose_upright_planar_3pt.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp2p.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp3ps.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\ugp4pl.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up1p1ll.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up1p2pl.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up2p.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up4pl.cc">
+      <Filter>Libraries\PoseLib\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\absolute_pose.cc">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\homography.cc">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\hybrid_pose.cc">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\estimators\relative_pose.cc">
+      <Filter>Libraries\PoseLib\robust\estimators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\hybrid_estimators\hybrid_point_line_absolute_pose.cc">
+      <Filter>Libraries\PoseLib\robust\hybrid_estimators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\PoseLib\robust\optim\lm_impl.cc">
+      <Filter>Libraries\PoseLib\robust\optim</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
