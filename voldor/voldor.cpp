@@ -31,6 +31,8 @@ VOLDOR::init
 	//	std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
 	//	throw;
 	//}
+	
+	// TODO: auto cfg.basefocal
 
 	if (cfg.resize_factor != 1)
 	{
