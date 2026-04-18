@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
 	//
 	char const* cfg = 
-		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 5 "
+		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 6 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 ";
 
 	char const* const path_flow = "";
