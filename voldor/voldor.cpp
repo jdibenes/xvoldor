@@ -138,6 +138,10 @@ VOLDOR::init
 	for (int i = 0; i < n_flows; i++)
 		rigidnesses.push_back(cv::Mat::ones(cv::Size(w, h), CV_32F));
 
+	// TODO: SET OPTION
+	estimate_camera_focal(flows_1[0], cfg.fx, cfg.fy, cfg.cx, cfg.cy, 4);
+	std::cout << "fx: " << cfg.fx << " fy: " << cfg.fy << std::endl;
+
 	// init cams
 	cv::Mat K = (cv::Mat_<float>(3, 3) <<
 		cfg.fx, 0, cfg.cx,
