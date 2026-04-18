@@ -28,7 +28,7 @@ static void batch_cpu_solver_ppf(job_descriptor& jd)
 
 	float r[3];
 	float t[3];
-	float f;
+	float f[2];
 
 	for (int i = jd.start; i < jd.end; ++i)
 	{
@@ -46,8 +46,8 @@ static void batch_cpu_solver_ppf(job_descriptor& jd)
 
 	switch (ji->solver)
 	{
-	case 0:  ok = solver_ppf_p4pf(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2k_2), ji->cx, ji->cy, r, t, &f); break;
-	default: ok = false;                                                                                                       break;
+	case 0:  ok = solver_ppf_p4pf(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2k_2), ji->cx, ji->cy, r, t, f); break;
+	default: ok = false;                                                                                                      break;
 	}
 
 	if (!ok) { continue; }
@@ -84,6 +84,6 @@ int batch_cpu_solver_ppf(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int
 	if (point_count < sample_size) { return 0; }
 
 	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_ppf, &ji, point_count, sample_size, unique, &jo);
-	if (focals) { batch_finalize(jr, focals, 1); }
+	if (focals) { batch_finalize(jr, focals, 2); }
 	return batch_finalize(jr, poses, 6);
 }

@@ -151,7 +151,7 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 
 	if (set_focals_pool) 
 	{
-		focals_pool = cv::Mat(options.n_poses_to_sample, 1, CV_32F);
+		focals_pool = cv::Mat(options.n_poses_to_sample, 2, CV_32F);
 		focals_pool_data = reinterpret_cast<float*>(focals_pool.data);
 	}
 	else

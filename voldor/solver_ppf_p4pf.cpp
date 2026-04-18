@@ -3,7 +3,7 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12, float* t_12, float* focal)
+bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12, float* t_12, float* f_xy)
 {
 	std::vector<Eigen::Matrix<double, 3, 1>> P1;
 	std::vector<Eigen::Matrix<double, 2, 1>> P2;
@@ -17,24 +17,25 @@ bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12
 	}
 
 	poselib::CameraPoseVector solutions;
-	std::vector<double> focals;
+	std::vector<double> fxs;
+	std::vector<double> fys;
 
-	int count = poselib::p4pf(P2, P1, &solutions, &focals);
+	int count = poselib::p4pf(P2, P1, &solutions, &fxs, &fys, true);
 	if (count <= 0) { return false; }
 
 	double max_error = std::numeric_limits<double>::infinity();
 
 	Eigen::Matrix<double, 3, 3> Rd;
 	Eigen::Matrix<double, 3, 1> td;
-	double fd;
+	Eigen::Matrix<double, 2, 1> fd;
 
 	for (int i = 0; i < count; ++i)
 	{
 	Eigen::Matrix<double, 3, 3> Rv = solutions[i].R();
 	Eigen::Matrix<double, 3, 1> tv = solutions[i].t;
-	double fv = focals[i];
+	Eigen::Matrix<double, 2, 1> fv{ fxs[i], fys[i] };
 
-	double error = (P2[5] - (fv * ((Rv * P1[5]) + tv).colwise().hnormalized())).norm();
+	double error = (P2[5] - fv.cwiseProduct(((Rv * P1[5]) + tv).colwise().hnormalized())).norm();
 	if (error >= max_error) { continue; }
 	max_error = error;
 
@@ -45,11 +46,11 @@ bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12
 
 	Eigen::Matrix<double, 3, 1> r = vector_r_rodrigues(Rd);
 	Eigen::Matrix<double, 3, 1> t = td;
-	float f = static_cast<float>(fd);
+	Eigen::Matrix<double, 2, 1> f = fd;
 
 	matrix_to_buffer(r, r_12);
 	matrix_to_buffer(t, t_12);
-	focal[0] = f;
+	matrix_to_buffer(f, f_xy);
 
 	return is_valid_pose(r, t) && is_valid_focal(f);
 }

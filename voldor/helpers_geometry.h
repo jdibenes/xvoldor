@@ -273,9 +273,11 @@ bool is_valid_pose(Eigen::MatrixBase<A> const& r, Eigen::MatrixBase<B> const& t)
 
 // OK
 template <typename A>
-bool is_valid_focal(A f)
+bool is_valid_focal(Eigen::MatrixBase<A> const& f)
 {
-    return std::isfinite(f) && (f > 0);
+    typename A::Scalar f_sum = f(0) + f(1);
+
+    return std::isfinite(f_sum) && (f(0) > 0) && (f(1) > 0);
 }
 
 // OK
