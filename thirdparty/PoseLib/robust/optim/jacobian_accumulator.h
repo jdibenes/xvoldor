@@ -66,8 +66,10 @@ class NormalAccumulator {
         residual_acc += w * loss_fcn->loss(res * res);
         residual_count++;
     }
-    template <int ResidualDim>
-    inline void add_residual(const Eigen::Matrix<double, ResidualDim, 1> &res, const double w = 1.0) {
+    template <typename A>//template <int ResidualDim>
+    inline void add_residual(
+        const Eigen::MatrixBase<A> &res,//const Eigen::Matrix<double, ResidualDim, 1> &res,
+        const double w = 1.0) {
         const double r_squared = res.squaredNorm();
         residual_acc += w * loss_fcn->loss(r_squared);
         residual_count++;
@@ -79,9 +81,10 @@ class NormalAccumulator {
         JtJ.setZero();
         Jtr.setZero();
     }
-    template <int ResidualDim, int ParamsDim>
-    inline void add_jacobian(const Eigen::Matrix<double, ResidualDim, 1> &res,
-                             const Eigen::Matrix<double, ResidualDim, ParamsDim> &jac, const double w = 1.0) {
+    template <typename A, typename B>//template <int ResidualDim, int ParamsDim>
+    inline void add_jacobian(const Eigen::MatrixBase<A> &res, //const Eigen::Matrix<double, ResidualDim, 1> &res,
+                             const Eigen::MatrixBase<B> &jac, //const Eigen::Matrix<double, ResidualDim, ParamsDim> &jac,
+                             const double w = 1.0) {
         const double r_squared = res.squaredNorm();
         const double weight = w * loss_fcn->weight(r_squared);
         if (weight == 0) {
@@ -95,7 +98,7 @@ class NormalAccumulator {
         Jtr += jac.transpose() * (weight * res);
         residual_count++;
     }
-
+    /*
     template <int ResidualDim>
     inline void add_jacobian(const Eigen::Matrix<double, ResidualDim, 1> &res, const Eigen::MatrixXd &jac,
                              const double w = 1.0) {
@@ -112,11 +115,11 @@ class NormalAccumulator {
         Jtr += jac.transpose() * (weight * res);
         residual_count++;
     }
-
+    */
     // Residuals that are 1-dim
-    template <int ParamsDim, int StorageOrder, int MaxRows, int MaxCols>
+    template <typename A>//template <int ParamsDim, int StorageOrder, int MaxRows, int MaxCols>
     inline void add_jacobian(const double res,
-                             const Eigen::Matrix<double, 1, ParamsDim, StorageOrder, MaxRows, MaxCols> &jac,
+                             const Eigen::MatrixBase<A> &jac, //const Eigen::Matrix<double, 1, ParamsDim, StorageOrder, MaxRows, MaxCols> &jac,
                              const double w = 1.0) {
         const double r_squared = res * res;
         const double weight = w * loss_fcn->weight(r_squared);
