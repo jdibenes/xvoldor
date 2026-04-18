@@ -39,7 +39,7 @@ struct Camera
 
 	cv::Mat dr = cv::Mat::zeros(3, 1, CV_32F);
 	cv::Mat dt = cv::Mat::zeros(3, 1, CV_32F);
-	float focal = 1;
+	//float focal = 1;
 
 	
 

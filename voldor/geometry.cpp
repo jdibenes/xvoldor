@@ -267,43 +267,36 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 
 	//----------------------------------------------------------------------------
 
-
-
-
-
 	cameras[active_index].pose_sample_count = poses_pool_used;
 
 	cv::Mat pose_opm(1, 6, CV_32F);
+	cv::Mat velocity_opm(1, 6, CV_32F);
+	cv::Mat focal_opm(1, 2, CV_32F);
+
 	Rodrigues(cameras[active_index].R, pose_opm.at<cv::Vec3f>(0));
 	pose_opm.at<cv::Vec3f>(1) = cameras[active_index].t.at<cv::Vec3f>(0);
 
 	if (velocities_pool.total() > 0)
 	{
-		cv::Mat velocity_opm(1, 6, CV_32F);
 		velocity_opm.at<cv::Vec3f>(0) = cameras[active_index].dr.at<cv::Vec3f>(0);
 		velocity_opm.at<cv::Vec3f>(1) = cameras[active_index].dt.at<cv::Vec3f>(1);
 	}
 
 	if (focals_pool.total() > 0)
 	{
-		float focal_opm = cameras[active_index].focal;
+		focal_opm.at<float>(0) = cameras[active_index].K.at<float>(0, 0);
+		focal_opm.at<float>(1) = cameras[active_index].K.at<float>(1, 1);
 	}
 
 	//----------------------------------------------------------------------------
 	// scale and do meanshift
 
+
+
 	// pose: 6 | 3+3
 	// pose&velocity: 12 | 6+6 | 3+3+3+3
 	// pose&focal: 7 | 6+1 | 3+3+1
-
-
-
-
-
-
-
-
-	
+		
 	time_stamp = std::chrono::high_resolution_clock::now();
 
 	///*
@@ -325,6 +318,32 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		options.meanshift_good_init_confidence
 	);
 	//*/
+
+	if (focals_pool.total() > 0)
+	{
+		std::cout << "focal ms input: " << focal_opm << std::endl;
+		float focals_scale = (25.0f / std::sqrt(w*w + h*h));//610.0f);
+		focals_pool *= focals_scale;
+		focal_opm *= focals_scale;
+		meanshift_gpu
+		(
+			(float*)focals_pool.data,
+			options.meanshift_kernel_var,
+			(float*)focal_opm.data,
+			nullptr,
+			nullptr,
+			successive_pose,
+			poses_pool_used,
+			2,
+			options.meanshift_epsilon,
+			options.meanshift_max_iters,
+			options.meanshift_max_init_trials,
+			options.meanshift_good_init_confidence
+		);
+		focal_opm /= focals_scale;
+		std::cout << "focal ms output: " << focal_opm << std::endl;
+	}
+
 
 
 
@@ -396,6 +415,15 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		// copy back pose
 		Rodrigues(pose_opm.at<cv::Vec3f>(0), cameras[active_index].R);
 		cameras[active_index].t.at<cv::Vec3f>(0) = pose_opm.at<cv::Vec3f>(1);
+
+		if (focals_pool.total() > 0)
+		{
+			if (!cv::checkRange(focal_opm)) { return 0; }
+			cameras[active_index].K.at<float>(0, 0) = focal_opm.at<float>(0);
+			cameras[active_index].K.at<float>(1, 1) = focal_opm.at<float>(1);
+			cameras[active_index].K_inv = cameras[active_index].K.inv();
+		}
+
 		return 1;
 	}
 	else
