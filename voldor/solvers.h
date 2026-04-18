@@ -21,4 +21,4 @@ bool solver_tft_linear(float const* p3d_1, float const* p2d_2, float const* p2d_
 bool solver_p4p_lambdatwist(float const* p3d_1, float const* p2d_2, float* r_12, float* t_12);
 bool solver_p4p_ap3p(float const* p3d_1, float const* p2d_2, float* r_12, float* t_12);
 
-bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12, float* t_12, float* f_xy);
+bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, bool same, float cx, float cy, float* r_12, float* t_12, float* f_xy);

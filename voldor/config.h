@@ -14,7 +14,7 @@ struct Config
 
 	// disparities
 	bool disparities_enable = true;
-	bool disparities_use_0 = true;
+	bool disparities_use_0 = false;
 	
 	// rolling shutter
 	int rs_direction = 0;
@@ -27,7 +27,10 @@ struct Config
 	bool tf_enable_flow_2 = true;
 	bool tf_use_flow_2 = false;
 	float tf_squared_error_threshold = 100000;
-	
+
+	// focal estimation
+	bool square_pixels = true;
+	bool shared_focals = true;
 	
 
 

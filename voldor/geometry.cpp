@@ -210,7 +210,7 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold); break;
 
 	// p4pf
-	case 32: poses_pool_used = batch_cpu_solver_ppf(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, focals_pool_data, options.batch_workers, options.batch_unique); break;
+	case 32: poses_pool_used = batch_cpu_solver_ppf(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, focals_pool_data, options.batch_workers, options.batch_unique, options.square_pixels); break;
 
 	// default: gpu p4p lambdatwist
 	default: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data); break;
@@ -419,9 +419,14 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		if (focals_pool.total() > 0)
 		{
 			if (!cv::checkRange(focal_opm)) { return 0; }
-			cameras[active_index].K.at<float>(0, 0) = focal_opm.at<float>(0);
-			cameras[active_index].K.at<float>(1, 1) = focal_opm.at<float>(1);
-			cameras[active_index].K_inv = cameras[active_index].K.inv();
+
+			for (int index = options.shared_focals ? 0 : active_index; index <= active_index; ++index)
+			{
+				cameras[index].K.at<float>(0, 0) = focal_opm.at<float>(0);
+				cameras[index].K.at<float>(1, 1) = focal_opm.at<float>(1);
+				cameras[index].K_inv = cameras[index].K.inv();
+			}
+			
 		}
 
 		return 1;

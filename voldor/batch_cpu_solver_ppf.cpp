@@ -7,6 +7,7 @@ struct job_inputs
 {
 	cv::Point3f const* p3d_1;
 	cv::Point2f const* p2k_2;
+	bool same;
 	float cx;
 	float cy;
 	int solver;
@@ -46,8 +47,8 @@ static void batch_cpu_solver_ppf(job_descriptor& jd)
 
 	switch (ji->solver)
 	{
-	case 0:  ok = solver_ppf_p4pf(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2k_2), ji->cx, ji->cy, r, t, f); break;
-	default: ok = false;                                                                                                      break;
+	case 0:  ok = solver_ppf_p4pf(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2k_2), ji->same, ji->cx, ji->cy, r, t, f); break;
+	default: ok = false;                                                                                                                break;
 	}
 
 	if (!ok) { continue; }
@@ -59,13 +60,14 @@ static void batch_cpu_solver_ppf(job_descriptor& jd)
 	}
 }
 
-int batch_cpu_solver_ppf(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, float* focals, int workers, bool unique)
+int batch_cpu_solver_ppf(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, float* focals, int workers, bool unique, bool same)
 {
 	job_inputs ji;
 	job_output jo;
 
 	ji.p3d_1 = p3d_1;
 	ji.p2k_2 = p2k_2;
+	ji.same = same;
 	ji.cx = K.at<float>(0, 2);
 	ji.cy = K.at<float>(1, 2);
 	ji.solver = solver;

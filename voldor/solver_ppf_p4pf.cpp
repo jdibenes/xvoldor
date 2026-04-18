@@ -3,7 +3,7 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12, float* t_12, float* f_xy)
+bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, bool same, float cx, float cy, float* r_12, float* t_12, float* f_xy)
 {
 	std::vector<Eigen::Matrix<double, 3, 1>> P1;
 	std::vector<Eigen::Matrix<double, 2, 1>> P2;
@@ -19,8 +19,18 @@ bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, float cx, float cy, float* r_12
 	poselib::CameraPoseVector solutions;
 	std::vector<double> fxs;
 	std::vector<double> fys;
+	int count;
 
-	int count = poselib::p4pf(P2, P1, &solutions, &fxs, &fys, true);
+	if (same)
+	{
+		count = poselib::p4pf(P2, P1, &solutions, &fxs, true);
+		fys = fxs;
+	}
+	else
+	{
+		count = poselib::p4pf(P2, P1, &solutions, &fxs, &fys, true);
+	}
+
 	if (count <= 0) { return false; }
 
 	double max_error = std::numeric_limits<double>::infinity();
