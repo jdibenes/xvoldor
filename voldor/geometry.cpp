@@ -1,4 +1,5 @@
 
+#include <PoseLib/robust.h>
 #include "geometry.h"
 #include "batch_solver.h"
 #include "helpers_opencv.h"
@@ -485,6 +486,40 @@ estimate_camera_pose_epipolar
 
 }
 
+void estimate_camera_focal(
+	cv::Mat flow,
+	float& fx,
+	float& fy,
+	float cx,
+	float cy,
+	int sampling_2d_step)
+{
+	int w = flow.cols;
+	int h = flow.rows;
+
+	std::vector<poselib::Point2D> p2k_1;
+	std::vector<poselib::Point2D> p2k_2;
+
+	for (int y = 0; y < h; y += sampling_2d_step)
+	{
+		for (int x = 0; x < w; x += sampling_2d_step)
+		{
+			p2k_1.push_back({ x, y });
+			p2k_2.push_back({ x + flow.at<cv::Vec2f>(y, x)[0], y + flow.at<cv::Vec2f>(y, x)[1] });
+		}
+	}
+
+	poselib::Point2D pp{ cx, cy };
+
+	poselib::RelativePoseOptions rpo;
+	poselib::ImagePair ip;
+	std::vector<char> inliers;
+
+	poselib::RansacStats rs = poselib::estimate_shared_focal_relative_pose(p2k_1, p2k_2, pp, rpo, &ip, &inliers);
+
+	fx = ip.camera1.focal_x();
+	fy = ip.camera2.focal_y();
+}
 
 
 
