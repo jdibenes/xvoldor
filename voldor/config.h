@@ -29,6 +29,7 @@ struct Config
 	float tf_squared_error_threshold = 100000;
 
 	// focal estimation
+	bool estimate_intrinsics = true;
 	bool square_pixels = true;
 	bool shared_focals = true;
 	
@@ -40,8 +41,8 @@ struct Config
 
 	// OLD
 
-	int cpu_p3p = false; //do p3p on cpu (deprecated)
-	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
+	//int cpu_p3p = false; //do p3p on cpu (deprecated)
+	//int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
@@ -59,7 +60,7 @@ struct Config
 	float rg_epsilon = 1e-5f;
 
 	// input-params
-	float resize_factor = 1.0f; //(deprecated, now resize is done in slam logic)
+	//float resize_factor = 1.0f; //(deprecated, now resize is done in slam logic)
 	float abs_resize_factor = 1.0f; //resize factor related to the size that optical flow is estimated from. (useful to residual model)
 	float fx = 0.0f;
 	float fy = 0.0f;
@@ -218,8 +219,8 @@ struct Config
 			else if (cfg_strs[i] == "--rg_pose_scaling")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_pose_scaling);
 
-			else if (cfg_strs[i] == "--resize_factor")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->resize_factor);
+			//else if (cfg_strs[i] == "--resize_factor")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->resize_factor);
 			else if (cfg_strs[i] == "--abs_resize_factor")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->abs_resize_factor);
 			else if (cfg_strs[i] == "--fx")
@@ -253,10 +254,10 @@ struct Config
 			else if (cfg_strs[i] == "--norm_world_scale")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->norm_world_scale);
 
-			else if (cfg_strs[i] == "--cpu_p3p")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->cpu_p3p);
-			else if (cfg_strs[i] == "--lambdatwist")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambdatwist);
+			//else if (cfg_strs[i] == "--cpu_p3p")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->cpu_p3p);
+			//else if (cfg_strs[i] == "--lambdatwist")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambdatwist);
 			else if (cfg_strs[i] == "--max_trace_on_flow")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->max_trace_on_flow);
 			else if (cfg_strs[i] == "--n_poses_to_sample")
@@ -344,7 +345,7 @@ struct Config
 		std::cout << "rg_epsilon = " << rg_epsilon << std::endl;
 		std::cout << "rg_max_iters = " << rg_max_iters << std::endl;
 
-		std::cout << "resize_factor = " << resize_factor << std::endl;
+		//std::cout << "resize_factor = " << resize_factor << std::endl;
 		std::cout << "abs_resize_factor = " << abs_resize_factor << std::endl;
 		std::cout << "fx = " << fx << std::endl;
 		std::cout << "fy = " << fy << std::endl;
@@ -360,8 +361,8 @@ struct Config
 		std::cout << "meanshift_kernel_var = " << meanshift_kernel_var << std::endl;
 		std::cout << "meanshift_rvec_scale = " << meanshift_rvec_scale << std::endl;
 
-		std::cout << "cpu_p3p = " << cpu_p3p << std::endl;
-		std::cout << "lambdatwist = " << lambdatwist << std::endl;
+		//std::cout << "cpu_p3p = " << cpu_p3p << std::endl;
+		//std::cout << "lambdatwist = " << lambdatwist << std::endl;
 		std::cout << "max_trace_on_flow = " << max_trace_on_flow << std::endl;
 		std::cout << "n_poses_to_sample = " << n_poses_to_sample << std::endl;
 		std::cout << "pose_sample_min_depth = " << pose_sample_min_depth << std::endl;
