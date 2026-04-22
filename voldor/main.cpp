@@ -52,8 +52,8 @@ int main(int argc, char* argv[]) {
 	char const* const path_disp = "";
 	float fx = 586.27075;
 	float fy = 586.27075;
-	float cx = 760 / 2;//374.04108;
-	float cy = 428 / 2;//202.26265;
+	float cx = 374.04108;//760 / 2;//374.04108;
+	float cy = 202.26265;//428 / 2;//202.26265;
 	float basefocal = 117.254150390625;
 	int N = 5;
 	int w = 760;

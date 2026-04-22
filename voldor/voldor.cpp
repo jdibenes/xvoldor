@@ -24,7 +24,6 @@ VOLDOR::init
 	iters_cur = 0;
 	iters_remain = cfg.max_iters;
 	
-	// TODO: auto cfg.basefocal
 
 	// copy flows
 	for (int i = 0; i < _flows_1.size(); ++i)
@@ -37,6 +36,15 @@ VOLDOR::init
 	{
 		cv::Mat flow_2 = _flows_2[i].clone();
 		flows_2.push_back(flow_2);
+	}
+
+	if (cfg.estimate_intrinsics)
+	{
+		estimate_camera_focal(flows_1[0], cfg.fx, cfg.fy, cfg.cx, cfg.cy, 4);
+		// TODO: auto cfg.basefocal
+		cfg.basefocal *= cfg.fx; // use baseline in metric units when focal is unknown
+		std::cout << "intrinsics override" << std::endl;
+		std::cout << "fx: " << cfg.fx << " fy: " << cfg.fy << std::endl;
 	}
 
 	// copy disparities
@@ -108,12 +116,7 @@ VOLDOR::init
 
 
 
-	if (cfg.estimate_intrinsics)
-	{
-		estimate_camera_focal(flows_1[0], cfg.fx, cfg.fy, cfg.cx, cfg.cy, 4);
-		std::cout << "intrinsics override" << std::endl;
-		std::cout << "fx: " << cfg.fx << " fy: " << cfg.fy << std::endl;
-	}
+	
 
 	// init cams
 	cv::Mat K = (cv::Mat_<float>(3, 3) <<
@@ -311,7 +314,7 @@ void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
 			NULL, NULL,
 			NULL, h_depth_prior_confs,
 			NULL, (float*)depth.data,
-			NULL,
+			(float*)cams[0].K.data,
 			h_Rs, h_ts,
 			NULL, NULL,
 			cfg.abs_resize_factor,

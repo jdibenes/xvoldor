@@ -6,7 +6,7 @@ struct Config
 {
 	// solver selection
 	int multiview_mode = 2; // 2: binocular, 3: trifocal
-	int solver_select = 32;
+	int solver_select = 3;
 
 	// batch solve
 	int batch_workers = 12;
@@ -29,7 +29,7 @@ struct Config
 	float tf_squared_error_threshold = 100000;
 
 	// focal estimation
-	bool estimate_intrinsics = true;
+	bool estimate_intrinsics = false;
 	bool square_pixels = true;
 	bool shared_focals = true;
 	
