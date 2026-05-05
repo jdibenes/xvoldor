@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	char const* cfg =
 		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 6 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
-		"--solver_select 17 --batch_workers 24 ";
+		"--solver_select 3 --batch_workers 24 ";
 
 	float fx = 586.27075;
 	float fy = 586.27075;
@@ -51,9 +51,9 @@ int main(int argc, char* argv[])
 	int fid = 61;
 	int last = 253;
 
-	char const* const flow_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_searaft";
-	char const* const flow_2_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_searaft";
-	char const* const disp_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_searaft";
+	char const* const flow_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt";
+	char const* const flow_2_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt";
+	char const* const disp_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt";
 	char const* const poses_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose";
 	char path[260];
 
@@ -77,6 +77,8 @@ int main(int argc, char* argv[])
 
 	std::unique_ptr<Eigen::Matrix<float, 4, 4>[]> gt_poses = std::make_unique<Eigen::Matrix<float, 4, 4>[]>(N + 1);
 	std::unique_ptr<Eigen::Matrix<float, 4, 4>[]> gt_relposes = std::make_unique<Eigen::Matrix<float, 4, 4>[]>(N);
+
+	float max_t_ang_error = 0;
 
 	while ((fid + N) < last)
 	{
@@ -119,8 +121,8 @@ int main(int argc, char* argv[])
 		py_voldor_wrapper(
 			flows_pt.get(),
 			flows_2_pt.get(),
-			disparities_pt.get(),
-			disparity_pt.get(),
+			nullptr,//disparities_pt.get(),
+			nullptr,//disparity_pt.get(),
 			nullptr,
 			nullptr,
 			nullptr,
@@ -145,12 +147,19 @@ int main(int argc, char* argv[])
 			Eigen::Matrix<float, 3, 3> R_gt = gt_relposes[i](Eigen::seqN(0, 3), Eigen::seqN(0, 3));
 			Eigen::Matrix<float, 3, 1> r_gt = vector_r_rodrigues(R_gt);
 			Eigen::Matrix<float, 3, 1> t_gt = gt_relposes[i](Eigen::seqN(0, 3), 3);
+			Eigen::Matrix<float, 3, 1> r_et = matrix_from_buffer<float, 3, 1>(poses.get() + 6 * i);
+			Eigen::Matrix<float, 3, 1> t_et = matrix_from_buffer<float, 3, 1>(poses.get() + 6 * i + 3);
 			//std::cout << " | r_gt: " << r_gt << " | t_gt: " << t_gt;
-			Eigen::Matrix<float, 2, 1> errors = compute_error(r_gt, t_gt, matrix_from_buffer<float, 3, 1>(poses.get() + 6 * i), matrix_from_buffer<float, 3, 1>(poses.get() + 6 * i + 3));
-			std::cout << " | Errors: " << errors(0) << ", " << errors(1);
+			Eigen::Matrix<float, 2, 1> errors = compute_error(r_gt, t_gt, r_et, t_et);
+			float rad_to_deg = (180.0f / 3.14159265359f);
+			float ang_error = std::acos(clamp(t_gt.normalized().dot(t_et.normalized()),-1.0f, 1.0f)) * rad_to_deg;
+			std::cout << " | Errors: " << (errors(0) * rad_to_deg) << ", " << errors(1) << " (" << ang_error << ")";
 			std::cout << std::endl;
+			if (ang_error > max_t_ang_error) { max_t_ang_error = ang_error; }
 		}
 	}
+
+	std::cout << "MAX t ANG ERROR " << max_t_ang_error << std::endl;
 
 	return 0;
 }
