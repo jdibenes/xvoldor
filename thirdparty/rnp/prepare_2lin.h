@@ -8614,6 +8614,7 @@ void solveVW3var(double g[60], std::vector<double> & v1, std::vector<double> & v
 	
 	Eigen::EigenSolver<Eigen::MatrixXd> es;
 	es.compute(A, true);
+	if (es.info() != Eigen::Success) { return; }
 	Eigen::MatrixXcd  V(3, 20);
 	V.setZero();
 	V.row(0) = es.eigenvectors().row(3);
