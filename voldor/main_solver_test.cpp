@@ -1,5 +1,5 @@
 
-#define ENABLE_SOLVER_TEST
+//#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
