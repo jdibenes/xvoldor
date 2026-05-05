@@ -1,5 +1,5 @@
 
-//#define ENABLE_SOLVER_TEST
+#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 4> pose02 = pose02h(Eigen::seqN(0, 3), Eigen::indexing::all);
     Eigen::Matrix<float, 3, 4> pose12 = pose12h(Eigen::seqN(0, 3), Eigen::indexing::all);
  
-    //make_planar(pose01);
-    //make_planar(pose02);
+    make_planar(pose01);
+    make_planar(pose02);
 
     Eigen::Matrix<float, 4, 7> p1h{
         {1,   2, -3, -1.5, 4, -5, 1.5},
@@ -97,12 +97,13 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 1> t2;
     Eigen::Matrix<float, 3, 1> dr;
     Eigen::Matrix<float, 3, 1> dt;
-    float focal = -1;
+    float focal[2] = { -1,-1 };
     bool ok;
 
     //ok = solver_gpm_hpc0(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_hpc1(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_hpc2(p11.data(), p21.data(), r.data(), t.data()); // OK*
+    ok = solver_gpm_hpc3(p11.data(), p21.data(), r.data(), t.data());
     //ok = solver_gpm_nm5(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_nm6(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_nm7(p11.data(), p21.data(), r.data(), t.data()); // OK*
@@ -113,7 +114,7 @@ int main(int argc, char* argv[])
     //ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_tft_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data(), 0); // OK*
     //ok = solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
-    ok = solver_p4pf(p11.data(), x21.data(), 0, 0, r.data(), t.data(), &focal);
+    //ok = solver_ppf_p4pf(p11.data(), x21.data(), false, 0, 0, r.data(), t.data(), focal);
 
     std::cout << "GT" << std::endl;
 
@@ -125,7 +126,7 @@ int main(int argc, char* argv[])
     std::cout << t << std::endl;
     std::cout << Eigen::AngleAxis<float>(r2.norm(), r2.normalized()).toRotationMatrix() << std::endl;
     std::cout << t2 << std::endl;
-    std::cout << "focal " << focal << std::endl;
+    std::cout << "focal " << focal[0] << ", " << focal[1] << std::endl;
     std::cout << "Error 01" << std::endl;
     std::cout << compute_error(vector_r_rodrigues(R_gt), t_gt, r, t) << std::endl;
     std::cout << "Error 12" << std::endl;

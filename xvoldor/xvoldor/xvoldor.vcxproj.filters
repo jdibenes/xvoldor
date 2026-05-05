@@ -722,6 +722,9 @@
     <ClCompile Include="..\..\thirdparty\PoseLib\robust\optim\lm_impl.cc">
       <Filter>Libraries\PoseLib\robust\optim</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc3.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\voldor\voldor_bin.txt">

@@ -225,7 +225,7 @@
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\lock.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\main_solver_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -234,6 +234,7 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp" />
     <ClCompile Include="..\..\voldor\py_export.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp" />
+    <ClCompile Include="..\..\voldor\solver_gpm_hpc3.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm5.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm6.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp" />
