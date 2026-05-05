@@ -3,7 +3,7 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-Eigen::Matrix<double, Eigen::Dynamic, 1> compute_coeffs(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
+static Eigen::Matrix<double, Eigen::Dynamic, 1> compute_coeffs(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
 {
 	double p111, p121, p131, p112, p122, p132, p113, p123, p133, p211, p221, p231, p212, p222, p232, p213, p223, p233;
 	double t2, t3, t4, t5, t6, t7, t8, t9;
@@ -407,7 +407,7 @@ struct elimination_template
 	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> C1;
 };
 
-elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
+static elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
 {
 	Eigen::Matrix<double, Eigen::Dynamic, 1> coeffs = compute_coeffs(p1, p2);
 
@@ -493,7 +493,7 @@ elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dyn
 	return result;
 }
 
-Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> solver_solver_prob_pc_relpose_223122(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
+static Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> solver_solver_prob_pc_relpose_223122(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
 {
 	elimination_template et = setup_elimination_template(p1, p2);
 
