@@ -8,7 +8,6 @@
 #include "config.h"
 #include "geometry.h"
 #include "voldor.h"
-#include "../gpu-kernels/gpu_kernels.h"
 #include "py_export.h"
 #include "lock.h"
 
@@ -33,7 +32,131 @@ Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
 	return pose;
 }
 
+int main(int argc, char* argv[])
+{
+	char const* cfg =
+		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 6 "
+		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
+		"--solver_select 17 --batch_workers 24 ";
 
+	float fx = 586.27075;
+	float fy = 586.27075;
+	float cx = 374.04108;
+	float cy = 202.26265;
+	float basefocal = 117.254150390625;
+	int N = 5;
+	int w = 760;
+	int h = 428;
+
+	int fid = 61;
+	int last = 253;
+
+	char const* const flow_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_searaft";
+	char const* const flow_2_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_searaft";
+	char const* const disp_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_searaft";
+	char const* const poses_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose";
+	char path[260];
+
+	std::unique_ptr<float[]> flows_pt = std::make_unique<float[]>(N * w * h * 2);
+	std::unique_ptr<float[]> flows_2_pt = std::make_unique<float[]>((N - 1) * w * h * 2);
+	std::unique_ptr<float[]> disparity_pt = std::make_unique<float[]>(w * h * 2);
+	std::unique_ptr<float[]> disparities_pt = std::make_unique<float[]>((N + 1) * w * h * 2);
+
+	std::unique_ptr<float[]> poses = std::make_unique<float[]>(N * 6);
+	std::unique_ptr<float[]> poses_covar = std::make_unique<float[]>(N * 6 * 6);
+	std::unique_ptr<float[]> depth = std::make_unique<float[]>(w * h);
+	std::unique_ptr<float[]> depth_conf = std::make_unique<float[]>(w * h);
+
+	// hl2_to_opencv = np.array([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,1]], dtype=np.float32)
+	Eigen::Matrix<float, 4, 4> hl2_to_opencv{
+		{1,  0,  0,  0},
+		{0, -1,  0,  0},
+		{0,  0, -1,  0},
+		{0,  0,  0,  1}
+	};
+
+	std::unique_ptr<Eigen::Matrix<float, 4, 4>[]> gt_poses = std::make_unique<Eigen::Matrix<float, 4, 4>[]>(N + 1);
+	std::unique_ptr<Eigen::Matrix<float, 4, 4>[]> gt_relposes = std::make_unique<Eigen::Matrix<float, 4, 4>[]>(N);
+
+	while ((fid + N) < last)
+	{
+		int n_registered = -1;
+
+		for (int i = 0; i < N; ++i)
+		{
+			sprintf(path, "%s/%06d.flo", flow_path, fid + i);
+			load_file(path, flows_pt.get() + i * (w * h * 2), 12, -1);
+		}
+		for (int i = 0; i < (N - 1); ++i)
+		{
+			sprintf(path, "%s/%06d.flo", flow_2_path, fid + i);
+			load_file(path, flows_2_pt.get() + i * (w * h * 2), 12, -1);
+		}
+		sprintf(path, "%s/%06d.flo", disp_path, fid);
+		load_file(path, disparity_pt.get(), 12, -1);
+		for (int i = 0; i < (N + 1); ++i)
+		{
+			sprintf(path, "%s/%06d.flo", disp_path, fid + i);
+			load_file(path, disparities_pt.get() + i * (w * h * 2), 12, -1);
+		}
+		for (int i = 0; i < (N + 1); ++i)
+		{
+			sprintf(path, "%s/%06d.bin", poses_path, fid + i);
+			gt_poses[i] = hl2_to_opencv * load_pose(path).transpose() * hl2_to_opencv;
+		}
+		for (int i = 0; i < N; ++i)
+		{
+			gt_relposes[i] = gt_poses[i + 1].inverse() * gt_poses[i];
+		}
+		for (int i = 0; i < (w * h); ++i)
+		{
+			disparity_pt[i] = -disparity_pt[2 * i];
+		}
+		for (int i = 0; i < ((N + 1) * w * h); ++i)
+		{
+			disparities_pt[i] = -disparities_pt[2 * i];
+		}
+		py_voldor_wrapper(
+			flows_pt.get(),
+			flows_2_pt.get(),
+			disparities_pt.get(),
+			disparity_pt.get(),
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			fx, fy, cx, cy, basefocal, N, 0, w, h, cfg,
+			n_registered,
+			poses.get(),
+			poses_covar.get(),
+			depth.get(),
+			depth_conf.get()
+		);
+		std::cout << "fid " << fid << " registered " << n_registered << std::endl;
+		if (n_registered <= 0) { break; }
+		fid += n_registered;
+		for (int i = 0; i < n_registered; ++i)
+		{
+			std::cout << "pose (" << i << ")" << std::endl;
+			for (int j = 0; j < 6; ++j) {
+				std::cout << poses[6 * i + j];
+				if (j < 5) { std::cout << ", "; }
+			}
+			Eigen::Matrix<float, 3, 3> R_gt = gt_relposes[i](Eigen::seqN(0, 3), Eigen::seqN(0, 3));
+			Eigen::Matrix<float, 3, 1> r_gt = vector_r_rodrigues(R_gt);
+			Eigen::Matrix<float, 3, 1> t_gt = gt_relposes[i](Eigen::seqN(0, 3), 3);
+			//std::cout << " | r_gt: " << r_gt << " | t_gt: " << t_gt;
+			Eigen::Matrix<float, 2, 1> errors = compute_error(r_gt, t_gt, matrix_from_buffer<float, 3, 1>(poses.get() + 6 * i), matrix_from_buffer<float, 3, 1>(poses.get() + 6 * i + 3));
+			std::cout << " | Errors: " << errors(0) << ", " << errors(1);
+			std::cout << std::endl;
+		}
+	}
+
+	return 0;
+}
+
+
+/*
 int main(int argc, char* argv[]) {
 	cout << "TODO: VOLDOR debug exec." << endl;
 
@@ -171,3 +294,4 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+*/
