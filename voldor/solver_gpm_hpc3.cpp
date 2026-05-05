@@ -409,8 +409,8 @@ struct elimination_template
 
 elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
 {
-	elimination_template result;
 	Eigen::Matrix<double, Eigen::Dynamic, 1> coeffs = compute_coeffs(p1, p2);
+
 	static int const coeffs0_ind[] =
 	{
 		0, 19, 0, 1, 19, 20, 0, 1, 4, 19, 20, 23, 1, 4, 10, 20, 23, 29, 38, 4, 10, 23, 29, 39, 10, 29, 42, 0, 19, 0, 1, 2, 19, 20, 21, 0, 1, 2, 4, 5,
@@ -435,6 +435,7 @@ elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dyn
 		44, 45, 46, 47, 7, 8, 16, 17, 26, 27, 35, 36, 40, 41, 45, 46, 11, 12, 13, 14, 15, 17, 18, 30, 31, 32, 33, 34, 36, 37, 42, 43, 44, 45, 46, 47, 13, 14, 16, 17,
 		32, 33, 35, 36, 43, 44, 45, 46, 16, 35, 45,
 	};
+
 	static int const coeffs1_ind[] = 
 	{
 		47, 9, 28, 41, 47, 6, 9, 15, 25, 28, 34, 39, 41, 44, 47, 5, 6, 8, 9, 14, 15, 18, 24, 25, 27, 28, 33, 34, 37, 39, 40, 41, 43, 44, 46, 47, 8, 9, 18, 27,
@@ -443,6 +444,7 @@ elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dyn
 		33, 34, 36, 37, 43, 44, 45, 46, 47, 13, 14, 15, 16, 17, 18, 32, 33, 34, 35, 36, 37, 43, 44, 45, 46, 47, 18, 37, 46, 47, 17, 18, 36, 37, 45, 46, 47, 16, 17, 18,
 		35, 36, 37, 45, 46, 47, 16, 17, 18, 35, 36, 37, 45, 46, 47, 16, 17, 35, 36, 45, 46
 	};
+
 	static int const C0_ind[] = 
 	{
 		18, 37, 80, 83, 99, 102, 139, 145, 148, 158, 164, 167, 204, 210, 213, 223, 229, 232, 247, 269, 275, 288, 294, 312, 334, 353, 377, 407, 426, 469, 472, 473, 488, 491, 492, 528, 534, 535, 537, 538,
@@ -467,6 +469,7 @@ elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dyn
 		3955, 3957, 3958, 3959, 3967, 3968, 3976, 3977, 3986, 3987, 3995, 3996, 4006, 4007, 4020, 4021, 4031, 4032, 4034, 4035, 4036, 4037, 4038, 4050, 4051, 4053, 4054, 4055, 4056, 4057, 4070, 4074, 4075, 4077, 4078, 4079, 4097, 4098, 4100, 4101,
 		4116, 4117, 4119, 4120, 4136, 4137, 4140, 4141, 4163, 4182, 4202
 	};
+
 	static int const C1_ind[] = 
 	{
 		38, 65, 84, 103, 118, 130, 134, 140, 149, 153, 159, 168, 173, 183, 187, 195, 196, 199, 200, 205, 206, 208, 214, 215, 218, 219, 224, 225, 227, 234, 238, 239, 248, 249, 252, 253, 260, 261, 270, 279,
@@ -482,32 +485,43 @@ elimination_template setup_elimination_template(Eigen::Matrix<double, Eigen::Dyn
 	C0_flat(C0_ind) = coeffs(coeffs0_ind);
 	C1_flat(C1_ind) = coeffs(coeffs1_ind);
 
+	elimination_template result;
+
 	result.C0 = C0_flat.reshaped(65, 65);
 	result.C1 = C1_flat.reshaped(65, 18);
 	
 	return result;
 }
 
-Eigen::MatrixXcd solver_solver_prob_pc_relpose_223122(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
+Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> solver_solver_prob_pc_relpose_223122(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p1, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> const& p2)
 {
 	elimination_template et = setup_elimination_template(p1, p2);
+
 	static int const b_ind[] = { 60, 126, 192, 258, 324 };
 	Eigen::Matrix<double, Eigen::Dynamic, 1> b_flat = Eigen::Matrix<double, Eigen::Dynamic, 1>::Zero(65 * 5);
 	b_flat(b_ind).setConstant(-1.0);
+
 	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> b = b_flat.reshaped(65, 5);
 	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> alpha = et.C0.transpose().colPivHouseholderQr().solve(b);
+
 	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> RR(5 + 18, 18);
 	RR << (alpha.transpose() * et.C1), Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>::Identity(18, 18);
+
 	static int const AM_ind[] = { 18, 9, 8, 0, 10, 11, 1, 15, 14, 2, 16, 17, 3, 19, 20, 21, 22, 4 };
 	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> AM = RR(AM_ind, Eigen::indexing::all);
+
 	Eigen::EigenSolver<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> es(AM);
-	if (es.info() != Eigen::Success) { return Eigen::MatrixXcd(0, 0); }
-	Eigen::MatrixXcd V = es.eigenvectors();
+	if (es.info() != Eigen::Success) { return Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>(0, 0); }
+
+	Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> V = es.eigenvectors();
 	for (int i = 0; i < V.cols(); ++i) { V.col(i) /= V(0, i); }
-	Eigen::MatrixXcd q(3, 18);
+
+	Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> q(3, 18);
+
 	q.row(0) = V(1, Eigen::indexing::all);
 	q.row(1) = V(7, Eigen::indexing::all);
 	q.row(2) = es.eigenvalues().transpose();
+
 	return q;
 }
 
@@ -524,7 +538,7 @@ bool solver_gpm_hpc3(float const* p3d_1, float const* p3d_2, float* r_12, float*
 	p2.col(1) /= p2(2, 1);
 	p2.col(2) /= p2(2, 2);
 
-	Eigen::MatrixXcd q_f = solver_solver_prob_pc_relpose_223122(p1, p2);
+	Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> q_f = solver_solver_prob_pc_relpose_223122(p1, p2);
 
 	Eigen::Matrix<double, 3, 1> p20 = p2.col(0);
 	Eigen::Matrix<double, 3, 1> p21 = p2.col(1);
