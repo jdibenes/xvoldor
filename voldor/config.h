@@ -13,7 +13,7 @@ struct Config
 	bool batch_unique = true;
 
 	// disparities
-	bool disparities_enable = true;
+	bool disparities_enable = false;
 	bool disparities_use_0 = false;
 	
 	// rolling shutter
