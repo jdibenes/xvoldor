@@ -43,7 +43,7 @@ static void batch_cpu_solver_gpm(job_descriptor& jd)
 	case 0:  ok = solver_gpm_hpc0(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p3d_2), r, t); break;
 	case 1:  ok = solver_gpm_hpc1(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p3d_2), r, t); break;
 	case 2:  ok = solver_gpm_hpc2(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p3d_2), r, t); break;
-	case 3:  ok = false;                                                                                   break; // TODO: HPC3
+	case 3:  ok = solver_gpm_hpc3(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p3d_2), r, t); break;
 	case 4:  ok = solver_gpm_m4(  reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p3d_2), r, t); break;
 	case 5:  ok = solver_gpm_nm5( reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p3d_2), r, t); break;
 	case 6:  ok = solver_gpm_nm6( reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p3d_2), r, t); break;
