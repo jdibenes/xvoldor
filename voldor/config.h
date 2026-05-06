@@ -9,8 +9,8 @@ struct Config
 	int solver_select = 3;
 
 	// batch solve
-	int batch_workers = 12;
-	bool batch_unique = true;
+	int batch_workers = 8;
+	bool batch_unique = false;
 
 	// disparities
 	bool disparities_enable = false;
@@ -23,19 +23,15 @@ struct Config
 
 	// trifocal
 	float tf_threshold = 0;
-	bool tf_enable_next_pool = true;
-	bool tf_enable_flow_2 = true;
+	bool tf_enable_next_pool = false;
+	bool tf_enable_flow_2 = false;
 	bool tf_use_flow_2 = false;
 	float tf_squared_error_threshold = 100000;
 
 	// focal estimation
 	bool estimate_intrinsics = false;
-	bool square_pixels = true;
-	bool shared_focals = true;
-	
-
-
-
+	bool square_pixels = false;
+	bool shared_focals = false;
 
 
 
@@ -180,18 +176,38 @@ struct Config
 
 			else if (cfg_strs[i] == "--batch_workers")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->batch_workers);
+			else if (cfg_strs[i] == "--batch_unique")
+				this->batch_unique = true;
 
+			else if (cfg_strs[i] == "--disparities_enable")
+				this->disparities_enable = true;
+			else if (cfg_strs[i] == "--disparities_use_0")
+				this->disparities_use_0 = true;
 
 			else if (cfg_strs[i] == "--rs_direction")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_direction);
 			else if (cfg_strs[i] == "--rs_r0")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_r0);
-			//else if (cfg_strs[i] == "--rs_max_pow")
-			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_pow);
 			else if (cfg_strs[i] == "--rs_iterations")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_iterations);
 
+			else if (cfg_strs[i] == "--tf_threshold")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_threshold);
+			else if (cfg_strs[i] == "--tf_enable_next_pool")
+				this->tf_enable_next_pool = true;
+			else if (cfg_strs[i] == "--tf_enable_flow_2")
+				this->tf_enable_flow_2 = true;
+			else if (cfg_strs[i] == "--tf_use_flow_2")
+				this->tf_use_flow_2 = true;
+			else if (cfg_strs[i] == "--tf_squared_error_threshold")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_squared_error_threshold);
 
+			else if (cfg_strs[i] == "--estimate_intrinsics")
+				this->estimate_intrinsics = true;
+			else if (cfg_strs[i] == "--square_pixels")
+				this->square_pixels = true;
+			else if (cfg_strs[i] == "--shared_focals")
+				this->shared_focals = true;
 
 			// OLD ------------------------------------------------------------
 
