@@ -125,7 +125,7 @@ bool solver_gpm_hpc2(float const* p3d_1, float const* p3d_2, float* r_12, float*
     polynomial.normalize();
 
     float roots[4];
-    int nroots = find_real_roots(polynomial.data(), 4, roots);
+    int nroots = find_real_roots<4>(polynomial.data(), roots);
     if (nroots <= 0) { return false; }
 
     float kx;
