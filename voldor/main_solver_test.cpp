@@ -1,5 +1,5 @@
 
-//#define ENABLE_SOLVER_TEST
+#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -103,12 +103,12 @@ int main(int argc, char* argv[])
     //ok = solver_gpm_hpc0(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_hpc1(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_hpc2(p11.data(), p21.data(), r.data(), t.data()); // OK*
-    ok = solver_gpm_hpc3(p11.data(), p21.data(), r.data(), t.data());
+    //ok = solver_gpm_hpc3(p11.data(), p21.data(), r.data(), t.data());
     //ok = solver_gpm_nm5(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_nm6(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_nm7(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_m4(p11.data(), p21.data(), r.data(), t.data()); // OK*
-    //ok = solver_r6p1l(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data()); // OK*
+    ok = solver_r6p1l(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data()); // OK*
     //ok = solver_r6p2i(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data(), 5); // OK*
     //ok = solver_r6p2l(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data()); // OK*
     //ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data()); // OK*
