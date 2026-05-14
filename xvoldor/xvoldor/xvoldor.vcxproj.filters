@@ -120,9 +120,6 @@
     <ClInclude Include="..\..\thirdparty\rnp\rnp.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\thirdparty\rnp\sturm.h">
-      <Filter>Libraries\rnp</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\thirdparty\rnp\utils.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
@@ -474,9 +471,6 @@
       <Filter>Libraries\rnp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\rnp.cpp">
-      <Filter>Libraries\rnp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp">
       <Filter>Libraries\rnp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\rnp_utils.cpp">
