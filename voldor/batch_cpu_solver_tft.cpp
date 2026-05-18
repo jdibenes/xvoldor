@@ -54,6 +54,7 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	switch (ji->solver)
 	{
 	case 0:  ok = solver_tft_linear(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), reinterpret_cast<float*>(p2d_3), jd.sample_size, r1, t1, r2, t2, ji->threshold); break;
+	case 1:  ok = solver_tft_p4p(   reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), reinterpret_cast<float*>(p2d_3),                 r1, t1, r2, t2);                break;
 	default: ok = false;                                                                                                                                                               break;
 	}
 
@@ -89,6 +90,7 @@ int batch_cpu_solver_tft(cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv:
 	switch (solver)
 	{
 	case 0:  sample_size = 7; break;
+	case 1:  sample_size = 4; break;
 	default: return 0;
 	}
 
