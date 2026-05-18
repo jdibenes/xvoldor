@@ -27,6 +27,7 @@ struct Config
 	bool tf_enable_flow_2 = false;
 	bool tf_use_flow_2 = false;
 	float tf_squared_error_threshold = 100000;
+	int tf_sample_size = 7;
 
 	// focal estimation
 	bool estimate_intrinsics = false;
@@ -201,6 +202,8 @@ struct Config
 				this->tf_use_flow_2 = true;
 			else if (cfg_strs[i] == "--tf_squared_error_threshold")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_squared_error_threshold);
+			else if (cfg_strs[i] == "--tf_sample_size")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_sample_size);
 
 			else if (cfg_strs[i] == "--estimate_intrinsics")
 				this->estimate_intrinsics = true;

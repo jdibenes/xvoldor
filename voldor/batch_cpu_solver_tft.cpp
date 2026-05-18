@@ -27,9 +27,9 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	job_inputs* ji = static_cast<job_inputs*>(jd.inputs);
 	job_output* jo = static_cast<job_output*>(jd.output);
 
-	cv::Point3f p3d_1[7];
-	cv::Point2f p2d_2[7];
-	cv::Point2f p2d_3[7];
+	std::unique_ptr<cv::Point3f[]> p3d_1 = std::make_unique<cv::Point3f[]>(jd.sample_size);
+	std::unique_ptr<cv::Point2f[]> p2d_2 = std::make_unique<cv::Point2f[]>(jd.sample_size);
+	std::unique_ptr<cv::Point2f[]> p2d_3 = std::make_unique<cv::Point2f[]>(jd.sample_size);
 
 	float r1[3];
 	float t1[3];
@@ -53,9 +53,9 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	
 	switch (ji->solver)
 	{
-	case 0:  ok = solver_tft_linear(reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), reinterpret_cast<float*>(p2d_3), jd.sample_size, r1, t1, r2, t2, ji->threshold); break;
-	case 1:  ok = solver_tft_p4p(   reinterpret_cast<float*>(p3d_1), reinterpret_cast<float*>(p2d_2), reinterpret_cast<float*>(p2d_3),                 r1, t1, r2, t2);                break;
-	default: ok = false;                                                                                                                                                               break;
+	case 0:  ok = solver_tft_linear(reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()), jd.sample_size, r1, t1, r2, t2, ji->threshold); break;
+	case 1:  ok = solver_tft_p4p(   reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()),                 r1, t1, r2, t2);                break;
+	default: ok = false;                                                                                                                                                                                 break;
 	}
 
 	if (!ok) { continue; }
@@ -67,7 +67,7 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	}
 }
 
-int batch_cpu_solver_tft(cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv::Point3f const* p2z_3, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, float* next_pool, int workers, bool unique, float threshold)
+int batch_cpu_solver_tft(cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv::Point3f const* p2z_3, int point_count, cv::Mat const& K, int solver, int poses_to_sample, float* poses, float* next_pool, int workers, bool unique, float threshold, int non_minimal_size)
 {
 	job_inputs ji;
 	job_output jo;
@@ -89,8 +89,8 @@ int batch_cpu_solver_tft(cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv:
 
 	switch (solver)
 	{
-	case 0:  sample_size = 7; break;
-	case 1:  sample_size = 4; break;
+	case 0:  sample_size = std::max(7, non_minimal_size); break;
+	case 1:  sample_size = 4;                             break;
 	default: return 0;
 	}
 
