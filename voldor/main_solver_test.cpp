@@ -1,5 +1,5 @@
 
-#define ENABLE_SOLVER_TEST
+//#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 4> pose02 = pose02h(Eigen::seqN(0, 3), Eigen::indexing::all);
     Eigen::Matrix<float, 3, 4> pose12 = pose12h(Eigen::seqN(0, 3), Eigen::indexing::all);
  
-    make_planar(pose01);
-    make_planar(pose02);
+    //make_planar(pose01);
+    //make_planar(pose02);
 
     Eigen::Matrix<float, 4, 7> p1h{
         {1,   2, -3, -1.5, 4, -5, 1.5},

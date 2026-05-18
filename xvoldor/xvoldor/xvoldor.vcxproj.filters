@@ -405,6 +405,9 @@
     <ClInclude Include="..\..\thirdparty\PoseLib\robust\optim\relative.h">
       <Filter>Libraries\PoseLib\robust\optim</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\thirdparty\rnp\sturm.h">
+      <Filter>Libraries\rnp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
@@ -718,6 +721,9 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_hpc3.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp">
+      <Filter>Libraries\rnp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

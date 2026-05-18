@@ -113,6 +113,7 @@
     <ClInclude Include="..\..\thirdparty\rnp\prepare_1lin.h" />
     <ClInclude Include="..\..\thirdparty\rnp\prepare_2lin.h" />
     <ClInclude Include="..\..\thirdparty\rnp\rnp.h" />
+    <ClInclude Include="..\..\thirdparty\rnp\sturm.h" />
     <ClInclude Include="..\..\thirdparty\rnp\utils.h" />
     <ClInclude Include="..\..\voldor\algebra.h" />
     <ClInclude Include="..\..\voldor\batch_solver.h" />
@@ -211,6 +212,7 @@
     <ClCompile Include="..\..\thirdparty\rnp\r7pfr.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\rnp.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\rnp_utils.cpp" />
+    <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp" />
     <ClCompile Include="..\..\voldor\algebra.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_ppf.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp" />
@@ -223,7 +225,7 @@
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\lock.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\main_solver_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
