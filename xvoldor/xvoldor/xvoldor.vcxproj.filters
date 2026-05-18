@@ -449,13 +449,7 @@
     <ClCompile Include="..\..\voldor\solver_rnp_r6p1l.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\thirdparty\rnp\benchmark.bak">
-      <Filter>Libraries\rnp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\iterative.cpp">
-      <Filter>Libraries\rnp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\thirdparty\rnp\python_bindings.bak">
       <Filter>Libraries\rnp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\r6p_1lin.cpp">

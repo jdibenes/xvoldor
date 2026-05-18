@@ -198,13 +198,7 @@
     <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up1p2pl.cc" />
     <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up2p.cc" />
     <ClCompile Include="..\..\thirdparty\PoseLib\solvers\up4pl.cc" />
-    <ClCompile Include="..\..\thirdparty\rnp\benchmark.bak">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\iterative.cpp" />
-    <ClCompile Include="..\..\thirdparty\rnp\python_bindings.bak">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\thirdparty\rnp\r6p_1lin.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\r6p_2lin.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\r6p_iter.cpp" />

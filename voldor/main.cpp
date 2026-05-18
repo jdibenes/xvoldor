@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	char const* cfg =
 		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 4 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
-		"--multiview_mode 2 --solver_select 16 --batch_workers 32";
+		"--multiview_mode 2 --solver_select 16 --batch_workers 18";
 		//"--multiview_mode 3 --solver_select 24 --batch_workers 32 --disparities_enable --disparities_use_0 --tf_enable_next_pool --tf_enable_flow_2 --tf_use_flow_2 ";
 
 	float fx = 586.27075;
