@@ -28,13 +28,13 @@ big_table = [
 ]
 
 if __name__ == '__main__':
-    solver_id = 3
+    solver_id = 16
     sequence_index = 18
     toolset = 'gt'
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
-    set_enable_loop_closure = True    
+    set_enable_loop_closure = False    
     set_png_depth = True
     png_depth_scale = 1000
 
