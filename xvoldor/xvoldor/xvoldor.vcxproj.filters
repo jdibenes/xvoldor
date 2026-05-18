@@ -102,9 +102,6 @@
     <ClInclude Include="..\..\voldor\helpers_geometry.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\algebra.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\thirdparty\rnp\danilevsky.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
@@ -408,6 +405,9 @@
     <ClInclude Include="..\..\thirdparty\rnp\sturm.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\algebra.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">
@@ -484,9 +484,6 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp">
       <Filter>Source Files\solvers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\algebra.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\py_export.cpp">
       <Filter>Source Files</Filter>
