@@ -28,7 +28,7 @@ big_table = [
 ]
 
 if __name__ == '__main__':
-    solver_id = 16
+    solver_id = 18
     sequence_index = 18
     toolset = 'gt'
     mode_name = 'stereo'
