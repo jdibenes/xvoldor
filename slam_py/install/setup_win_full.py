@@ -36,7 +36,14 @@ ext = Extension('pyvoldor_full',
             [x for x in glob('../../voldor/*.cpp') if 'main.cpp' not in x] + \
             [x for x in glob('../../frame-alignment/*.cpp') if 'main.cpp' not in x] + \
             [x for x in glob('../../pose-graph/*.cpp') if 'main.cpp' not in x] + \
-            [x for x in glob('../../thirdparty/rnp/*.cpp')],
+            [x for x in glob('../../thirdparty/rnp/*.cpp')] + \
+            [x for x in glob('../../thirdparty/PoseLib/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/misc/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/estimators/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/hybrid_estimators/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/optim/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/solvers/*.cc')],
     language = 'c++',
     library_dirs = ['./gpu-kernels.lib', opencv_lib_dir] + ceres_lib_dirs,
     libraries = ['gpu-kernels', opencv_lib_name] + ceres_lib_names,
