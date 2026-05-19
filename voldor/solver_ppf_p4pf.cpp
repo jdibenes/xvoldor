@@ -3,7 +3,7 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
-bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, bool same, float cx, float cy, float* r_12, float* t_12, float* f_xy)
+bool solver_ppf_p4pf(float const* p3d_1, float const* p2k_2, bool same, float cx, float cy, float* r_12, float* t_12, float* f_xy)
 {
 	std::vector<Eigen::Matrix<double, 3, 1>> P1;
 	std::vector<Eigen::Matrix<double, 2, 1>> P2;
@@ -23,12 +23,12 @@ bool solver_ppf_p4pf(float* p3d_1, float* p2k_2, bool same, float cx, float cy, 
 
 	if (same)
 	{
-		count = poselib::p4pf(P2, P1, &solutions, &fxs, true);
-		fys = fxs;
+	count = poselib::p4pf(P2, P1, &solutions, &fxs, true);
+	fys = fxs;
 	}
 	else
 	{
-		count = poselib::p4pf(P2, P1, &solutions, &fxs, &fys, true);
+	count = poselib::p4pf(P2, P1, &solutions, &fxs, &fys, true);
 	}
 
 	if (count <= 0) { return false; }
