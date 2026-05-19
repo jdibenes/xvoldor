@@ -210,6 +210,7 @@
     <ClCompile Include="..\..\voldor\batch_cpu_solver_ppf.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_rpf.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_tft.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_p4p.cpp" />
@@ -218,7 +219,7 @@
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\lock.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\voldor\main_solver_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>

@@ -722,6 +722,9 @@
     <ClCompile Include="..\..\voldor\solver_rpf_r7pfi.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_solver_rpf.cpp">
+      <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\voldor\voldor_bin.txt">
