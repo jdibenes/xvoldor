@@ -719,6 +719,9 @@
     <ClCompile Include="..\..\voldor\solver_tft_p4p.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_rnp_r7pfi.cpp">
+      <Filter>Source Files\solvers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\voldor\voldor_bin.txt">
