@@ -40,7 +40,18 @@ VOLDOR::init
 
 	if (cfg.estimate_intrinsics)
 	{
-		estimate_camera_focal(flows_1[0], cfg.fx, cfg.fy, cfg.cx, cfg.cy, 4);
+		float fx_sum = 0, fy_sum = 0;
+		for (int i = 0; i < _flows_1.size(); ++i)
+		{
+			float fx_i, fy_i;
+			estimate_camera_focal(flows_1[i], fx_i, fy_i, cfg.cx, cfg.cy, 2);
+			fx_sum += fx_i;
+			fy_sum += fy_i;
+		}
+		cfg.fx = fx_sum / _flows_1.size();
+		cfg.fy = fy_sum / _flows_1.size();
+
+		
 		// TODO: auto cfg.basefocal
 		cfg.basefocal *= cfg.fx; // use baseline in metric units when focal is unknown
 		std::cout << "intrinsics override" << std::endl;
