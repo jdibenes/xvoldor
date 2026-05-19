@@ -6,7 +6,7 @@
 #include "helpers_geometry.h"
 
 // OK
-bool solver_rnp_r7pfi(float const* p3d_1, float const* p2k_2, float cx, float cy, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12, float* f_xy, int max_iterations)
+bool solver_rpf_r7pfi(float const* p3d_1, float const* p2k_2, float cx, float cy, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12, float* f_xy, int max_iterations)
 {
 	float r_initial[3];
 	float t_initial[3];

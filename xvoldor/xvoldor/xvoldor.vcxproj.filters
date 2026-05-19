@@ -719,7 +719,7 @@
     <ClCompile Include="..\..\voldor\solver_tft_p4p.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_rnp_r7pfi.cpp">
+    <ClCompile Include="..\..\voldor\solver_rpf_r7pfi.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
