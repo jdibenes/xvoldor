@@ -555,7 +555,7 @@ void estimate_camera_focal(
 	poselib::RansacStats rs = poselib::estimate_shared_focal_relative_pose(p2k_1, p2k_2, pp, rpo, &ip, &inliers);
 
 	fx = ip.camera1.focal_x();
-	fy = ip.camera2.focal_y();
+	fy = ip.camera1.focal_y();
 }
 
 
