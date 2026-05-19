@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 
 	float fx = 586.27075;
 	float fy = 586.27075;
-	float cx = 374.04108;
-	float cy = 202.26265;
+	float cx = 760.0 / 2.0;//374.04108;
+	float cy = 428.0 / 2.0;//202.26265;
 	//float basefocal = 117.254150390625;
 	float basefocal = 0.2000000006662877; // for estimate intrinsics
 	int N = 4;
