@@ -132,6 +132,7 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	case 24: set_next_pool = options.tf_enable_next_pool; break;
 	case 25: set_next_pool = options.tf_enable_next_pool; break;
 	case 32: set_focals_pool = true; break;
+	case 33: set_velocities_pool = set_focals_pool = true; break;
 	}
 
 	float* poses_pool_data = nullptr;
@@ -213,6 +214,7 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 
 	// p4pf
 	case 32: poses_pool_used = batch_cpu_solver_ppf(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, focals_pool_data, options.batch_workers, options.batch_unique, options.square_pixels); break;
+	case 33: poses_pool_used = batch_cpu_solver_rpf(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, focals_pool_data, options.batch_workers, options.batch_unique, options.square_pixels, options.rs_direction, options.rs_r0, options.rs_iterations); break;
 
 	// default: gpu p4p lambdatwist
 	default: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data); break;
