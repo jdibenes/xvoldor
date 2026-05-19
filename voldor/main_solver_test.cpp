@@ -1,5 +1,5 @@
 
-#define ENABLE_SOLVER_TEST
+//#define ENABLE_SOLVER_TEST
 
 #ifdef ENABLE_SOLVER_TEST
 #include <iostream>
@@ -12,8 +12,6 @@
 #include "solvers.h"
 #include "solver_4p3v_para.h"
 #include "lock.h"
-
-bool solver_rnp_r7pfi(float const* p3d_1, float const* p2k_2, float cx, float cy, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12, float* f_xy, int max_iterations);
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
 {
@@ -121,7 +119,7 @@ int main(int argc, char* argv[])
     
     //ok = solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
     //ok = solver_ppf_p4pf(p11.data(), x21.data(), false, 0, 0, r.data(), t.data(), focal);
-    ok = solver_rnp_r7pfi(p11.data(), u21.data(), 320, 240, 0, 0, r.data(), t.data(), dr.data(), dt.data(), focal, 5);
+    ok = solver_rpf_r7pfi(p11.data(), u21.data(), 320, 240, 0, 0, r.data(), t.data(), dr.data(), dt.data(), focal, 5);
 
     std::cout << "GT" << std::endl;
 
