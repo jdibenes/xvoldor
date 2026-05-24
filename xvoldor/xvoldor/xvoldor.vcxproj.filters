@@ -440,9 +440,6 @@
     <ClCompile Include="..\..\voldor\solver_gpm_hpc2.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_nm7.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
@@ -724,6 +721,9 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\batch_cpu_solver_rpf.cpp">
       <Filter>Source Files\batch_solve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_tft_4p3vpara.cpp">
+      <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
