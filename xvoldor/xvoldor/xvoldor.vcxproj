@@ -127,7 +127,6 @@
     <ClInclude Include="..\..\voldor\kitti.h" />
     <ClInclude Include="..\..\voldor\lock.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
-    <ClInclude Include="..\..\voldor\solver_4p3v_para.h" />
     <ClInclude Include="..\..\voldor\solvers.h" />
     <ClInclude Include="..\..\voldor\voldor_utils.h" />
     <ClInclude Include="..\..\voldor\voldor.h" />
@@ -224,7 +223,8 @@
     <ClCompile Include="..\..\voldor\main_solver_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\solver_4p3v_para.cpp" />
+    <ClCompile Include="..\..\voldor\solver_tft_4p3vaffine.cpp" />
+    <ClCompile Include="..\..\voldor\solver_tft_4p3vpara.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp" />
     <ClCompile Include="..\..\voldor\py_export.cpp" />
     <ClCompile Include="..\..\voldor\solver_gpm_hpc1.cpp" />
