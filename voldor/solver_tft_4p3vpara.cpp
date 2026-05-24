@@ -1,7 +1,6 @@
 // From Practical solutions to the relative pose of three calibrated cameras, CVPR 25
 // From poselib implementation (https://github.com/kocurvik/PoseLib)
 
-#include <iostream>
 #include <PoseLib/camera_pose.h>
 #include <PoseLib/misc/essential.h>
 #include <PoseLib/robust/utils.h>
