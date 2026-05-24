@@ -723,7 +723,7 @@
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_tft_4p3vaffine.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\solvers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
