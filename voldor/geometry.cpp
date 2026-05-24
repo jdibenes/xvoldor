@@ -211,6 +211,7 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	// tft
 	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold, options.tf_sample_size); break;
 	case 25: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 1, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold, options.tf_sample_size); break;
+	case 26: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 2, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold, options.tf_sample_size); break;
 
 	// p4pf
 	case 32: poses_pool_used = batch_cpu_solver_ppf(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, focals_pool_data, options.batch_workers, options.batch_unique, options.square_pixels); break;
