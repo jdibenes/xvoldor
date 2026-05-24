@@ -96,9 +96,6 @@
     <ClInclude Include="..\..\voldor\lock.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\solver_4p3v_para.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_geometry.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
@@ -724,6 +721,9 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_tft_4p3vpara.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\solver_tft_4p3vaffine.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
