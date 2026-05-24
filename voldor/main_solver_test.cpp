@@ -10,7 +10,6 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 #include "solvers.h"
-#include "solver_4p3v_para.h"
 #include "lock.h"
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
@@ -115,11 +114,14 @@ int main(int argc, char* argv[])
     //ok = solver_r6p2l(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data()); // OK*
     //ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_tft_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data(), 0); // OK*
-    //ok = solver_tft_p4p(p11.data(), x21.data(), x31.data(), r.data(), t.data(), r2.data(), t2.data());
+    //ok = solver_tft_p4p(p11.data(), x21.data(), x31.data(), r.data(), t.data(), r2.data(), t2.data()); // OK*
+    //ok = solver_tft_4p3vpara(p11.data(), x21.data(), x31.data(), r.data(), t.data(), r2.data(), t2.data(), 0); // ??
+    //ok = solver_tft_4p3vaffine(p11.data(), x21.data(), x31.data(), r.data(), t.data(), r2.data(), t2.data()); // ??
     
     //ok = solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
     //ok = solver_ppf_p4pf(p11.data(), x21.data(), false, 0, 0, r.data(), t.data(), focal);
-    ok = solver_rpf_r7pfi(p11.data(), u21.data(), 320, 240, 0, 0, r.data(), t.data(), dr.data(), dt.data(), focal, 5);
+    //ok = solver_rpf_r7pfi(p11.data(), u21.data(), 320, 240, 0, 0, r.data(), t.data(), dr.data(), dt.data(), focal, 5);
+    
 
     std::cout << "GT" << std::endl;
 
