@@ -53,10 +53,11 @@ static void batch_cpu_solver_tft(job_descriptor& jd)
 	
 	switch (ji->solver)
 	{
-	case 0:  ok = solver_tft_linear(  reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()), jd.sample_size, r1, t1, r2, t2,                  ji->threshold);  break;
-	case 1:  ok = solver_tft_p4p(     reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()),                 r1, t1, r2, t2);                                  break;
-	case 2:  ok = solver_tft_4p3vpara(reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()),                 r1, t1, r2, t2, static_cast<int>(ji->threshold)); break;
-	default: ok = false;                                                                                                                                                                                                     break;
+	case 0:  ok = solver_tft_linear(    reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()), jd.sample_size, r1, t1, r2, t2,                  ji->threshold);  break;
+	case 1:  ok = solver_tft_p4p(       reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()),                 r1, t1, r2, t2);                                  break;
+	case 2:  ok = solver_tft_4p3vpara(  reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()),                 r1, t1, r2, t2, static_cast<int>(ji->threshold)); break;
+	case 3:  ok = solver_tft_4p3vaffine(reinterpret_cast<float*>(p3d_1.get()), reinterpret_cast<float*>(p2d_2.get()), reinterpret_cast<float*>(p2d_3.get()),                 r1, t1, r2, t2);                                  break;
+	default: ok = false;                                                                                                                                                                                                       break;
 	}
 
 	if (!ok) { continue; }
@@ -93,6 +94,7 @@ int batch_cpu_solver_tft(cv::Point3f const* p2z_1, cv::Point3f const* p2z_2, cv:
 	case 0:  sample_size = std::max(7, non_minimal_size); break;
 	case 1:  sample_size = 4;                             break;
 	case 2:  sample_size = 5;                             break;
+	case 3:  sample_size = 5;                             break;
 	default: return 0;
 	}
 
