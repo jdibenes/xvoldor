@@ -447,7 +447,7 @@ class VOLDOR_SLAM:
                 'debug': False}
                 
             py_pgo_funmap = partial(pyvoldor.pgo, **py_pgo_kwargs)
-            poses_ret = self.cython_process_pool.apply(py_pgo_funmap)
+            poses_ret = py_pgo_funmap() #self.cython_process_pool.apply(py_pgo_funmap)
 
             for i in range(n_frames-1):
                 self.frames[i+fid_start].Tcw = T6_to_T44(poses_ret[i,:6])
