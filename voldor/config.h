@@ -34,6 +34,7 @@ struct Config
 	bool square_pixels = false;
 	bool shared_focals = false;
 
+	bool full_log = false;
 
 
 	// OLD
@@ -211,6 +212,9 @@ struct Config
 				this->square_pixels = true;
 			else if (cfg_strs[i] == "--shared_focals")
 				this->shared_focals = true;
+
+			else if (cfg_strs[i] == "--full_log")
+				this->full_log = true;
 
 			// OLD ------------------------------------------------------------
 

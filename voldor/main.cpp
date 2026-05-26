@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
 	char const* cfg =
 		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 4 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
-		//"--multiview_mode 2 --solver_select 16 --batch_workers 18 ";
-		"--multiview_mode 3 --solver_select 26 --batch_workers 18 ";
+		"--multiview_mode 2 --solver_select 3 --batch_workers 18 ";
+		//"--multiview_mode 3 --solver_select 26 --batch_workers 18 ";
 	    //"--multiview_mode 2 --solver_select 33 --batch_workers 18 --estimate_intrinsics --square_pixels --shared_focals ";
 		//"--multiview_mode 3 --solver_select 24 --tf_sample_size 9 --batch_workers 18 --disparities_enable --tf_enable_flow_2 "; // --tf_enable_next_pool --tf_use_flow_2 
 

@@ -447,7 +447,7 @@ class VOLDOR_SLAM:
                 'debug': False}
                 
             py_pgo_funmap = partial(pyvoldor.pgo, **py_pgo_kwargs)
-            poses_ret = py_pgo_funmap() #self.cython_process_pool.apply(py_pgo_funmap)
+            poses_ret = self.cython_process_pool.apply(py_pgo_funmap)
 
             for i in range(n_frames-1):
                 self.frames[i+fid_start].Tcw = T6_to_T44(poses_ret[i,:6])
@@ -488,22 +488,37 @@ class VOLDOR_SLAM:
                 print('MISSING FLOW 2')
                 raise 'Flow 2 loader not working or files are missing.'
             if self.mode=='stereo':
-                if not self.disp_loader_sync(self.fid_cur):
+                #if not self.disp_loader_sync(self.fid_cur):
+                if not self.disp_loader_sync(min(self.fid_cur+self.voldor_winsize+1, self.N_FRAMES-1)):
                     print('MISSING DISP')
                     raise 'Disparity loader not working or files are missing.'
+                
+            flows_1_arg = np.stack(self.flows[  self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0)
+            print(f'FLOWS 1 SHAPE {flows_1_arg.shape} {flows_1_arg.dtype}')
+            flows_2_arg = np.stack(self.flows_2[self.fid_cur:self.fid_cur+self.voldor_winsize-1], axis=0)
+            print(f'FLOWS 2 SHAPE {flows_2_arg.shape} {flows_2_arg.dtype}')
+            print(f'disps len: {len(self.disps)}')
+            disp_arg = np.stack(self.disps[  self.fid_cur:self.fid_cur+self.voldor_winsize+1], axis=0) if self.mode=='stereo' else None
+            if (disp_arg is None):
+                print("DISP SHAPE NOT AVAILABLE")
+            else:
+                print(f'DISP SHAPE {disp_arg.shape} {disp_arg.dtype}')
+
             py_voldor_kwargs = {
-                'flows'   : np.stack(self.flows[  self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0),
-                'flows_2' : np.stack(self.flows_2[self.fid_cur:self.fid_cur+self.voldor_winsize-1], axis=0),
+                'flows'   : flows_1_arg,
+                'flows_2' : flows_2_arg,
                 'fx':self.fx, 'fy':self.fy, 'cx':self.cx, 'cy':self.cy, 'basefocal':self.basefocal,
                 'disparity' : self.disps[self.fid_cur] if self.mode=='stereo' else None,
                 'depth_priors' : np.stack(depth_priors, axis=0) if len(depth_priors)>0 else None,
                 'depth_prior_pconfs' : np.stack(depth_prior_pconfs, axis=0) if len(depth_prior_pconfs)>0 else None,
                 'depth_prior_poses' : np.stack(depth_prior_poses, axis=0) if len(depth_prior_poses)>0 else None,
-                'disparities' : np.stack(self.disps[  self.fid_cur:self.fid_cur+self.voldor_winsize+1], axis=0) if self.mode=='stereo' else None,
+                'disparities' : disp_arg,
                 'config' : self.voldor_config + ' ' + self.voldor_user_config}
 
             py_voldor_funmap = partial(pyvoldor.voldor, **py_voldor_kwargs)
+            print('BEFORE_VOLDOR')
             vo_ret = self.cython_process_pool.apply(py_voldor_funmap)
+            print('AFTER_VOLDOR')
 
             
             # if vo failed

@@ -1,4 +1,7 @@
 
+import faulthandler
+faulthandler.enable()
+
 import argparse
 parser = argparse.ArgumentParser(description='VOLDOR-SLAM demo script')
 parser.add_argument('--mode', type=str, required=True, help='One from stereo/mono-scaled/mono. For stereo and mono-scaled, disparity input will be required.')
@@ -35,6 +38,7 @@ parser.add_argument('--tf_sample_size', type=int)
 parser.add_argument('--estimate_intrinsics', action='store_true')
 parser.add_argument('--square_pixels', action='store_true')
 parser.add_argument('--shared_focals', action='store_true')
+parser.add_argument('--full_log', action='store_true')
 parser.add_argument('--depth_scale', type=float, default=1000)
 
 opt = parser.parse_args()
@@ -72,6 +76,7 @@ if __name__ == '__main__':
     extra_args += f'--rs_direction {opt.rs_direction} --rs_r0 {opt.rs_r0} --rs_iterations {opt.rs_iterations} '
     extra_args += f'--tf_threshold {opt.tf_threshold} ' + ('--tf_enable_next_pool' if (opt.tf_enable_next_pool) else '') + f' ' + ('--tf_enable_flow_2' if (opt.tf_enable_flow_2) else '') + f' ' + ('--tf_use_flow_2' if (opt.tf_use_flow_2) else '') + f' --tf_squared_error_threshold {opt.tf_squared_error_threshold} --tf_sample_size {opt.tf_sample_size} '
     extra_args += ('--estimate_intrinsics' if (opt.estimate_intrinsics) else '') + f' ' + ('--square_pixels' if (opt.square_pixels) else '') + f' ' + ('--shared_focals' if (opt.shared_focals) else '') + f' '
+    extra_args += ('--full_log' if (opt.full_log) else '') + f' '
 
     # set camera intrinsic
     slam.set_cam_params(opt.fx,opt.fy,opt.cx,opt.cy,opt.bf, rescale=opt.resize, depth_scale=opt.depth_scale)

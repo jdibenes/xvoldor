@@ -28,8 +28,8 @@ big_table = [
 ]
 
 if __name__ == '__main__':
-    multiview_mode = 2
-    solver_id = 3
+    multiview_mode = 3
+    solver_id = 24
 
     batch_workers = 18
     batch_unique = False
@@ -59,8 +59,9 @@ if __name__ == '__main__':
 
     mode_name = 'stereo'
     set_save_pose = True
-    set_enable_mapping = True
+    set_enable_mapping = False
     set_enable_loop_closure = False
+    full_log = True
 
     extra_args = ''
     extra_args += f'--multiview_mode {multiview_mode} --solver_select {solver_id} '
@@ -69,6 +70,7 @@ if __name__ == '__main__':
     extra_args += f'--rs_direction {rs_direction} --rs_r0 {rs_r0} --rs_iterations {rs_iterations} '
     extra_args += f'--tf_threshold {tf_threshold} ' + ('--tf_enable_next_pool' if (tf_enable_next_pool) else '') + f' ' + ('--tf_enable_flow_2' if (tf_enable_flow_2) else '') + f' ' + ('--tf_use_flow_2' if (tf_use_flow_2) else '') + f' --tf_squared_error_threshold {tf_squared_error_threshold} --tf_sample_size {tf_sample_size} '
     extra_args += ('--estimate_intrinsics' if (estimate_intrinsics) else '') + f' ' + ('--square_pixels' if (square_pixels) else '') + f' ' + ('--shared_focals' if (shared_focals) else '') + f' '
+    extra_args += ('--full_log' if (full_log) else '') + f' '
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
 

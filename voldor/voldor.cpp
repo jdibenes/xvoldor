@@ -24,6 +24,7 @@ VOLDOR::init
 	iters_cur = 0;
 	iters_remain = cfg.max_iters;
 	
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY FLOW 1" << std::endl; }
 
 	// copy flows
 	for (int i = 0; i < _flows_1.size(); ++i)
@@ -31,6 +32,8 @@ VOLDOR::init
 		cv::Mat flow = _flows_1[i].clone();	
 		flows_1.push_back(flow);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY FLOW 2" << std::endl; }
 
 	for (int i = 0; i < _flows_2.size(); ++i)
 	{
@@ -58,12 +61,16 @@ VOLDOR::init
 		std::cout << "fx: " << cfg.fx << " fy: " << cfg.fy << std::endl;
 	}
 
-	// copy disparities
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY DISP" << std::endl; }
+
+	// copy disparities // BUG???
 	for (int i = 0; i < _disparities.size(); ++i)
 	{
 		cv::Mat depth = cfg.basefocal / _disparities[i];
 		disparities.push_back(depth);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - CONVERT DISP" << std::endl; }
 
 	// convert disparity to general depth prior
 	if (!_disparity.empty()) {
@@ -80,6 +87,8 @@ VOLDOR::init
 		cam.t = cv::Mat::zeros(3, 1, CV_32F);
 		depth_prior_poses.push_back(cam);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY DEPTH PRIOR" << std::endl; }
 
 	// copy depth priors
 	for (int i = 0; i < _depth_priors.size(); i++) {
@@ -142,6 +151,8 @@ VOLDOR::init
 		cams.push_back(cam);
 	}
 
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - INIT DEPTH" << std::endl; }
+
 	// init depth
 	if (n_depth_priors > 0) {
 		// if disparity is present, depth map is initialized with that
@@ -153,6 +164,8 @@ VOLDOR::init
 	else {
 		depth = cv::Mat::ones(cv::Size(w, h), CV_32F);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - END" << std::endl; }
 
 	if (!cfg.silent) {
 		std::cout << n_flows_init << " flows loaded" << std::endl;
