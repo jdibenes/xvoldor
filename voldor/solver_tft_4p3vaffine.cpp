@@ -44,7 +44,7 @@ void relpose_affine_4p(const std::vector<Eigen::Vector2d> &x1, const std::vector
 
     Eigen::Matrix3d FA = relpose_affine_4p(xx1, xx2);
 
-    if (not use_enm)
+    if (!use_enm)
     {
         std::vector<Point3D> x1n(4), x2n(4);
         for (int k = 0; k < 4; ++k)
@@ -229,7 +229,7 @@ void affine_homography_3p(const std::vector<Eigen::Vector2d> &x1, const std::vec
     std::vector<CameraPose> poses;
     motion_from_homography_svd(H, poses, normals);
 
-    if (not use_enm)
+    if (!use_enm)
     {
         for (const CameraPose& pose: poses)
         {
@@ -309,7 +309,7 @@ void affine_essential_2p(const std::vector<Eigen::Vector2d> &x1, const std::vect
         Eigen::Matrix3d E;
         E << 0, 0, Ev(0), 0, 0, Ev(1), Ev(2), Ev(3), 0;
 
-        if (not use_enm)
+        if (!use_enm)
         {
             std::vector<Point3D> x1n(2), x2n(2);
             x1n[0] = xx1[0].homogeneous().normalized();
