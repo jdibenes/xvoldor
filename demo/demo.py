@@ -17,7 +17,24 @@ parser.add_argument('--enable_loop_closure', type=str, default=None)
 parser.add_argument('--enable_mapping', action='store_true')
 parser.add_argument('--save_poses', type=str)
 parser.add_argument('--save_depths', type=str)
+parser.add_argument('--multiview_mode', type=int)
 parser.add_argument('--solver_select', type=int)
+parser.add_argument('--batch_workers', type=int)
+parser.add_argument('--batch_unique', action='store_true') #
+parser.add_argument('--disparities_enable', action='store_true')
+parser.add_argument('--disparities_use_0', action='store_true')
+parser.add_argument('--rs_direction', type=int)
+parser.add_argument('--rs_r0', type=float)
+parser.add_argument('--rs_iterations', type=int)
+parser.add_argument('--tf_threshold', type=float)
+parser.add_argument('--tf_enable_next_pool', action='store_true')
+parser.add_argument('--tf_enable_flow_2', action='store_true')
+parser.add_argument('--tf_use_flow_2', action='store_true')
+parser.add_argument('--tf_squared_error_threshold', type=float)
+parser.add_argument('--tf_sample_size', type=int)
+parser.add_argument('--estimate_intrinsics', action='store_true')
+parser.add_argument('--square_pixels', action='store_true')
+parser.add_argument('--shared_focals', action='store_true')
 parser.add_argument('--depth_scale', type=float, default=1000)
 
 opt = parser.parse_args()
@@ -33,7 +50,8 @@ sys.path.append('../slam_py')
 #sys.path.append('./lib_p3plt_gpu')
 #sys.path.append('./lib_rnp')
 #sys.path.append('./lib_build_260414')
-sys.path.append('./lib_poselib_test')
+#sys.path.append('./lib_poselib_test')
+sys.path.append('./lib_focal_test_2026_05_26')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
@@ -47,9 +65,18 @@ if __name__ == '__main__':
     # init slam instance and select mode from mono/mono-scaled/stereo
     slam = VOLDOR_SLAM(mode=opt.mode)
 
+    extra_args = ''
+    extra_args += f'--multiview_mode {opt.multiview_mode} --solver_select {opt.solver_select} '
+    extra_args += f'--batch_workers {opt.batch_workers} ' + ('--batch_unique' if (opt.batch_unique) else '') + f' '
+    extra_args += ('--disparities_enable' if (opt.disparities_enable) else '') + f' ' + ('--disparities_use_0' if (opt.disparities_use_0) else '') + f' '
+    extra_args += f'--rs_direction {opt.rs_direction} --rs_r0 {opt.rs_r0} --rs_iterations {opt.rs_iterations} '
+    extra_args += f'--tf_threshold {opt.tf_threshold} ' + ('--tf_enable_next_pool' if (opt.tf_enable_next_pool) else '') + f' ' + ('--tf_enable_flow_2' if (opt.tf_enable_flow_2) else '') + f' ' + ('--tf_use_flow_2' if (opt.tf_use_flow_2) else '') + f' --tf_squared_error_threshold {opt.tf_squared_error_threshold} --tf_sample_size {opt.tf_sample_size} '
+    extra_args += ('--estimate_intrinsics' if (opt.estimate_intrinsics) else '') + f' ' + ('--square_pixels' if (opt.square_pixels) else '') + f' ' + ('--shared_focals' if (opt.shared_focals) else '') + f' '
+
     # set camera intrinsic
     slam.set_cam_params(opt.fx,opt.fy,opt.cx,opt.cy,opt.bf, rescale=opt.resize, depth_scale=opt.depth_scale)
-    slam.voldor_user_config = f'--abs_resize_factor {opt.abs_resize} --solver_select {opt.solver_select}'
+    slam.voldor_user_config = f'--abs_resize_factor {opt.abs_resize} ' + extra_args
+    print(slam.voldor_user_config)
 
     # enable loop closure
     if opt.enable_loop_closure is not None:
