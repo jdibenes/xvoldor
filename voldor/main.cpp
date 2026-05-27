@@ -37,28 +37,40 @@ int main(int argc, char* argv[])
 	char const* cfg =
 		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 4 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
-		"--multiview_mode 2 --solver_select 3 --batch_workers 18 ";
+		"--multiview_mode 2 --solver_select 16 --batch_workers 18 ";
 		//"--multiview_mode 3 --solver_select 26 --batch_workers 18 ";
 	    //"--multiview_mode 2 --solver_select 33 --batch_workers 18 --estimate_intrinsics --square_pixels --shared_focals ";
 		//"--multiview_mode 3 --solver_select 24 --tf_sample_size 9 --batch_workers 18 --disparities_enable --tf_enable_flow_2 "; // --tf_enable_next_pool --tf_use_flow_2 
 
-	float fx = 586.27075;
-	float fy = 586.27075;
-	float cx = 374.04108;//760.0 / 2.0;//374.04108;
-	float cy = 202.26265;//428.0 / 2.0;//202.26265;
-	float basefocal = 117.254150390625;
-	//float basefocal = 0.2000000006662877; // for estimate intrinsics
-	int N = 4;
-	int w = 760;
-	int h = 428;
+	//float fx = 586.27075;
+	//float fy = 586.27075;
+	//float cx = 374.04108;//760.0 / 2.0;//374.04108;
+	//float cy = 202.26265;//428.0 / 2.0;//202.26265;
+	//float basefocal = 117.254150390625;
+	////float basefocal = 0.2000000006662877; // for estimate intrinsics
+	int N = 5;
+	//int w = 760;
+	//int h = 428;
+	//370.00048828125, 370.00048828125, 477.6654968261719, 270.8048095703125, 44.458960801608859567705078125
+	float fx = 370.00048828125;
+	float fy = 370.00048828125;
+	float cx = 477.6654968261719;//760.0 / 2.0;//374.04108;
+	float cy = 270.8048095703125;//428.0 / 2.0;//202.26265;
+	float basefocal = 44.458960801608859567705078125;
+	int w = 960;
+	int h = 560;
 
-	int fid = 61;
-	int last = 253;
+	int fid = 0;
+	int last = 4000;
 
-	char const* const flow_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt";
-	char const* const flow_2_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt";
-	char const* const disp_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt";
-	char const* const poses_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose";
+	//char const* const flow_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt";
+	//char const* const flow_2_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt";
+	//char const* const disp_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/disp_gt";
+	//char const* const poses_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/pose";
+	char const* const flow_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/zed_x_etna_1/flow_searaft";
+	char const* const flow_2_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/zed_x_etna_1/flow_2_searaft";
+	char const* const disp_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/zed_x_etna_1/disp_searaft";
+	char const* const poses_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/zed_x_etna_1/pose";
 	char path[260];
 
 	std::unique_ptr<float[]> flows_pt = std::make_unique<float[]>(N * w * h * 2);
@@ -92,21 +104,26 @@ int main(int argc, char* argv[])
 
 		for (int i = 0; i < N; ++i)
 		{
-			sprintf(path, "%s/%06d.flo", flow_path, fid + i);
+			//sprintf(path, "%s/%06d.flo", flow_path, fid + i);
+			sprintf(path, "%s/left%06d.flo", flow_path, fid + i);
 			load_file(path, flows_pt.get() + i * (w * h * 2), 12, -1);
 		}
 		for (int i = 0; i < (N - 1); ++i)
 		{
-			sprintf(path, "%s/%06d.flo", flow_2_path, fid + i);
+			//sprintf(path, "%s/%06d.flo", flow_2_path, fid + i);
+			sprintf(path, "%s/left%06d.flo", flow_2_path, fid + i);
 			load_file(path, flows_2_pt.get() + i * (w * h * 2), 12, -1);
 		}
-		sprintf(path, "%s/%06d.flo", disp_path, fid);
+		//sprintf(path, "%s/%06d.flo", disp_path, fid);
+		sprintf(path, "%s/left%06d.flo", disp_path, fid);
 		load_file(path, disparity_pt.get(), 12, -1);
 		for (int i = 0; i < (N + 1); ++i)
 		{
-			sprintf(path, "%s/%06d.flo", disp_path, fid + i);
+			//sprintf(path, "%s/%06d.flo", disp_path, fid + i);
+			sprintf(path, "%s/left%06d.flo", disp_path, fid + i);
 			load_file(path, disparities_pt.get() + i * (w * h * 2), 12, -1);
 		}
+		/*
 		for (int i = 0; i < (N + 1); ++i)
 		{
 			sprintf(path, "%s/%06d.bin", poses_path, fid + i);
@@ -116,6 +133,7 @@ int main(int argc, char* argv[])
 		{
 			gt_relposes[i] = gt_poses[i + 1].inverse() * gt_poses[i];
 		}
+		*/
 		for (int i = 0; i < (w * h); ++i)
 		{
 			disparity_pt[i] = -disparity_pt[2 * i];
@@ -141,7 +159,11 @@ int main(int argc, char* argv[])
 			depth_conf.get()
 		);
 		std::cout << "fid " << fid << " registered " << n_registered << std::endl;
-		if (n_registered <= 0) { break; }
+		if (n_registered <= 0) {
+			fid++;
+			continue;
+			break;
+		}
 		fid += n_registered;
 		for (int i = 0; i < n_registered; ++i)
 		{
@@ -150,6 +172,7 @@ int main(int argc, char* argv[])
 				std::cout << poses[6 * i + j];
 				if (j < 5) { std::cout << ", "; }
 			}
+			/*
 			Eigen::Matrix<float, 3, 3> R_gt = gt_relposes[i](Eigen::seqN(0, 3), Eigen::seqN(0, 3));
 			Eigen::Matrix<float, 3, 1> r_gt = vector_r_rodrigues(R_gt);
 			Eigen::Matrix<float, 3, 1> t_gt = gt_relposes[i](Eigen::seqN(0, 3), 3);
@@ -162,12 +185,13 @@ int main(int argc, char* argv[])
 			std::cout << " | Errors: " << (errors(0) * rad_to_deg) << ", " << errors(1) << " (" << ang_error << ")";
 			std::cout << std::endl;
 			if (ang_error > max_t_ang_error) { max_t_ang_error = ang_error; }
+			*/
 		}
 
 		std::cout << "batch time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 	}
 
-	std::cout << "MAX t ANG ERROR " << max_t_ang_error << std::endl;
+	//std::cout << "MAX t ANG ERROR " << max_t_ang_error << std::endl;
 
 	return 0;
 }
