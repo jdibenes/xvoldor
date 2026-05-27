@@ -28,8 +28,8 @@ big_table = [
 ]
 
 if __name__ == '__main__':
-    multiview_mode = 3
-    solver_id = 24
+    multiview_mode = 2
+    solver_id = 16
 
     batch_workers = 18
     batch_unique = False
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     rs_iterations = 5
 
     tf_threshold = 0.0
-    tf_enable_next_pool = False
+    tf_enable_next_pool = True
     tf_enable_flow_2 = False
     tf_use_flow_2 = False
     tf_squared_error_threshold = 100000.0
