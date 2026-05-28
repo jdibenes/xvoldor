@@ -2,7 +2,7 @@
 #include <limits>
 #include <Eigen/Eigen>
 #include <polynomial/polynomial.h>
-#include "algebra.h"
+#include "helpers_algebra.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 

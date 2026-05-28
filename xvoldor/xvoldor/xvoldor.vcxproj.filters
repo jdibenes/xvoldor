@@ -402,7 +402,7 @@
     <ClInclude Include="..\..\thirdparty\rnp\sturm.h">
       <Filter>Libraries\rnp</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\algebra.h">
+    <ClInclude Include="..\..\voldor\helpers_algebra.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
   </ItemGroup>

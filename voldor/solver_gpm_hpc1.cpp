@@ -1,7 +1,7 @@
 
 #include <Eigen/Eigen>
 #include "solvers.h"
-#include "algebra.h"
+#include "helpers_algebra.h"
 #include "helpers.h"
 #include "helpers_eigen.h"
 

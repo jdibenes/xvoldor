@@ -115,7 +115,7 @@
     <ClInclude Include="..\..\thirdparty\rnp\rnp.h" />
     <ClInclude Include="..\..\thirdparty\rnp\sturm.h" />
     <ClInclude Include="..\..\thirdparty\rnp\utils.h" />
-    <ClInclude Include="..\..\voldor\algebra.h" />
+    <ClInclude Include="..\..\voldor\helpers_algebra.h" />
     <ClInclude Include="..\..\voldor\batch_solvers.h" />
     <ClInclude Include="..\..\voldor\batch_cpu_solver.h" />
     <ClInclude Include="..\..\voldor\config.h" />

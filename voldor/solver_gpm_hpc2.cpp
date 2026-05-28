@@ -1,7 +1,7 @@
 
 #include <limits>
 #include <Eigen/Eigen>
-#include "algebra.h"
+#include "helpers_algebra.h"
 #include "helpers.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
