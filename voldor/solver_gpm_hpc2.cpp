@@ -2,7 +2,7 @@
 #include <limits>
 #include <Eigen/Eigen>
 #include "helpers_algebra.h"
-#include "helpers.h"
+#include "helpers_math.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 

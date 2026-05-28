@@ -2,7 +2,7 @@
 #include <Eigen/Eigen>
 #include "solvers.h"
 #include "helpers_algebra.h"
-#include "helpers.h"
+#include "helpers_math.h"
 #include "helpers_eigen.h"
 
 bool solver_gpm_hpc1(float const* p3d_1, float const* p3d_2, float* r_12, float* t_12)
