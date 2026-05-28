@@ -413,13 +413,7 @@
     <ClCompile Include="..\..\voldor\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\voldor_utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\voldor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="x_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\kitti.cpp">
@@ -512,7 +506,7 @@
     <ClCompile Include="..\..\voldor\batch_gpu_solver_p4p.cpp">
       <Filter>Source Files\batch_solve</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\voldor\lock.cpp">
+    <ClCompile Include="..\..\voldor\helpers_lock.cpp">
       <Filter>Source Files\helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_ppf_p4pf.cpp">
@@ -724,6 +718,9 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_tft_4p3vaffine.cpp">
       <Filter>Source Files\solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\helpers_file.cpp">
+      <Filter>Source Files\helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

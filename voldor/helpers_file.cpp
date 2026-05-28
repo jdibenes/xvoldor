@@ -1,9 +1,7 @@
 
-
 #include <stdio.h>
 #include <string>
 #include <stdexcept>
-
 
 void load_file(char const* filename, void* buffer, int offset, int count)
 {
@@ -12,8 +10,8 @@ void load_file(char const* filename, void* buffer, int offset, int count)
     int bytes;
     if (count < 0)
     {
-        fseek(f, 0, SEEK_END);
-        bytes = ftell(f) - offset;
+    fseek(f, 0, SEEK_END);
+    bytes = ftell(f) - offset;
     }
     else
     {

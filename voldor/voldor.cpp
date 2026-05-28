@@ -431,12 +431,12 @@ VOLDOR::save_result
 
 	if (cfg.save_everything) {
 		// save rigidness maps and flow viz
-		for (int i = 0; i < flows_1.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "flow-" + std::to_string(i) + ".png", 255 * vis_flow(flows_1[i]));
+		//for (int i = 0; i < flows_1.size(); i++)
+		//	cv::imwrite(save_dir + PATH_SEPARATOR + "flow-" + std::to_string(i) + ".png", 255 * vis_flow(flows_1[i]));
 		for (int i = 0; i < rigidnesses.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "rigidness-" + std::to_string(i) + ".png", rigidnesses[i]);
+			cv::imwrite(save_dir + PATH_SEPARATOR + "rigidness-" + std::to_string(i) + ".png", rigidnesses[i]);
 		for (int i = 0; i < depth_prior_confs.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "depth_prior_conf-" + std::to_string(i) + ".png", depth_prior_confs[i]);
+			cv::imwrite(save_dir + PATH_SEPARATOR + "depth_prior_conf-" + std::to_string(i) + ".png", depth_prior_confs[i]);
 	}
 
 	if (!cfg.silent) {

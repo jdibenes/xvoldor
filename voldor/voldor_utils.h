@@ -83,6 +83,48 @@ struct Camera
 };
 
 
+/*
 cv::Mat vis_flow(cv::Mat flow, float mag_scale = 0);
 
 cv::Mat load_flow(const char* file_path);
+*/
+/*
+#include "voldor_utils.h"
+
+cv::Mat vis_flow(cv::Mat flow, float mag_scale) {
+	cv::Mat flow_xy[2];
+	cv::Mat mag, angle;
+	split(flow, flow_xy);
+	cv::cartToPolar(flow_xy[0], flow_xy[1], mag, angle, true);
+	if (mag_scale <= 0)
+		normalize(mag, mag, 0, 1, cv::NORM_MINMAX);
+	else
+		mag /= mag_scale;
+	cv::Mat dst;
+	std::vector<cv::Mat> src{ angle, mag, cv::Mat::ones(flow.size(), CV_32F) };
+	merge(src, dst);
+	cvtColor(dst, dst, cv::COLOR_HSV2BGR);
+	return dst;
+}
+
+
+cv::Mat load_flow(const char* file_path) {
+	FILE* fs = fopen(file_path, "rb");
+	if (fs == NULL) {
+		std::cout << file_path << " does not exist~!" << std::endl;
+		throw;
+	}
+
+	float magic_num = 0;
+	int w = 0, h = 0;
+	fread(&magic_num, sizeof(float), 1, fs);
+	assert(magic_num == 202021.25f);
+	fread(&w, sizeof(int), 1, fs);
+	fread(&h, sizeof(int), 1, fs);
+
+	cv::Mat flow(cv::Size(w, h), CV_32FC2);
+	fread(flow.data, sizeof(float), w*h * 2, fs);
+	fclose(fs);
+	return flow;
+}
+*/
