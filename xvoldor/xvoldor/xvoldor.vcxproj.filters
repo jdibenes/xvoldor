@@ -150,7 +150,7 @@
     <ClInclude Include="..\..\thirdparty\lambdatwist\solve_eig0.h">
       <Filter>Libraries\lambdatwist</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\batch_solver.h">
+    <ClInclude Include="..\..\voldor\batch_solvers.h">
       <Filter>Header Files\batch_solve</Filter>
     </ClInclude>
     <ClInclude Include="..\..\thirdparty\PoseLib\alignment.h">
