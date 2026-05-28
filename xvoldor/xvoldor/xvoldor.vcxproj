@@ -125,7 +125,7 @@
     <ClInclude Include="..\..\voldor\helpers_geometry.h" />
     <ClInclude Include="..\..\voldor\helpers_opencv.h" />
     <ClInclude Include="..\..\voldor\kitti.h" />
-    <ClInclude Include="..\..\voldor\lock.h" />
+    <ClInclude Include="..\..\voldor\helpers_lock.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
     <ClInclude Include="..\..\voldor\solvers.h" />
     <ClInclude Include="..\..\voldor\voldor_utils.h" />

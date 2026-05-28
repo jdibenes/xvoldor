@@ -93,7 +93,7 @@
     <ClInclude Include="..\..\voldor\helpers.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\voldor\lock.h">
+    <ClInclude Include="..\..\voldor\helpers_lock.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_geometry.h">
