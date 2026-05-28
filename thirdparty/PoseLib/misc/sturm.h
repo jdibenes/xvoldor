@@ -95,7 +95,7 @@ template <int N> inline double polyval(const double *f, double x) {
 
 // Daniel Thul is responsible for this template-trickery :)
 template <int D> inline unsigned int flag_negative(const double *const f) {
-    return ((f[D] < 0) << D) | flag_negative<D - 1>(f);
+    return ((f[D] < 0) << (D)) | flag_negative<D - 1>(f);
 }
 template <> inline unsigned int flag_negative<0>(const double *const f) { return f[0] < 0; }
 // Evaluates the sturm sequence and counts the number of sign changes
