@@ -1,7 +1,7 @@
 
 #include <PoseLib/robust.h>
 #include "geometry.h"
-#include "batch_solver.h"
+#include "batch_solvers.h"
 #include "helpers_opencv.h"
 
 #include "../gpu-kernels/gpu_kernels.h"
