@@ -289,7 +289,7 @@ static int solver_4p3v(const Eigen::Matrix<double, 2, 4>& x1, const Eigen::Matri
     Solution sol;
 
     // Relative depths
-    Eigen::Matrix<double, 1, 3> z1, z2, z3;
+    //Eigen::Matrix<double, 1, 3> z1, z2, z3;
 
     solver_4p3v_para(x1c, x2c, x3c, &sol);
 
