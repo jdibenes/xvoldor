@@ -29,5 +29,7 @@ py_voldor_wrapper
 	float* poses,
 	float* poses_covar,
 	float* depth,
-	float* depth_conf
+	float* depth_conf,
+	// EXTRA
+	float* focals
 );

@@ -30,7 +30,9 @@ py_voldor_wrapper
 	float* poses_pt,
 	float* poses_covar_pt,
 	float* depth_pt,
-	float* depth_conf_pt
+	float* depth_conf_pt,
+	// EXTRA
+	float* focals
 )
 {
 	std::istringstream iss(config_pt);
@@ -121,6 +123,9 @@ py_voldor_wrapper
 		depth_conf /= (float)(voldor.n_flows + voldor.n_depth_priors);
 		memcpy(depth_conf_pt, depth_conf.data, w * h * sizeof(float));
 	}
+
+	focals[0] = voldor.cams[0].K.at<float>(0, 0);
+	focals[1] = voldor.cams[0].K.at<float>(1, 1);
 
 	if (cfg.full_log) { std::cout << "VOLDOR RETURN" << std::endl; }
 

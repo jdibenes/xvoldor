@@ -15,31 +15,37 @@
 using namespace cv;
 using namespace std;
 
+
+
 int main(int argc, char* argv[])
 {
 	char const* cfg =
 		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 5 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
-		"--multiview_mode 2 --solver_select 3 --batch_workers 18 ";
+		"--multiview_mode 2 --solver_select 3 --batch_workers 18 --estimate_intrinsics --square_pixels --shared_focals ";
+		//"--multiview_mode 2 --solver_select 3 --batch_workers 18 ";
 		//"--multiview_mode 3 --solver_select 26 --batch_workers 18 ";
-	    //"--multiview_mode 2 --solver_select 33 --batch_workers 18 --estimate_intrinsics --square_pixels --shared_focals ";
+	    
 		//"--multiview_mode 3 --solver_select 24 --tf_sample_size 9 --batch_workers 18 --disparities_enable --tf_enable_flow_2 "; // --tf_enable_next_pool --tf_use_flow_2 
 
-	float fx = 586.27075;
-	float fy = 586.27075;
-	float cx = 374.04108;//760.0 / 2.0;//374.04108;
-	float cy = 202.26265;//428.0 / 2.0;//202.26265;
-	float basefocal = 117.254150390625;
-	//float basefocal = 0.2000000006662877; // for estimate intrinsics
 	int N = 5;
 	int w = 760;
 	int h = 428;
 
-	int fid = 61;
-	int last = 250;
+	float fx = 586.27075;
+	float fy = 586.27075;
+	float cx = 374.04108;
+	float cy = 202.26265;
+	float basefocal = 117.254150390625;
 	
+	//float cx = w / 2.0;
+	//float cy = h / 2.0;
+	float basefocal = 0.2000000006662877; // for estimate intrinsics
 	
 
+
+	int fid = 61;
+	int last = 250;
 
 	char const* const flow_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_gt";
 	char const* const flow_2_path = "C:/Users/jcds/Documents/GitHub/xvoldor/demo/data/hl2_5/flow_2_gt";
@@ -48,9 +54,7 @@ int main(int argc, char* argv[])
 	char const* const pattern = "%06d.flo";
 	char const* const pattern_poses = "%06d.bin";
 	
-	char path[260];
-
-	std::unique_ptr<float[]> flows_pt = std::make_unique<float[]>(N * w * h * 2);
+	std::unique_ptr<float[]> flows_1_pt = std::make_unique<float[]>(N * w * h * 2);
 	std::unique_ptr<float[]> flows_2_pt = std::make_unique<float[]>((N - 1) * w * h * 2);
 	std::unique_ptr<float[]> disparity_pt = std::make_unique<float[]>(w * h * 2);
 	std::unique_ptr<float[]> disparities_pt = std::make_unique<float[]>((N + 1) * w * h * 2);
@@ -61,6 +65,9 @@ int main(int argc, char* argv[])
 	std::unique_ptr<float[]> depth = std::make_unique<float[]>(w * h);
 	std::unique_ptr<float[]> depth_conf = std::make_unique<float[]>(w * h);
 
+	float focals[2];
+
+
 	float max_t_ang_error = 0;
 
 	while ((fid + N) < last)
@@ -69,7 +76,7 @@ int main(int argc, char* argv[])
 
 		int n_registered = -1;
 
-		load_window_flow(flow_path, pattern, fid, fid + N, flows_pt.get(), false, w, h);		
+		load_window_flow(flow_path, pattern, fid, fid + N, flows_1_pt.get(), false, w, h);		
 		load_window_flow(flow_2_path, pattern, fid, fid + N - 1, flows_2_pt.get(), false, w, h);		
 		load_window_flow(disp_path, pattern, fid, fid + 1, disparity_pt.get(), false, w, h);		
 		load_window_flow(disp_path, pattern, fid, fid + N + 1, disparities_pt.get(), false, w, h);		
@@ -79,7 +86,7 @@ int main(int argc, char* argv[])
 		for (int i = 0; i < ((N + 1) * w * h); ++i) { disparities_pt[i] = -disparities_pt[2 * i]; }
 
 		py_voldor_wrapper(
-			flows_pt.get(),
+			flows_1_pt.get(),
 			flows_2_pt.get(),
 			disparities_pt.get(),
 			disparity_pt.get(),
@@ -92,9 +99,12 @@ int main(int argc, char* argv[])
 			poses.get(),
 			poses_covar.get(),
 			depth.get(),
-			depth_conf.get()
+			depth_conf.get(),
+			focals
 		);
+
 		std::cout << "fid " << fid << " registered " << n_registered << std::endl;
+		std::cout << "focals " << focals[0] << ", " << focals[1] << std::endl;
 		if (n_registered <= 0) {
 			fid++;
 			continue;
@@ -136,6 +146,8 @@ int main(int argc, char* argv[])
 
 
 
+
+//char path[260];
 
 //370.00048828125, 370.00048828125, 477.6654968261719, 270.8048095703125, 44.458960801608859567705078125
 	//float fx = 370.00048828125;
