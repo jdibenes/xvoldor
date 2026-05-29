@@ -120,6 +120,7 @@
     <ClInclude Include="..\..\voldor\batch_cpu_solver.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
+    <ClInclude Include="..\..\voldor\helpers_file.h" />
     <ClInclude Include="..\..\voldor\helpers_math.h" />
     <ClInclude Include="..\..\voldor\helpers_eigen.h" />
     <ClInclude Include="..\..\voldor\helpers_geometry.h" />

@@ -405,6 +405,9 @@
     <ClInclude Include="..\..\voldor\helpers_algebra.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\helpers_file.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\geometry.cpp">

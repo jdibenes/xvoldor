@@ -106,25 +106,4 @@ cv::Mat vis_flow(cv::Mat flow, float mag_scale) {
 	cvtColor(dst, dst, cv::COLOR_HSV2BGR);
 	return dst;
 }
-
-
-cv::Mat load_flow(const char* file_path) {
-	FILE* fs = fopen(file_path, "rb");
-	if (fs == NULL) {
-		std::cout << file_path << " does not exist~!" << std::endl;
-		throw;
-	}
-
-	float magic_num = 0;
-	int w = 0, h = 0;
-	fread(&magic_num, sizeof(float), 1, fs);
-	assert(magic_num == 202021.25f);
-	fread(&w, sizeof(int), 1, fs);
-	fread(&h, sizeof(int), 1, fs);
-
-	cv::Mat flow(cv::Size(w, h), CV_32FC2);
-	fread(flow.data, sizeof(float), w*h * 2, fs);
-	fclose(fs);
-	return flow;
-}
 */
