@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	char const* cfg =
 		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 5 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
-		"--multiview_mode 2 --solver_select 3 --batch_workers 18 --estimate_intrinsics --square_pixels --shared_focals ";
+		"--multiview_mode 2 --solver_select 33 --batch_workers 18 --estimate_intrinsics --square_pixels --shared_focals ";
 		//"--multiview_mode 2 --solver_select 3 --batch_workers 18 ";
 		//"--multiview_mode 3 --solver_select 26 --batch_workers 18 ";
 	    
@@ -36,14 +36,12 @@ int main(int argc, char* argv[])
 	float fy = 586.27075;
 	float cx = 374.04108;
 	float cy = 202.26265;
-	float basefocal = 117.254150390625;
+	//float basefocal = 117.254150390625;
 	
 	//float cx = w / 2.0;
 	//float cy = h / 2.0;
 	float basefocal = 0.2000000006662877; // for estimate intrinsics
 	
-
-
 	int fid = 61;
 	int last = 250;
 
@@ -67,8 +65,14 @@ int main(int argc, char* argv[])
 
 	float focals[2];
 
+	float mean_r_error = 0;
+	float mean_t_error = 0;
+	float mean_a_error = 0;
+	float mean_f_error = 0;
+	float frame_count = 0;
+	float fail_count = 0;
 
-	float max_t_ang_error = 0;
+	//float max_t_ang_error = 0;
 
 	while ((fid + N) < last)
 	{
@@ -107,10 +111,12 @@ int main(int argc, char* argv[])
 		std::cout << "focals " << focals[0] << ", " << focals[1] << std::endl;
 		if (n_registered <= 0) {
 			fid++;
+			fail_count++;
 			continue;
 			//break;
 		}
 		fid += n_registered;
+		frame_count += n_registered;
 		for (int i = 0; i < n_registered; ++i)
 		{
 			std::cout << "pose (" << i << ")" << std::endl;
@@ -130,15 +136,27 @@ int main(int argc, char* argv[])
 			float rad_to_deg = (180.0f / 3.14159265359f);
 			float ang_error = std::acos(clamp(t_gt.normalized().dot(t_et.normalized()),-1.0f, 1.0f)) * rad_to_deg;
 			std::cout << " | Errors: " << (errors(0) * rad_to_deg) << ", " << errors(1) << " (" << ang_error << ")";
+
+			mean_r_error += (errors(0) * rad_to_deg);
+			mean_t_error += errors(1);
+			mean_a_error += ang_error;
+			mean_f_error += abs(focals[0] - fx);
+
 			std::cout << std::endl;
-			if (ang_error > max_t_ang_error) { max_t_ang_error = ang_error; }
+			//if (ang_error > max_t_ang_error) { max_t_ang_error = ang_error; }
 			//*/
 		}
 
 		std::cout << "batch time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
 	}
 
-	std::cout << "MAX t ANG ERROR " << max_t_ang_error << std::endl;
+	std::cout << "mean_r_error: " << (mean_r_error / frame_count) << std::endl;
+	std::cout << "mean_t_error: " << (mean_t_error / frame_count) << std::endl;
+	std::cout << "mean_a_error: " << (mean_a_error / frame_count) << std::endl;
+	std::cout << "mean_f_error: " << (mean_f_error / frame_count) << std::endl;
+	std::cout << "frame_count: " << frame_count << " - " << " fail count: " << fail_count << std::endl;
+
+	//std::cout << "MAX t ANG ERROR " << max_t_ang_error << std::endl;
 
 	return 0;
 }
