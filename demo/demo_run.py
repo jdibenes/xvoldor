@@ -48,9 +48,9 @@ if __name__ == '__main__':
     tf_squared_error_threshold = 100000.0
     tf_sample_size = 7
 
-    estimate_intrinsics = False
-    square_pixels = False
-    shared_focals = False
+    estimate_intrinsics = True
+    square_pixels = True
+    shared_focals = True
 
     sequence_index = 22
     toolset = 'searaft'
