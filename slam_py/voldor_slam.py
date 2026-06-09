@@ -489,7 +489,7 @@ class VOLDOR_SLAM:
                 raise 'Flow 2 loader not working or files are missing.'
             if self.mode=='stereo':
                 #if not self.disp_loader_sync(self.fid_cur):
-                if not self.disp_loader_sync(min(self.fid_cur+self.voldor_winsize+1, self.N_FRAMES-1)):
+                if not self.disp_loader_sync(min(self.fid_cur+self.voldor_winsize, self.N_FRAMES-2)):
                     print('MISSING DISP')
                     raise 'Disparity loader not working or files are missing.'
                 
