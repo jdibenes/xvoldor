@@ -48,9 +48,9 @@ if __name__ == '__main__':
     tf_squared_error_threshold = 100000.0
     tf_sample_size = 7
 
-    estimate_intrinsics = True
-    square_pixels = True
-    shared_focals = True
+    estimate_intrinsics = False
+    square_pixels = False
+    shared_focals = False
 
     sequence_index = 22
     toolset = 'searaft'
@@ -59,8 +59,8 @@ if __name__ == '__main__':
 
     mode_name = 'stereo'
     set_save_pose = True
-    set_enable_mapping = False
-    set_enable_loop_closure = False
+    set_enable_mapping = True
+    set_enable_loop_closure = True
     full_log = True
 
     extra_args = ''
