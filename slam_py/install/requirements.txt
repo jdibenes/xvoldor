@@ -5,4 +5,4 @@ matplotlib
 PyOpenGL
 PyOpenGL-accelerate
 scikit-learn
-opencv-python==3.4.14.53
+opencv-python==3.4.16.59
