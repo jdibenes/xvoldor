@@ -135,7 +135,7 @@ class VOLDOR_SLAM:
         self.disable_local_mapping = False
 
         # extended options
-        self.enable_flow_2 = True # load stride 2 flows for trifocal solvers
+        self.enable_flow_2 = False # load stride 2 flows for trifocal solvers
 
         # internal use
         self._use_loop_closure = False
@@ -244,9 +244,7 @@ class VOLDOR_SLAM:
                 return False
             time.sleep(0.01)
         return True
-        
 
-        
     def flow_loader(self, flow_path, resize=1.0, n_cache=100, range=(0,0)):
         self.flow_loader_pt = 0
 
@@ -254,7 +252,9 @@ class VOLDOR_SLAM:
         if range != (0,0):
             flow_fn_list = flow_fn_list[range[0]:range[1]]
         print(f'{len(flow_fn_list)} flows loaded')
+
         flow_example = load_flow(os.path.join(flow_path, flow_fn_list[0]))
+        
         self.N_FRAMES = len(flow_fn_list)+1
         self.h = int(flow_example.shape[0]*resize)
         self.w = int(flow_example.shape[1]*resize)
@@ -345,7 +345,7 @@ class VOLDOR_SLAM:
                 disp = np.ascontiguousarray(disp)
             elif fn.endswith('.png'):
                 disp = cv2.imread(os.path.join(disp_path, fn), cv2.IMREAD_UNCHANGED)
-                disp = np.nan_to_num(self.basefocal / (disp.astype(np.float32) / self.depth_scale), nan=0, posinf=0, neginf=0)                
+                disp = np.nan_to_num(self.basefocal / (disp.astype(np.float32) / self.depth_scale), nan=0, posinf=0, neginf=0) # TODO: BASEFOCAL
             else:
                 raise f'Unsupported disparity format {fn}'
 
@@ -499,22 +499,7 @@ class VOLDOR_SLAM:
                 disp_wnd = self.disps[self.fid_cur:self.fid_cur+self.voldor_winsize+1]
             else:
                 disp_wnd = []
-
-                
-
-            #if not self.disp_loader_sync(self.fid_cur):
-            #flows_1_arg = 
-            #print(f'FLOWS 1 SHAPE {flows_1_arg.shape} {flows_1_arg.dtype}')
-            #flows_2_arg = 
-            #print(f'FLOWS 2 SHAPE {flows_2_arg.shape} {flows_2_arg.dtype}')
-            #print(f'disps len: {len(self.disps)}')
-            #disp_arg = 
-            #if (disp_arg is None):
-            #    print("DISP SHAPE NOT AVAILABLE")
-            #else:
-            #    print(f'DISP SHAPE {disp_arg.shape} {disp_arg.dtype}')
-            
-            
+                        
             py_voldor_kwargs = {
                 'flows'   : np.stack(flows_1_wnd, axis=0),
                 'flows_2' : np.stack(flows_2_wnd, axis=0) if len(flows_2_wnd)>0 else None,
@@ -530,6 +515,8 @@ class VOLDOR_SLAM:
                 'disparities' : np.stack(disp_wnd, axis=0) if len(disp_wnd)>0 else None,
                 'config' : self.voldor_config + ' ' + self.voldor_user_config
             }
+
+
 
             py_voldor_funmap = partial(pyvoldor.voldor, **py_voldor_kwargs)
             print('BEFORE_VOLDOR')
