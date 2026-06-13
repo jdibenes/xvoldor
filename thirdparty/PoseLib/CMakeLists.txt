@@ -7,8 +7,15 @@ set(SOURCES
     solvers/p2p2pl.cc
     solvers/p3ll.cc
     solvers/p3p.cc
-    solvers/p3p_ding.cc
+    solvers/p3p_lambdatwist.cc
     solvers/p4pf.cc
+    solvers/p35pf.cc
+    solvers/p5pf.cc
+    solvers/p5pfr.cc
+    solvers/p3p1llf.cc
+    solvers/p2p2llf.cc
+    solvers/p1p3llf.cc
+    solvers/p4llf.cc
     solvers/p5lp_radial.cc
     solvers/p6lp.cc
     solvers/ugp2p.cc
@@ -23,31 +30,37 @@ set(SOURCES
     solvers/relpose_upright_planar_3pt.cc
     solvers/relpose_8pt.cc
     solvers/relpose_5pt.cc
+    solvers/relpose_monodepth_3pt.cc
     solvers/relpose_7pt.cc
     solvers/relpose_6pt_focal.cc
-    solvers/relpose_affine_4p.cc
+    solvers/relpose_k2Fk1_10pt.cc
+    solvers/relpose_kFk_9pt.cc
+    solvers/relpose_monodepth_3pt_shared_focal.cc
+    solvers/relpose_monodepth_3pt_varying_focal.cc
     solvers/gen_relpose_upright_4pt.cc
     solvers/gen_relpose_5p1pt.cc
     solvers/gen_relpose_6pt.cc
     solvers/homography_4pt.cc
-    solvers/threeview_hc.cc
-    solvers/threeview_para.cc
-    solvers/threeview_nister.cc
     misc/qep.cc
     misc/univariate.cc
     misc/essential.cc
     misc/re3q3.cc
-    misc/colmap_models.cc
+    misc/camera_models.cc
     misc/decompositions.cc
     robust.cc
     robust/ransac.cc
+    robust/robust_loss.cc
     robust/bundle.cc
     robust/utils.cc
     robust/sampling.cc
+    robust/recalibrator.cc
     robust/estimators/absolute_pose.cc
     robust/estimators/relative_pose.cc
     robust/estimators/hybrid_pose.cc
     robust/estimators/homography.cc
+    robust/optim/lm_impl.cc
+    robust/hybrid_ransac.cc
+    robust/hybrid_estimators/hybrid_point_line_absolute_pose.cc
 )
 
 # Set HEADERS_PUBLIC variable
@@ -60,8 +73,16 @@ set(HEADERS_PUBLIC
     solvers/p2p2pl.h
     solvers/p3ll.h
     solvers/p3p.h
-    solvers/p3p_ding.h
+    solvers/p3p_lambdatwist.h
     solvers/p4pf.h
+    solvers/p35pf.h
+    solvers/p5pf.h
+    solvers/p5pfr.h
+    solvers/pnplf_impl.h
+    solvers/p3p1llf.h
+    solvers/p2p2llf.h
+    solvers/p1p3llf.h
+    solvers/p4llf.h
     solvers/p5lp_radial.h
     solvers/p6lp.h
     solvers/ugp2p.h
@@ -76,18 +97,19 @@ set(HEADERS_PUBLIC
     solvers/relpose_upright_planar_3pt.h
     solvers/relpose_8pt.h
     solvers/relpose_5pt.h
+    solvers/relpose_monodepth_3pt.h
     solvers/relpose_7pt.h
     solvers/relpose_6pt_focal.h
-    solvers/relpose_affine_4p.h
+    solvers/relpose_k2Fk1_10pt.h
+    solvers/relpose_kFk_9pt.h
+    solvers/relpose_monodepth_3pt_shared_focal.h
+    solvers/relpose_monodepth_3pt_varying_focal.h
     solvers/gen_relpose_upright_4pt.h
     solvers/gen_relpose_5p1pt.h
     solvers/gen_relpose_6pt.h
     solvers/homography_4pt.h
-    solvers/threeview_hc.h
-    solvers/threeview_para.h
-    solvers/threeview_nister.h
     misc/quaternion.h
-    misc/colmap_models.h
+    misc/camera_models.h
     misc/qep.h
     misc/univariate.h
     misc/sturm.h
@@ -103,12 +125,13 @@ set(HEADERS_PUBLIC
     robust/bundle.h
     robust/utils.h
     robust/sampling.h
-    robust/lm_impl.h
-    robust/jacobian_impl.h
     robust/estimators/absolute_pose.h
     robust/estimators/relative_pose.h
     robust/estimators/hybrid_pose.h
     robust/estimators/homography.h
+    robust/hybrid_ransac.h
+    robust/hybrid_ransac_impl.h
+    robust/hybrid_estimators/hybrid_point_line_absolute_pose.h
 )
 
 # Set HEADERS_PRIVATE variable

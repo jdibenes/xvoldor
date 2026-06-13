@@ -26,12 +26,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef POSELIB_ROBUST_TYPES_H_
-#define POSELIB_ROBUST_TYPES_H_
+#pragma once
 
 #include "alignment.h"
 
 #include <Eigen/Dense>
+#include <limits>
 #include <vector>
 
 namespace poselib {
@@ -39,36 +39,14 @@ namespace poselib {
 struct RansacOptions {
     size_t max_iterations = 100000;
     size_t min_iterations = 1000;
-    size_t lo_iterations = 25;
     double dyn_num_trials_mult = 3.0;
     double success_prob = 0.9999;
-    double max_reproj_error = 12.0;  // used for 2D-3D matches
-    double max_epipolar_error = 1.0; // used for 2D-2D matches
     unsigned long seed = 0;
     // If we should use PROSAC sampling. Assumes data is sorted
     bool progressive_sampling = false;
     size_t max_prosac_iterations = 100000;
-    // Whether we should use real focal length checking: https://arxiv.org/abs/2311.16304
-    // Assumes that principal points of both cameras are at origin.
-    bool real_focal_check = false;
-    size_t sample_sz = 0;
-    size_t inner_refine = 0;
-    size_t inner_refine_extra = 1;
-    bool threeview_check = false;
-    bool threeview_check_extra = false;
-    double delta = 0.0;
-    bool use_hc = false;
-    bool use_net = false;
-    bool init_net = false;
-    bool oracle = false;
-    Eigen::Matrix3d gt_E = Eigen::Matrix3d::Zero();
-    bool use_affine = false;
-    bool early_nonminimal = false;
-    bool early_lm = false;
-    bool use_homography = false;
-    bool use_para = false;
-    int use_nister = 0;
-    double nister_scale = 1.0;
+    // Whether to treat the input 'best_model' as an initial model and score it before running the main RANSAC loop
+    bool score_initial_model = false;
 };
 
 struct RansacStats {
@@ -86,16 +64,34 @@ struct BundleOptions {
         TRUNCATED,
         HUBER,
         CAUCHY,
+        // This is truncated loss for the hybrid optimizer introduced as extension to Ding. et al. ICCV 2025
+        TRUNCATED_CAUCHY,
         // This is the TR-IRLS scheme from Le and Zach, 3DV 2021
         TRUNCATED_LE_ZACH
     } loss_type = LossType::CAUCHY;
     double loss_scale = 1.0;
-    double gradient_tol = 1e-10;
+    double gradient_tol = 1e-12;
     double step_tol = 1e-8;
+    double relative_cost_tol = 1e-10;
     double initial_lambda = 1e-3;
     double min_lambda = 1e-10;
     double max_lambda = 1e10;
     bool verbose = false;
+
+    enum LambdaUpdateType {
+        NIELSEN,
+        FIXED_FACTOR,
+    } lambda_update = LambdaUpdateType::NIELSEN;
+    double lambda_factor = 10.0; // for FIXED_FACTOR
+
+    enum DampingType {
+        LEVENBERG,
+        MARQUARDT,
+    } damping = DampingType::LEVENBERG;
+
+    bool refine_focal_length = false;
+    bool refine_extra_params = false;
+    bool refine_principal_point = false;
 };
 
 struct BundleStats {
@@ -103,9 +99,79 @@ struct BundleStats {
     double initial_cost;
     double cost;
     double lambda;
+    double nu = 2.0; // Nielsen step size multiplier
     size_t invalid_steps;
     double step_norm;
     double grad_norm;
+};
+
+// Options for robust estimators
+struct AbsolutePoseOptions {
+    RansacOptions ransac;
+    BundleOptions bundle;
+
+    double max_error = 12.0;
+    // For problems with multiple types of residuals, we can have different max errors for each type
+    // If not set, max_error is used for all residuals
+    std::vector<double> max_errors = {};
+
+    // Only applicable for pure PnP problems (central, 2D-3D points only)
+    bool estimate_focal_length = false;
+    bool estimate_extra_params = false;
+
+    // Minimum (effective) field-of-view to accept when estimating focal length
+    // in degrees. Effective means based on the image points supplied
+    // and not on the actual image size.
+    // Setting to 0 (or negative) disables checking.
+    double min_fov = 5.0; // circa 500mm lens 35mm-equivalent
+};
+
+struct RelativePoseOptions {
+    RansacOptions ransac;
+    BundleOptions bundle;
+
+    // Inlier threshold
+    double max_error = 1.0;
+
+    // TODO: refactor estimate_relative_pose to similarly to estimate_absolute_pose have a single entry point
+    // bool estimate_focal_length = false;
+    // bool estimate_extra_params = false;
+    // bool shared_intrinsics = false;
+    bool tangent_sampson = false;
+
+    // Whether we should use real focal length checking: https://arxiv.org/abs/2311.16304
+    // Assumes that principal points of both cameras are at origin.
+    bool real_focal_check = false;
+};
+
+struct HybridPoseOptions {
+    RansacOptions ransac;
+    BundleOptions bundle;
+
+    // Inlier thresholds for 2D-3D and 2D-2D correspondences (in this order)
+    std::array<double, 2> max_errors = {12.0, 1.0};
+};
+
+struct MonoDepthRelativePoseOptions {
+    RansacOptions ransac;
+    BundleOptions bundle;
+
+    // Inlier thresholds for reprojection error and epipolar error (in this order)
+    // Used for hybrid scoring in MonoDepth estimators
+    std::array<double, 2> max_errors = {12.0, 1.0};
+
+    // Whether to estimate the shifts in the calibrated relative pose with monodepth.
+    bool estimate_shift = false;
+    // The weight of the Sampson error compared to the reprojection error used by the monodepth estimators, which use
+    // hybrid errors for LO.
+    float weight_sampson = 1.0;
+};
+
+struct HomographyOptions {
+    RansacOptions ransac;
+    BundleOptions bundle;
+
+    double max_error = 1.0;
 };
 
 typedef Eigen::Vector2d Point2D;
@@ -131,6 +197,39 @@ struct Line3D {
     Eigen::Vector3d X1, X2;
 };
 
-} // namespace poselib
+// Options for hybrid RANSAC with multiple data types and minimal solvers.
+// Extends RansacOptions with per-type thresholds.
+struct HybridRansacOptions {
+    size_t max_iterations = 100000;
+    size_t min_iterations = 1000;
+    double dyn_num_trials_mult = 3.0;
+    double success_prob = 0.9999;
+    unsigned long seed = 0;
 
-#endif
+    // Per-data-type error thresholds (unsquared, in pixels)
+    // e.g., {max_reproj_error, max_line_error} for points and lines
+    std::vector<double> max_errors;
+
+    // Per-data-type weights for MSAC scoring (optional)
+    // If empty, all types are weighted equally
+    std::vector<double> data_type_weights;
+};
+
+// Statistics returned by hybrid RANSAC
+struct HybridRansacStats {
+    size_t iterations = 0;
+    size_t refinements = 0;
+    size_t num_inliers = 0;
+    double inlier_ratio = 0.0;
+    double model_score = std::numeric_limits<double>::max();
+
+    // Per-data-type statistics
+    std::vector<size_t> num_inliers_per_type;
+    std::vector<double> inlier_ratios;
+
+    // Per-solver statistics
+    std::vector<size_t> num_iterations_per_solver;
+    int best_solver_type = -1;
+};
+
+} // namespace poselib

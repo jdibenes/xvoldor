@@ -23,62 +23,58 @@ VOLDOR::init
 	
 	iters_cur = 0;
 	iters_remain = cfg.max_iters;
-
-	// we assume flow, disparity and camera parameters need apply resize
-	// while depth_prior and their poses are pre-resized since they are usually previous VOLDOR result
-	//if (_flows_1.size() != _flows_2.size())
-	//{
-	//	std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
-	//	throw;
-	//}
-
-	if (cfg.resize_factor != 1)
-	{
-		std::cout << "WARNING resize_factor != 1" << std::endl;
-	}
+	
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY FLOW 1" << std::endl; }
 
 	// copy flows
 	for (int i = 0; i < _flows_1.size(); ++i)
 	{
 		cv::Mat flow = _flows_1[i].clone();	
-		if (cfg.resize_factor != 1) 
-		{
-			cv::resize(flow, flow, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-			flow *= cfg.resize_factor;			
-		}
-		flows_1.push_back(flow);		
+		flows_1.push_back(flow);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY FLOW 2" << std::endl; }
 
 	for (int i = 0; i < _flows_2.size(); ++i)
 	{
 		cv::Mat flow_2 = _flows_2[i].clone();
-		if (cfg.resize_factor != 1) 
-		{
-			cv::resize(flow_2, flow_2, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-			flow_2 *= cfg.resize_factor;
-		}
 		flows_2.push_back(flow_2);
 	}
 
-	// copy disparities
+	if (cfg.estimate_intrinsics)
+	{
+		float fx_sum = 0, fy_sum = 0;
+		for (int i = 0; i < _flows_1.size(); ++i)
+		{
+			float fx_i, fy_i;
+			estimate_camera_focal(flows_1[i], fx_i, fy_i, cfg.cx, cfg.cy, 2);
+			fx_sum += fx_i;
+			fy_sum += fy_i;
+		}
+		cfg.fx = fx_sum / _flows_1.size();
+		cfg.fy = fy_sum / _flows_1.size();
+
+		
+		// TODO: auto cfg.basefocal
+		cfg.basefocal *= cfg.fx; // use baseline in metric units when focal is unknown
+		std::cout << "intrinsics override" << std::endl;
+		std::cout << "fx: " << cfg.fx << " fy: " << cfg.fy << std::endl;
+	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY DISP" << std::endl; }
+
+	// copy disparities // BUG???
 	for (int i = 0; i < _disparities.size(); ++i)
 	{
 		cv::Mat depth = cfg.basefocal / _disparities[i];
-		if (cfg.resize_factor != 1)
-		{
-			cv::resize(depth, depth, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-			depth *= cfg.resize_factor;
-		}
 		disparities.push_back(depth);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - CONVERT DISP" << std::endl; }
 
 	// convert disparity to general depth prior
 	if (!_disparity.empty()) {
 		cv::Mat depth_prior = cfg.basefocal / _disparity;
-		if (cfg.resize_factor != 1) {
-			cv::resize(depth_prior, depth_prior, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-			depth_prior *= cfg.resize_factor;
-		}
 		depth_priors.push_back(depth_prior);
 
 		if (!_disparity_pconf.empty())
@@ -91,6 +87,8 @@ VOLDOR::init
 		cam.t = cv::Mat::zeros(3, 1, CV_32F);
 		depth_prior_poses.push_back(cam);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - COPY DEPTH PRIOR" << std::endl; }
 
 	// copy depth priors
 	for (int i = 0; i < _depth_priors.size(); i++) {
@@ -109,15 +107,11 @@ VOLDOR::init
 		depth_prior_poses.push_back(cam);
 	}
 
-	// apply resize to config params to make life easier
-	if (cfg.resize_factor != 1) {
-		cfg.fx *= cfg.resize_factor;
-		cfg.fy *= cfg.resize_factor;
-		cfg.cx *= cfg.resize_factor;
-		cfg.cy *= cfg.resize_factor;
-		// if want to rescale world size, apply resize to basefocal
-		//cfg.basefocal *= cfg.resize_factor;
-	}
+
+
+
+
+
 
 	int chop = cfg.multiview_mode - 2;
 
@@ -138,6 +132,12 @@ VOLDOR::init
 	for (int i = 0; i < n_flows; i++)
 		rigidnesses.push_back(cv::Mat::ones(cv::Size(w, h), CV_32F));
 
+
+
+
+
+	
+
 	// init cams
 	cv::Mat K = (cv::Mat_<float>(3, 3) <<
 		cfg.fx, 0, cfg.cx,
@@ -151,6 +151,8 @@ VOLDOR::init
 		cams.push_back(cam);
 	}
 
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - INIT DEPTH" << std::endl; }
+
 	// init depth
 	if (n_depth_priors > 0) {
 		// if disparity is present, depth map is initialized with that
@@ -162,6 +164,8 @@ VOLDOR::init
 	else {
 		depth = cv::Mat::ones(cv::Size(w, h), CV_32F);
 	}
+
+	if (cfg.full_log) { std::cout << "VOLDOR INIT - END" << std::endl; }
 
 	if (!cfg.silent) {
 		std::cout << n_flows_init << " flows loaded" << std::endl;
@@ -334,7 +338,7 @@ void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
 			NULL, NULL,
 			NULL, h_depth_prior_confs,
 			NULL, (float*)depth.data,
-			NULL,
+			(float*)cams[0].K.data,
 			h_Rs, h_ts,
 			NULL, NULL,
 			cfg.abs_resize_factor,
@@ -427,12 +431,12 @@ VOLDOR::save_result
 
 	if (cfg.save_everything) {
 		// save rigidness maps and flow viz
-		for (int i = 0; i < flows_1.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "flow-" + std::to_string(i) + ".png", 255 * vis_flow(flows_1[i]));
+		//for (int i = 0; i < flows_1.size(); i++)
+		//	cv::imwrite(save_dir + PATH_SEPARATOR + "flow-" + std::to_string(i) + ".png", 255 * vis_flow(flows_1[i]));
 		for (int i = 0; i < rigidnesses.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "rigidness-" + std::to_string(i) + ".png", rigidnesses[i]);
+			cv::imwrite(save_dir + PATH_SEPARATOR + "rigidness-" + std::to_string(i) + ".png", rigidnesses[i]);
 		for (int i = 0; i < depth_prior_confs.size(); i++)
-			imwrite(save_dir + PATH_SEPARATOR + "depth_prior_conf-" + std::to_string(i) + ".png", depth_prior_confs[i]);
+			cv::imwrite(save_dir + PATH_SEPARATOR + "depth_prior_conf-" + std::to_string(i) + ".png", depth_prior_confs[i]);
 	}
 
 	if (!cfg.silent) {
@@ -464,3 +468,44 @@ VOLDOR::debug
 	if (cv::waitKey(0) == 'q')
 		exit(0);
 }
+
+
+// apply resize to config params to make life easier
+//if (cfg.resize_factor != 1) {
+//	cfg.fx *= cfg.resize_factor;
+//	cfg.fy *= cfg.resize_factor;
+//	cfg.cx *= cfg.resize_factor;
+//	cfg.cy *= cfg.resize_factor;
+	// if want to rescale world size, apply resize to basefocal
+	//cfg.basefocal *= cfg.resize_factor;
+//}
+//if (cfg.resize_factor != 1) 
+		//{
+		//	cv::resize(flow, flow, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	flow *= cfg.resize_factor;			
+		//}
+		//if (cfg.resize_factor != 1) 
+		//{
+		//	cv::resize(flow_2, flow_2, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	flow_2 *= cfg.resize_factor;
+		//}
+		//if (cfg.resize_factor != 1)
+		//{
+		//	cv::resize(depth, depth, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	depth *= cfg.resize_factor;
+		//}
+		//if (cfg.resize_factor != 1) {
+		//	cv::resize(depth_prior, depth_prior, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	depth_prior *= cfg.resize_factor;
+		//}
+		// we assume flow, disparity and camera parameters need apply resize
+	// while depth_prior and their poses are pre-resized since they are usually previous VOLDOR result
+	//if (_flows_1.size() != _flows_2.size())
+	//{
+	//	std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
+	//	throw;
+	//}
+	//if (cfg.resize_factor != 1)
+	//{
+	//	std::cout << "WARNING resize_factor != 1" << std::endl;
+	//}

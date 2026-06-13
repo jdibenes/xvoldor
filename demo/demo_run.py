@@ -28,17 +28,49 @@ big_table = [
 ]
 
 if __name__ == '__main__':
+    multiview_mode = 2
     solver_id = 3
-    sequence_index = 18
-    toolset = 'gt'
-    mode_name = 'stereo'
-    set_save_pose = True
-    set_enable_mapping = True
-    set_enable_loop_closure = True    
+
+    batch_workers = 18
+    batch_unique = False
+
+    disparities_enable = False
+    disparities_use_0 = False
+
+    rs_direction = 0
+    rs_r0 = 0.0
+    rs_iterations = 5
+
+    tf_threshold = 0.0
+    tf_enable_next_pool = True
+    tf_enable_flow_2 = False
+    tf_use_flow_2 = False
+    tf_squared_error_threshold = 100000.0
+    tf_sample_size = 7
+
+    estimate_intrinsics = False
+    square_pixels = False
+    shared_focals = False
+
+    sequence_index = 22
+    toolset = 'searaft'
     set_png_depth = True
     png_depth_scale = 1000
 
-    extra_args = f'--solver_select {solver_id}'
+    mode_name = 'stereo'
+    set_save_pose = True
+    set_enable_mapping = True
+    set_enable_loop_closure = True
+    full_log = True
+
+    extra_args = ''
+    extra_args += f'--multiview_mode {multiview_mode} --solver_select {solver_id} '
+    extra_args += f'--batch_workers {batch_workers} ' + ('--batch_unique' if (batch_unique) else '') + f' '
+    extra_args += ('--disparities_enable' if (disparities_enable) else '') + f' ' + ('--disparities_use_0' if (disparities_use_0) else '') + f' '
+    extra_args += f'--rs_direction {rs_direction} --rs_r0 {rs_r0} --rs_iterations {rs_iterations} '
+    extra_args += f'--tf_threshold {tf_threshold} ' + ('--tf_enable_next_pool' if (tf_enable_next_pool) else '') + f' ' + ('--tf_enable_flow_2' if (tf_enable_flow_2) else '') + f' ' + ('--tf_use_flow_2' if (tf_use_flow_2) else '') + f' --tf_squared_error_threshold {tf_squared_error_threshold} --tf_sample_size {tf_sample_size} '
+    extra_args += ('--estimate_intrinsics' if (estimate_intrinsics) else '') + f' ' + ('--square_pixels' if (square_pixels) else '') + f' ' + ('--shared_focals' if (shared_focals) else '') + f' '
+    extra_args += ('--full_log' if (full_log) else '') + f' '
 
     sequence, fx_val, fy_val, cx_val, cy_val, bf_val, resize_val, abs_resize_val = big_table[sequence_index]
 

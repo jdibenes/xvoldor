@@ -10,7 +10,6 @@
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 #include "solvers.h"
-#include "solver_4p3v_para.h"
 #include "lock.h"
 
 Eigen::Matrix<float, 4, 4> load_pose(char const* filename)
@@ -87,6 +86,8 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 2, 7> x21 = p21.colwise().hnormalized();
     Eigen::Matrix<float, 2, 7> x31 = p31.colwise().hnormalized();
 
+    Eigen::Matrix<float, 2, 7> u21 = (1500 * x21).colwise() + Eigen::Matrix<float, 2, 1>{ 320, 240 };
+
     Eigen::Matrix<float, 3, 3> R_gt = pose01(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
     Eigen::Matrix<float, 3, 1> t_gt = pose01.col(3);
     Eigen::Matrix<float, 3, 3> R2_gt = pose12(Eigen::seqN(0, 3), Eigen::seqN(0, 3));
@@ -97,11 +98,13 @@ int main(int argc, char* argv[])
     Eigen::Matrix<float, 3, 1> t2;
     Eigen::Matrix<float, 3, 1> dr;
     Eigen::Matrix<float, 3, 1> dt;
+    float focal[2] = { -1,-1 };
     bool ok;
 
     //ok = solver_gpm_hpc0(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_hpc1(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_hpc2(p11.data(), p21.data(), r.data(), t.data()); // OK*
+    //ok = solver_gpm_hpc3(p11.data(), p21.data(), r.data(), t.data());
     //ok = solver_gpm_nm5(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_nm6(p11.data(), p21.data(), r.data(), t.data()); // OK*
     //ok = solver_gpm_nm7(p11.data(), p21.data(), r.data(), t.data()); // OK*
@@ -110,8 +113,15 @@ int main(int argc, char* argv[])
     //ok = solver_r6p2i(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data(), 5); // OK*
     //ok = solver_r6p2l(p11.data(), x21.data(), 0, 0, r.data(), t.data(), dr.data(), dt.data()); // OK*
     //ok = solver_rpe_m5(p11.data(), p21.data(), r.data(), t.data()); // OK*
-    ok = solver_tft_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data(), 0); // OK*
+    //ok = solver_tft_linear(p11.data(), x21.data(), x31.data(), 7, r.data(), t.data(), r2.data(), t2.data(), 0); // OK*
+    //ok = solver_tft_p4p(p11.data(), x21.data(), x31.data(), r.data(), t.data(), r2.data(), t2.data()); // OK*
+    //ok = solver_tft_4p3vpara(p11.data(), x21.data(), x31.data(), r.data(), t.data(), r2.data(), t2.data(), 0); // ??
+    //ok = solver_tft_4p3vaffine(p11.data(), x21.data(), x31.data(), r.data(), t.data(), r2.data(), t2.data()); // ??
+    
     //ok = solver_4p3v_para(x11.data(), x21.data(), x31.data(), p11.data(), true, 7, r.data(), t.data(), r2.data(), t2.data());
+    //ok = solver_ppf_p4pf(p11.data(), x21.data(), false, 0, 0, r.data(), t.data(), focal);
+    //ok = solver_rpf_r7pfi(p11.data(), u21.data(), 320, 240, 0, 0, r.data(), t.data(), dr.data(), dt.data(), focal, 5);
+    
 
     std::cout << "GT" << std::endl;
 
@@ -123,6 +133,7 @@ int main(int argc, char* argv[])
     std::cout << t << std::endl;
     std::cout << Eigen::AngleAxis<float>(r2.norm(), r2.normalized()).toRotationMatrix() << std::endl;
     std::cout << t2 << std::endl;
+    std::cout << "focal " << focal[0] << ", " << focal[1] << std::endl;
     std::cout << "Error 01" << std::endl;
     std::cout << compute_error(vector_r_rodrigues(R_gt), t_gt, r, t) << std::endl;
     std::cout << "Error 12" << std::endl;

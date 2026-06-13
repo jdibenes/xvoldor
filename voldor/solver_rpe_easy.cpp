@@ -2,7 +2,7 @@
 #include <limits>
 #include <Eigen/Eigen>
 #include <polynomial/polynomial.h>
-#include "algebra.h"
+#include "helpers_algebra.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 
@@ -91,7 +91,7 @@ static bool solver_rpe_easy(float const* p3d_1, float const* p2h_2, float* r_12,
     polynomial.normalize();
 
     float roots[10];
-    int nroots = find_real_roots(polynomial.data(), 10, roots);
+    int nroots = find_real_roots<10>(polynomial.data(), roots);
     if (nroots <= 0) { return false; }
 
     result_R_t_from_E<float> result;

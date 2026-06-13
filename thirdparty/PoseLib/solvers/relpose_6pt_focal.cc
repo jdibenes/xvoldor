@@ -1,7 +1,7 @@
+#include "PoseLib/misc/essential.h"
 #include "PoseLib/misc/sturm.h"
 
 #include <Eigen/Dense>
-#include <PoseLib/misc/essential.h>
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
@@ -1080,8 +1080,8 @@ int solver_shared_focal_relpose_6pt(const Eigen::VectorXd &data, Eigen::Matrix<s
     return nroots;
 }
 
-int relpose_6pt_focal(const std::vector<Eigen::Vector3d> &x1, const std::vector<Eigen::Vector3d> &x2,
-                      ImagePairVector *out_image_pairs) {
+int relpose_6pt_shared_focal(const std::vector<Eigen::Vector3d> &x1, const std::vector<Eigen::Vector3d> &x2,
+                             ImagePairVector *out_image_pairs) {
 
     // Compute nullspace to epipolar constraints
     Eigen::Matrix<double, 9, 6> epipolar_constraints;
@@ -1113,7 +1113,7 @@ int relpose_6pt_focal(const std::vector<Eigen::Vector3d> &x1, const std::vector<
         F_vector.normalize();
         Eigen::Matrix3d F = Eigen::Matrix3d(F_vector.data());
 
-        Camera calib = Camera("SIMPLE_PINHOLE", std::vector<double>{focal, 0.0, 0.0}, -1, -1);
+        Camera calib = Camera(SimplePinholeCameraModel::model_id, std::vector<double>{focal, 0.0, 0.0}, -1, -1);
 
         Eigen::Matrix3d K;
         K << focal, 0.0, 0.0, 0.0, focal, 0.0, 0.0, 0.0, 1.0;
@@ -1129,9 +1129,9 @@ int relpose_6pt_focal(const std::vector<Eigen::Vector3d> &x1, const std::vector<
         x1_u.reserve(6);
         x2_u.reserve(6);
 
-        for (int j = 0; j < 6; j++) {
-            x1_u.push_back(Eigen::Vector3d(x1[j](0) / focal, x1[j](1) / focal, x1[j](2)).normalized());
-            x2_u.push_back(Eigen::Vector3d(x2[j](0) / focal, x2[j](1) / focal, x2[j](2)).normalized());
+        for (int i = 0; i < 6; i++) {
+            x1_u.push_back(Eigen::Vector3d(x1[i](0) / focal, x1[i](1) / focal, x1[i](2)).normalized());
+            x2_u.push_back(Eigen::Vector3d(x2[i](0) / focal, x2[i](1) / focal, x2[i](2)).normalized());
         }
 
         motion_from_essential(E, x1_u, x2_u, &poses);

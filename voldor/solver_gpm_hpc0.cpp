@@ -1,6 +1,6 @@
 
 #include <Eigen/Eigen>
-#include "helpers.h"
+#include "helpers_math.h"
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
 

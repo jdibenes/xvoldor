@@ -160,20 +160,11 @@ int relpose_5pt(const std::vector<Eigen::Vector3d> &x1, const std::vector<Eigen:
                 std::vector<Eigen::Matrix3d> *essential_matrices) {
 
     // Compute nullspace to epipolar constraints
-//    Eigen::Matrix<double, 9, 5> epipolar_constraints;
-//    for (size_t i = 0; i < 5; ++i) {
-//        epipolar_constraints.col(i) << x1[i](0) * x2[i], x1[i](1) * x2[i], x1[i](2) * x2[i];
-//    }
-//    Eigen::Matrix<double, 9, 9> Q = epipolar_constraints.fullPivHouseholderQr().matrixQ();
-//    Eigen::Matrix<double, 4, 9> N = Q.rightCols(4).transpose();
-
-    const size_t n_points = x1.size();
-    // Compute nullspace to epipolar constraints
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> epipolar_constraints(9, n_points);
-    for (size_t i = 0; i < n_points; ++i) {
+    Eigen::Matrix<double, 9, 5> epipolar_constraints;
+    for (int i = 0; i < 5; ++i) {
         epipolar_constraints.col(i) << x1[i](0) * x2[i], x1[i](1) * x2[i], x1[i](2) * x2[i];
     }
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Q = epipolar_constraints.fullPivHouseholderQr().matrixQ();
+    Eigen::Matrix<double, 9, 9> Q = epipolar_constraints.fullPivHouseholderQr().matrixQ();
     Eigen::Matrix<double, 4, 9> N = Q.rightCols(4).transpose();
 
     // Compute equation coefficients for the trace constraints + determinant

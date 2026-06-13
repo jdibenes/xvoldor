@@ -14,7 +14,7 @@ struct job_inputs
 	int solver;
 };
 
-static void batch_cpu_solver_p4p_lambdatwist(job_descriptor& jd)
+static void batch_cpu_solver_p4p(job_descriptor& jd)
 {
 	job_inputs* ji = static_cast<job_inputs*>(jd.inputs);
 
@@ -76,6 +76,6 @@ int batch_cpu_solver_p4p(cv::Point3f const* p3d_1, cv::Point2f const* p2k_2, int
 
 	if (point_count < sample_size) { return 0; }
 
-	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_p4p_lambdatwist, &ji, point_count, sample_size, unique, poses);
+	std::vector<job_result> jr = batch_solve(poses_to_sample, workers, batch_cpu_solver_p4p, &ji, point_count, sample_size, unique, poses);
 	return batch_finalize(jr, poses, 6);
 }

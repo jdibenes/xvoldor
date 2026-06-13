@@ -26,8 +26,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef POSELIB_ROBUST_UTILS_H
-#define POSELIB_ROBUST_UTILS_H
+#pragma once
 
 #include "PoseLib/camera_pose.h"
 #include "PoseLib/types.h"
@@ -40,13 +39,32 @@ namespace poselib {
 // Returns MSAC score of the reprojection error
 double compute_msac_score(const CameraPose &pose, const std::vector<Point2D> &x, const std::vector<Point3D> &X,
                           double sq_threshold, size_t *inlier_count);
+double compute_msac_score(const Image &image, const std::vector<Point2D> &x, const std::vector<Point3D> &X,
+                          double sq_threshold, size_t *inlier_count);
+
 double compute_msac_score(const CameraPose &pose, const std::vector<Line2D> &lines2D,
                           const std::vector<Line3D> &lines3D, double sq_threshold, size_t *inlier_count);
+// MSAC score of the reprojection error on projected 3D points
+double compute_msac_score(const CameraPose &pose, double focal, const std::vector<Point2D> &x,
+                          const std::vector<Point3D> &X, double sq_threshold, size_t *inlier_count);
+
 // Returns MSAC score of the Sampson error
 double compute_sampson_msac_score(const CameraPose &pose, const std::vector<Point2D> &x1,
                                   const std::vector<Point2D> &x2, double sq_threshold, size_t *inlier_count);
 double compute_sampson_msac_score(const Eigen::Matrix3d &F, const std::vector<Point2D> &x1,
                                   const std::vector<Point2D> &x2, double sq_threshold, size_t *inlier_count);
+
+// Returns MSAC score for the Tangent Sampson error (Terekhov and Larsson, CVPR 2023)
+double compute_tangent_sampson_msac_score(const Eigen::Matrix3d &F, const std::vector<Point2D> &x1,
+                                          const std::vector<Point2D> &x2, const Camera &cam1, const Camera &cam2,
+                                          double sq_threshold, size_t *inlier_count);
+// Returns MSAC score for the Tangent Sampson error (Terekhov and Larsson, CVPR 2023)
+// with pre-computed unprojections and unprojection jacobians
+double compute_tangent_sampson_msac_score(const CameraPose &pose, const std::vector<Point3D> &d1,
+                                          const std::vector<Point3D> &d2,
+                                          const std::vector<Eigen::Matrix<double, 3, 2>> &M1,
+                                          const std::vector<Eigen::Matrix<double, 3, 2>> &M2, double sq_threshold,
+                                          size_t *inlier_count);
 
 // Returns MSAC score of transfer error for homography
 double compute_homography_msac_score(const Eigen::Matrix3d &H, const std::vector<Point2D> &x1,
@@ -55,7 +73,12 @@ double compute_homography_msac_score(const Eigen::Matrix3d &H, const std::vector
 // Compute inliers for absolute pose estimation (using reprojection error and cheirality check)
 void get_inliers(const CameraPose &pose, const std::vector<Point2D> &x, const std::vector<Point3D> &X,
                  double sq_threshold, std::vector<char> *inliers);
+void get_inliers(const Image &image, const std::vector<Point2D> &x, const std::vector<Point3D> &X, double sq_threshold,
+                 std::vector<char> *inliers);
 void get_inliers(const CameraPose &pose, const std::vector<Line2D> &lines2D, const std::vector<Line3D> &lines3D,
+                 double sq_threshold, std::vector<char> *inliers);
+// Compute inliers for relative pose with monodepth by using reprojection error
+void get_inliers(const CameraPose &pose, double focal, const std::vector<Point2D> &x, const std::vector<Point3D> &X,
                  double sq_threshold, std::vector<char> *inliers);
 
 // Compute inliers for relative pose estimation (using Sampson error)
@@ -63,14 +86,19 @@ int get_inliers(const CameraPose &pose, const std::vector<Point2D> &x1, const st
                 double sq_threshold, std::vector<char> *inliers);
 int get_inliers(const Eigen::Matrix3d &E, const std::vector<Point2D> &x1, const std::vector<Point2D> &x2,
                 double sq_threshold, std::vector<char> *inliers);
-int get_inliers(const ThreeViewCameraPose &three_view_pose, const std::vector<Point2D> &x1,
-                const std::vector<Point2D> &x2, const std::vector<Point2D> &x3,
-                double sq_threshold, std::vector<char> *inliers);
-int get_inliers(const ImageTriplet &image_triplet, const std::vector<Point2D> &x1, const std::vector<Point2D> &x2,
-                const std::vector<Point2D> &x3, double sq_threshold, std::vector<char> *inliers);
+
+// Compute inliers for relative pose + distortion estimation using Tangent Sampson Error (Terekhov and Larsson, CVPR
+// 2023)
+int get_tangent_sampson_inliers(const Eigen::Matrix3d &F, const Camera &cam1, const Camera &cam2,
+                                const std::vector<Point2D> &x1, const std::vector<Point2D> &x2, double sq_threshold,
+                                std::vector<char> *inliers);
+int get_tangent_sampson_inliers(const CameraPose &pose, const std::vector<Point3D> &d1, const std::vector<Point3D> &d2,
+                                const std::vector<Eigen::Matrix<double, 3, 2>> &M1,
+                                const std::vector<Eigen::Matrix<double, 3, 2>> &M2, double sq_threshold,
+                                std::vector<char> *inliers);
 
 // inliers for homography
-int get_homography_inliers(const Eigen::Matrix3d &H, const std::vector<Point2D> &x1, const std::vector<Point2D> &x2,
+void get_homography_inliers(const Eigen::Matrix3d &H, const std::vector<Point2D> &x1, const std::vector<Point2D> &x2,
                             double sq_threshold, std::vector<char> *inliers);
 
 // Helpers for the 1D radial camera model
@@ -86,11 +114,4 @@ double normalize_points(std::vector<Eigen::Vector2d> &x1, std::vector<Eigen::Vec
 // Calculate whether F would yield real focals, assumes both pp at [0, 0]
 bool calculate_RFC(const Eigen::Matrix3d &F);
 
-// Triangulates points from uncalibrated view - assumes that last homog coord of x1, x2 is 1.0
-Point3D triangulate(const CameraPose &pose, const Point3D &x1, const Point3D &x2);
-Point3D triangulate(const ImagePair &image_pair, const Point3D &x1, const Point3D &x2);
-
-Eigen::Matrix3d skew(const Eigen::Vector3d &x);
 } // namespace poselib
-
-#endif

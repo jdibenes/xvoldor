@@ -9,12 +9,12 @@ struct Config
 	int solver_select = 3;
 
 	// batch solve
-	int batch_workers = 12;
-	bool batch_unique = true;
+	int batch_workers = 8;
+	bool batch_unique = false;
 
 	// disparities
-	bool disparities_enable = true;
-	bool disparities_use_0 = true;
+	bool disparities_enable = false;
+	bool disparities_use_0 = false;
 	
 	// rolling shutter
 	int rs_direction = 0;
@@ -23,22 +23,24 @@ struct Config
 
 	// trifocal
 	float tf_threshold = 0;
-	bool tf_enable_next_pool = true;
-	bool tf_enable_flow_2 = true;
+	bool tf_enable_next_pool = false;
+	bool tf_enable_flow_2 = false;
 	bool tf_use_flow_2 = false;
 	float tf_squared_error_threshold = 100000;
-	
-	
+	int tf_sample_size = 7;
 
+	// focal estimation
+	bool estimate_intrinsics = false;
+	bool square_pixels = false;
+	bool shared_focals = false;
 
-
-
+	bool full_log = false;
 
 
 	// OLD
 
-	int cpu_p3p = false; //do p3p on cpu (deprecated)
-	int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
+	//int cpu_p3p = false; //do p3p on cpu (deprecated)
+	//int lambdatwist = true; //use lambdatwist instead of ap3p (deprecated)
 
 	// depth prior related
 	float omega = 0.15f; //depth prior rigidness strictness
@@ -56,7 +58,7 @@ struct Config
 	float rg_epsilon = 1e-5f;
 
 	// input-params
-	float resize_factor = 1.0f; //(deprecated, now resize is done in slam logic)
+	//float resize_factor = 1.0f; //(deprecated, now resize is done in slam logic)
 	float abs_resize_factor = 1.0f; //resize factor related to the size that optical flow is estimated from. (useful to residual model)
 	float fx = 0.0f;
 	float fy = 0.0f;
@@ -176,18 +178,43 @@ struct Config
 
 			else if (cfg_strs[i] == "--batch_workers")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->batch_workers);
+			else if (cfg_strs[i] == "--batch_unique")
+				this->batch_unique = true;
 
+			else if (cfg_strs[i] == "--disparities_enable")
+				this->disparities_enable = true;
+			else if (cfg_strs[i] == "--disparities_use_0")
+				this->disparities_use_0 = true;
 
 			else if (cfg_strs[i] == "--rs_direction")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_direction);
 			else if (cfg_strs[i] == "--rs_r0")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_r0);
-			//else if (cfg_strs[i] == "--rs_max_pow")
-			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_max_pow);
 			else if (cfg_strs[i] == "--rs_iterations")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_iterations);
 
+			else if (cfg_strs[i] == "--tf_threshold")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_threshold);
+			else if (cfg_strs[i] == "--tf_enable_next_pool")
+				this->tf_enable_next_pool = true;
+			else if (cfg_strs[i] == "--tf_enable_flow_2")
+				this->tf_enable_flow_2 = true;
+			else if (cfg_strs[i] == "--tf_use_flow_2")
+				this->tf_use_flow_2 = true;
+			else if (cfg_strs[i] == "--tf_squared_error_threshold")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_squared_error_threshold);
+			else if (cfg_strs[i] == "--tf_sample_size")
+				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_sample_size);
 
+			else if (cfg_strs[i] == "--estimate_intrinsics")
+				this->estimate_intrinsics = true;
+			else if (cfg_strs[i] == "--square_pixels")
+				this->square_pixels = true;
+			else if (cfg_strs[i] == "--shared_focals")
+				this->shared_focals = true;
+
+			else if (cfg_strs[i] == "--full_log")
+				this->full_log = true;
 
 			// OLD ------------------------------------------------------------
 
@@ -215,8 +242,8 @@ struct Config
 			else if (cfg_strs[i] == "--rg_pose_scaling")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_pose_scaling);
 
-			else if (cfg_strs[i] == "--resize_factor")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->resize_factor);
+			//else if (cfg_strs[i] == "--resize_factor")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->resize_factor);
 			else if (cfg_strs[i] == "--abs_resize_factor")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->abs_resize_factor);
 			else if (cfg_strs[i] == "--fx")
@@ -250,10 +277,10 @@ struct Config
 			else if (cfg_strs[i] == "--norm_world_scale")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->norm_world_scale);
 
-			else if (cfg_strs[i] == "--cpu_p3p")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->cpu_p3p);
-			else if (cfg_strs[i] == "--lambdatwist")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambdatwist);
+			//else if (cfg_strs[i] == "--cpu_p3p")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->cpu_p3p);
+			//else if (cfg_strs[i] == "--lambdatwist")
+			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambdatwist);
 			else if (cfg_strs[i] == "--max_trace_on_flow")
 				str_to_arg(safe_arr_access(cfg_strs, ++i), this->max_trace_on_flow);
 			else if (cfg_strs[i] == "--n_poses_to_sample")
@@ -341,7 +368,7 @@ struct Config
 		std::cout << "rg_epsilon = " << rg_epsilon << std::endl;
 		std::cout << "rg_max_iters = " << rg_max_iters << std::endl;
 
-		std::cout << "resize_factor = " << resize_factor << std::endl;
+		//std::cout << "resize_factor = " << resize_factor << std::endl;
 		std::cout << "abs_resize_factor = " << abs_resize_factor << std::endl;
 		std::cout << "fx = " << fx << std::endl;
 		std::cout << "fy = " << fy << std::endl;
@@ -357,8 +384,8 @@ struct Config
 		std::cout << "meanshift_kernel_var = " << meanshift_kernel_var << std::endl;
 		std::cout << "meanshift_rvec_scale = " << meanshift_rvec_scale << std::endl;
 
-		std::cout << "cpu_p3p = " << cpu_p3p << std::endl;
-		std::cout << "lambdatwist = " << lambdatwist << std::endl;
+		//std::cout << "cpu_p3p = " << cpu_p3p << std::endl;
+		//std::cout << "lambdatwist = " << lambdatwist << std::endl;
 		std::cout << "max_trace_on_flow = " << max_trace_on_flow << std::endl;
 		std::cout << "n_poses_to_sample = " << n_poses_to_sample << std::endl;
 		std::cout << "pose_sample_min_depth = " << pose_sample_min_depth << std::endl;

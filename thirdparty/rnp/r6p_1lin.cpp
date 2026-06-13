@@ -124,11 +124,12 @@ int r6pSingleLin(const  Eigen::MatrixXd & X, const  Eigen::MatrixXd & u, const E
 	int order = 64;
 	double proots[65];
 	double roots[64];
-	int nroots;
+	int nroots = 0;
 	for (int j = 0; j <= order; j++) {
 		proots[order - j] = p[j];
 	}
 	find_real_roots_sturm(proots, order, roots, &nroots, maxpow, 0);
+	if (nroots <= 0) { return 0; }
 
 
 	Eigen::MatrixXcd sols(3, nroots);

@@ -1,6 +1,7 @@
 
+#include <PoseLib/robust.h>
 #include "geometry.h"
-#include "batch_solver.h"
+#include "batch_solvers.h"
 #include "helpers_opencv.h"
 
 #include "../gpu-kernels/gpu_kernels.h"
@@ -129,6 +130,9 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	case 17: set_velocities_pool = true; break;
 	case 18: set_velocities_pool = true; break;
 	case 24: set_next_pool = options.tf_enable_next_pool; break;
+	case 25: set_next_pool = options.tf_enable_next_pool; break;
+	case 32: set_focals_pool = true; break;
+	case 33: set_velocities_pool = set_focals_pool = true; break;
 	}
 
 	float* poses_pool_data = nullptr;
@@ -149,7 +153,7 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 
 	if (set_focals_pool) 
 	{
-		focals_pool = cv::Mat(options.n_poses_to_sample, 1, CV_32F);
+		focals_pool = cv::Mat(options.n_poses_to_sample, 2, CV_32F);
 		focals_pool_data = reinterpret_cast<float*>(focals_pool.data);
 	}
 	else
@@ -205,7 +209,13 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	case 18: poses_pool_used = batch_cpu_solver_rnp(p3d_1_data, p2k_2_data, bf_count, K, 2, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, options.batch_workers, options.batch_unique, options.rs_direction, options.rs_r0, options.rs_iterations); break;
 
 	// tft
-	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold); break;
+	case 24: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 0, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold, options.tf_sample_size); break;
+	case 25: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 1, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold, options.tf_sample_size); break;
+	case 26: poses_pool_used = batch_cpu_solver_tft(p2z_1_data, p2z_2_data, p2z_3_data, tf_count, K, 2, options.n_poses_to_sample, poses_pool_data, next_pool_data, options.batch_workers, options.batch_unique, options.tf_threshold, options.tf_sample_size); break;
+
+	// p4pf
+	case 32: poses_pool_used = batch_cpu_solver_ppf(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, focals_pool_data, options.batch_workers, options.batch_unique, options.square_pixels); break;
+	case 33: poses_pool_used = batch_cpu_solver_rpf(p3d_1_data, p2k_2_data, bf_count, K, 0, options.n_poses_to_sample, poses_pool_data, velocities_pool_data, focals_pool_data, options.batch_workers, options.batch_unique, options.square_pixels, options.rs_direction, options.rs_r0, options.rs_iterations); break;
 
 	// default: gpu p4p lambdatwist
 	default: poses_pool_used = batch_gpu_solver_p4p(p3d_1_data, p2k_2_data, bf_count, K, 1, options.n_poses_to_sample, poses_pool_data); break;
@@ -262,43 +272,36 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 
 	//----------------------------------------------------------------------------
 
-
-
-
-
 	cameras[active_index].pose_sample_count = poses_pool_used;
 
 	cv::Mat pose_opm(1, 6, CV_32F);
+	cv::Mat velocity_opm(1, 6, CV_32F);
+	cv::Mat focal_opm(1, 2, CV_32F);
+
 	Rodrigues(cameras[active_index].R, pose_opm.at<cv::Vec3f>(0));
 	pose_opm.at<cv::Vec3f>(1) = cameras[active_index].t.at<cv::Vec3f>(0);
 
 	if (velocities_pool.total() > 0)
 	{
-		cv::Mat velocity_opm(1, 6, CV_32F);
 		velocity_opm.at<cv::Vec3f>(0) = cameras[active_index].dr.at<cv::Vec3f>(0);
 		velocity_opm.at<cv::Vec3f>(1) = cameras[active_index].dt.at<cv::Vec3f>(1);
 	}
 
 	if (focals_pool.total() > 0)
 	{
-		float focal_opm = cameras[active_index].focal;
+		focal_opm.at<float>(0) = cameras[active_index].K.at<float>(0, 0);
+		focal_opm.at<float>(1) = cameras[active_index].K.at<float>(1, 1);
 	}
 
 	//----------------------------------------------------------------------------
 	// scale and do meanshift
 
+
+
 	// pose: 6 | 3+3
 	// pose&velocity: 12 | 6+6 | 3+3+3+3
 	// pose&focal: 7 | 6+1 | 3+3+1
-
-
-
-
-
-
-
-
-	
+		
 	time_stamp = std::chrono::high_resolution_clock::now();
 
 	///*
@@ -320,6 +323,32 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		options.meanshift_good_init_confidence
 	);
 	//*/
+
+	if (focals_pool.total() > 0)
+	{
+		std::cout << "focal ms input: " << focal_opm << std::endl;
+		float focals_scale = (25.0f / std::sqrt(w*w + h*h));//610.0f);
+		focals_pool *= focals_scale;
+		focal_opm *= focals_scale;
+		meanshift_gpu
+		(
+			(float*)focals_pool.data,
+			options.meanshift_kernel_var,
+			(float*)focal_opm.data,
+			nullptr,
+			nullptr,
+			successive_pose,
+			poses_pool_used,
+			2,
+			options.meanshift_epsilon,
+			options.meanshift_max_iters,
+			options.meanshift_max_init_trials,
+			options.meanshift_good_init_confidence
+		);
+		focal_opm /= focals_scale;
+		std::cout << "focal ms output: " << focal_opm << std::endl;
+	}
+
 
 
 
@@ -391,6 +420,20 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		// copy back pose
 		Rodrigues(pose_opm.at<cv::Vec3f>(0), cameras[active_index].R);
 		cameras[active_index].t.at<cv::Vec3f>(0) = pose_opm.at<cv::Vec3f>(1);
+
+		if (focals_pool.total() > 0)
+		{
+			if (!cv::checkRange(focal_opm)) { return 0; }
+
+			for (int index = options.shared_focals ? 0 : active_index; index <= active_index; ++index)
+			{
+				cameras[index].K.at<float>(0, 0) = focal_opm.at<float>(0);
+				cameras[index].K.at<float>(1, 1) = focal_opm.at<float>(1);
+				cameras[index].K_inv = cameras[index].K.inv();
+			}
+			
+		}
+
 		return 1;
 	}
 	else
@@ -477,10 +520,44 @@ estimate_camera_pose_epipolar
 	cam.E.convertTo(cam.E, CV_32F);
 	cam.R.convertTo(cam.R, CV_32F);
 	cam.t.convertTo(cam.t, CV_32F);
-	cam.t = cam.R*cam.t;
+	//cam.t = cam.R*cam.t;
 
 }
 
+void estimate_camera_focal(
+	cv::Mat flow,
+	float& fx,
+	float& fy,
+	float cx,
+	float cy,
+	int sampling_2d_step)
+{
+	int w = flow.cols;
+	int h = flow.rows;
+
+	std::vector<poselib::Point2D> p2k_1;
+	std::vector<poselib::Point2D> p2k_2;
+
+	for (int y = 0; y < h; y += sampling_2d_step)
+	{
+		for (int x = 0; x < w; x += sampling_2d_step)
+		{
+			p2k_1.push_back({ x, y });
+			p2k_2.push_back({ x + flow.at<cv::Vec2f>(y, x)[0], y + flow.at<cv::Vec2f>(y, x)[1] });
+		}
+	}
+
+	poselib::Point2D pp{ cx, cy };
+
+	poselib::RelativePoseOptions rpo;
+	poselib::ImagePair ip;
+	std::vector<char> inliers;
+
+	poselib::RansacStats rs = poselib::estimate_shared_focal_relative_pose(p2k_1, p2k_2, pp, rpo, &ip, &inliers);
+
+	fx = ip.camera1.focal_x();
+	fy = ip.camera1.focal_y();
+}
 
 
 

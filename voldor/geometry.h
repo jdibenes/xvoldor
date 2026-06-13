@@ -28,3 +28,5 @@ void estimate_depth_closed_form(cv::Mat flow, cv::Mat& depth, Camera cam,
 
 void estimate_camera_pose_epipolar(cv::Mat flow, Camera& cam,
 	cv::Mat mask = cv::Mat(), int sampling_2d_step = 4);
+
+void estimate_camera_focal(cv::Mat flow, float& fx, float& fy, float cx, float cy, int sampling_2d_step);

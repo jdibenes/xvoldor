@@ -23,7 +23,7 @@ int iterativeRnP(Eigen::MatrixXd &X, Eigen::MatrixXd &u, Eigen::Vector3d vk, int
         Solver(X, u, result.v, 0,  &results); 
         // if the inner solver returned no solution
         if(!results.size()){
-            std::cout << "Solver returned no solution\n";
+            //std::cout << "Solver returned no solution\n";
             return 1;
         }
 

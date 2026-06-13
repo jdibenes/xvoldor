@@ -41,11 +41,11 @@ static const char *copyright = "Copyright Richard Hartley, 2010";
 #include <math.h>
 #include <stdio.h>
 
-#define RELERROR      1.0e-12   /* smallest relative error we want */
+#define RELERROR      1.0e-9   /* smallest relative error we want (1.0e-12) */
 //#define MAXPOW        0        /* max power of 10 we wish to search to */
-#define MAXIT         800       /* max number of iterations */
-#define SMALL_ENOUGH  1.0e-12   /* a coefficient smaller than SMALL_ENOUGH 
-                                 * is considered to be zero (0.0). */
+#define MAXIT         200       /* max number of iterations (800) */
+#define SMALL_ENOUGH  1.0e-9   /* a coefficient smaller than SMALL_ENOUGH 
+                                 * is considered to be zero (0.0) (1.0e-12). */
 
 /* structure type for representing a polynomial */
 typedef struct p {
@@ -223,7 +223,7 @@ int modrf_pos( int ord, double *coef, double a, double b,
    // Print out the polynomial
    //fprintf(stderr, "Polynomial coefficients\n");
    //for (fp = ecoef; fp >= scoef; fp--) 
-      //fprintf (stderr, "\t%12.5e\n", *fp);
+   //   fprintf (stderr, "\t%12.5e\n", *fp);
 
    return(0);
    }

@@ -1,8 +1,8 @@
 
 #include <Eigen/Eigen>
 #include "solvers.h"
-#include "algebra.h"
-#include "helpers.h"
+#include "helpers_algebra.h"
+#include "helpers_math.h"
 #include "helpers_eigen.h"
 
 bool solver_gpm_hpc1(float const* p3d_1, float const* p3d_2, float* r_12, float* t_12)
@@ -23,7 +23,7 @@ bool solver_gpm_hpc1(float const* p3d_1, float const* p3d_2, float* r_12, float*
     polynomial.normalize();
 
     float roots[2];
-    int nroots = find_real_roots(polynomial.data(), 2, roots);
+    int nroots = find_real_roots<2>(polynomial.data(), roots);
     if (nroots <= 0) { return false; }
 
     float z1 = roots[0];

@@ -30,7 +30,9 @@ py_voldor_wrapper
 	float* poses_pt,
 	float* poses_covar_pt,
 	float* depth_pt,
-	float* depth_conf_pt
+	float* depth_conf_pt,
+	// EXTRA
+	float* focals
 )
 {
 	std::istringstream iss(config_pt);
@@ -54,21 +56,33 @@ py_voldor_wrapper
 	std::vector<cv::Mat> depth_priors;
 	std::vector<cv::Vec6f> depth_prior_poses;
 	std::vector<cv::Mat> depth_priors_pconfs;
-	
+
+	if (cfg.full_log) { std::cout << "LOAD FLOW 1" << std::endl; }
+
 	for (int i = 0; i < N; ++i) 
 	{
 		flows_1.push_back(cv::Mat(cv::Size(w, h), CV_32FC2, (void*)(flows_1_pt + i * w * h * 2)));
 	}
+
+	if (cfg.full_log) { std::cout << "LOAD FLOW 1 COMPLETE" << std::endl; }
+
+	if (cfg.full_log) { std::cout << "LOAD FLOW 2" << std::endl; }
 
 	for (int i = 0; i < (N - 1); ++i)
 	{
 		if (flows_2_pt) { flows_2.push_back(cv::Mat(cv::Size(w, h), CV_32FC2, (void*)(flows_2_pt + i * w * h * 2))); }
 	}
 
+	if (cfg.full_log) { std::cout << "LOAD FLOW 2 COMPLETE" << std::endl; }
+
+	if (cfg.full_log) { std::cout << "LOAD DISP" << std::endl; }
+
 	for (int i = 0; i < (N + 1); ++i)
 	{
 		if (disparities_pt) { disparities.push_back(cv::Mat(cv::Size(w, h), CV_32F, (void*)(disparities_pt + i * w * h))); }
 	}
+
+	if (cfg.full_log) { std::cout << "LOAD DISP COMPLETE" << std::endl; }
 
 	if (disparity_pt)       { disparity       = cv::Mat(cv::Size(w, h), CV_32F, (void*)disparity_pt); }
 	if (disparity_pconf_pt) { disparity_pconf = cv::Mat(cv::Size(w, h), CV_32F, (void*)disparity_pconf_pt); }
@@ -80,9 +94,16 @@ py_voldor_wrapper
 		if (depth_prior_pconfs_pt) { depth_priors_pconfs.push_back(cv::Mat(cv::Size(w, h), CV_32F, (void*)(depth_prior_pconfs_pt + i * w * h))); }
 	}
 
+	if (cfg.full_log) { std::cout << "VOLDOR INIT" << std::endl; }
+
 	VOLDOR voldor(cfg);
 	voldor.init(flows_1, flows_2, disparities, disparity, disparity_pconf, depth_priors, depth_prior_poses, depth_priors_pconfs);
+
+	if (cfg.full_log) { std::cout << "VOLDOR SOLVE" << std::endl; }
+
 	voldor.solve();
+
+	if (cfg.full_log) { std::cout << "VOLDOR END" << std::endl; }
 
 	n_registered = voldor.n_flows;
 
@@ -102,6 +123,11 @@ py_voldor_wrapper
 		depth_conf /= (float)(voldor.n_flows + voldor.n_depth_priors);
 		memcpy(depth_conf_pt, depth_conf.data, w * h * sizeof(float));
 	}
+
+	focals[0] = voldor.cams[0].K.at<float>(0, 0);
+	focals[1] = voldor.cams[0].K.at<float>(1, 1);
+
+	if (cfg.full_log) { std::cout << "VOLDOR RETURN" << std::endl; }
 
 	return 0;
 }

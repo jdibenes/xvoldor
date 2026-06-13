@@ -9,7 +9,7 @@ cdef extern from "../../voldor/py_export.h":
         const float fx, const float fy, const float cx, const float cy, const float basefocal,
         const int N, const int N_dp, const int w, const int h,
         const char* config,
-        int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf)
+        int& n_registered, float* poses, float* poses_covar, float* depth, float* depth_conf, float* focals)
 
 def voldor(
     np.ndarray[float, ndim=4] flows not None,
@@ -51,11 +51,13 @@ def voldor(
         np.ascontiguousarray(np.zeros((h, w), dtype=np.float32))
     cdef np.ndarray[float, ndim=2, mode='c'] depth_conf = \
         np.ascontiguousarray(np.zeros((h, w), dtype=np.float32))
+    cdef np.ndarray[float, ndim=2, mode='c'] focals = \
+        np.ascontiguousarray(np.zeros((2, 1), dtype=np.float32))
 
     cdef int n_registered = 0
     py_voldor_wrapper(
                 &flows[0,0,0,0],
-                &flows_2[0,0,0,0],
+                &flows_2[0,0,0,0] if flows_2 is not None else NULL,
                 &disparities[0,0,0] if disparities is not None else NULL,
                 &disparity[0,0] if disparity is not None else NULL,
                 &disparity_pconf[0,0] if disparity_pconf is not None else NULL,
@@ -69,13 +71,15 @@ def voldor(
                 &poses[0,0],
                 &poses_covar[0,0,0],
                 &depth[0,0],
-                &depth_conf[0,0])
+                &depth_conf[0,0],
+                &focals[0,0])
 
     return {'n_registered': n_registered,
             'poses': poses[:n_registered],
             'poses_covar': poses_covar[:n_registered],
             'depth': depth,
-            'depth_conf': depth_conf}
+            'depth_conf': depth_conf,
+            'focals' : focals}
 
 
 cdef extern from "../../frame-alignment/py_export.h":

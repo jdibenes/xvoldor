@@ -39,7 +39,7 @@ struct Camera
 
 	cv::Mat dr = cv::Mat::zeros(3, 1, CV_32F);
 	cv::Mat dt = cv::Mat::zeros(3, 1, CV_32F);
-	float focal = 1;
+	//float focal = 1;
 
 	
 
@@ -83,6 +83,27 @@ struct Camera
 };
 
 
+/*
 cv::Mat vis_flow(cv::Mat flow, float mag_scale = 0);
 
 cv::Mat load_flow(const char* file_path);
+*/
+/*
+#include "voldor_utils.h"
+
+cv::Mat vis_flow(cv::Mat flow, float mag_scale) {
+	cv::Mat flow_xy[2];
+	cv::Mat mag, angle;
+	split(flow, flow_xy);
+	cv::cartToPolar(flow_xy[0], flow_xy[1], mag, angle, true);
+	if (mag_scale <= 0)
+		normalize(mag, mag, 0, 1, cv::NORM_MINMAX);
+	else
+		mag /= mag_scale;
+	cv::Mat dst;
+	std::vector<cv::Mat> src{ angle, mag, cv::Mat::ones(flow.size(), CV_32F) };
+	merge(src, dst);
+	cvtColor(dst, dst, cv::COLOR_HSV2BGR);
+	return dst;
+}
+*/

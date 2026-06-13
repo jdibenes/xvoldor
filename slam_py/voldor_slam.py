@@ -80,7 +80,6 @@ class Edge:
 
     
 class VOLDOR_SLAM:
-
     def __init__(self, mode='mono'):
         self.voldor_winsize = 5
         
@@ -134,6 +133,9 @@ class VOLDOR_SLAM:
         self.voldor_user_config = '' # specify parameters for VO
         self.disable_dp = False # disable temporal and spatial depth priors for VO
         self.disable_local_mapping = False
+
+        # extended options
+        self.enable_flow_2 = False # load stride 2 flows for trifocal solvers
 
         # internal use
         self._use_loop_closure = False
@@ -208,8 +210,7 @@ class VOLDOR_SLAM:
         print(f'Camera parameters set to {self.fx}, {self.fy}, {self.cx}, {self.cy}, {self.basefocal}')
 
     def flow_loader_sync(self, fid_query, no_block=False, block_when_uninit=False):
-        if (self.flow_loader_pt == -1 and not block_when_uninit) \
-            or fid_query >= self.N_FRAMES-1:
+        if (self.flow_loader_pt == -1 and not block_when_uninit) or fid_query >= self.N_FRAMES-1:
             return False
         while self.flow_loader_pt <= fid_query:
             if no_block:
@@ -218,8 +219,7 @@ class VOLDOR_SLAM:
         return True
     
     def flow_2_loader_sync(self, fid_query, no_block=False, block_when_uninit=False):
-        if (self.flow_2_loader_pt == -1 and not block_when_uninit) \
-            or fid_query >= self.N_FRAMES-1:
+        if (self.flow_2_loader_pt == -1 and not block_when_uninit) or fid_query >= self.N_FRAMES-2:
             return False
         while self.flow_2_loader_pt <= fid_query:
             if no_block:
@@ -227,27 +227,24 @@ class VOLDOR_SLAM:
             time.sleep(0.01)
         return True
     
-
-
     def image_loader_sync(self, fid_query, no_block=False, block_when_uninit=False):
-        if (self.image_loader_pt == -1 and not block_when_uninit) \
-            or fid_query >= self.N_FRAMES-1:
+        if (self.image_loader_pt == -1 and not block_when_uninit) or fid_query >= self.N_FRAMES:
             return False
         while self.image_loader_pt <= fid_query:
             if no_block:
                 return False
             time.sleep(0.01)
         return True
+    
     def disp_loader_sync(self, fid_query, no_block=False, block_when_uninit=False):
-        if (self.disp_loader_pt == -1 and not block_when_uninit) \
-            or fid_query >= self.N_FRAMES-1:
+        if (self.disp_loader_pt == -1 and not block_when_uninit) or fid_query >= self.N_FRAMES:
             return False
         while self.disp_loader_pt <= fid_query:
             if no_block:
                 return False
             time.sleep(0.01)
         return True
-        
+
     def flow_loader(self, flow_path, resize=1.0, n_cache=100, range=(0,0)):
         self.flow_loader_pt = 0
 
@@ -255,7 +252,9 @@ class VOLDOR_SLAM:
         if range != (0,0):
             flow_fn_list = flow_fn_list[range[0]:range[1]]
         print(f'{len(flow_fn_list)} flows loaded')
+
         flow_example = load_flow(os.path.join(flow_path, flow_fn_list[0]))
+        
         self.N_FRAMES = len(flow_fn_list)+1
         self.h = int(flow_example.shape[0]*resize)
         self.w = int(flow_example.shape[1]*resize)
@@ -346,7 +345,7 @@ class VOLDOR_SLAM:
                 disp = np.ascontiguousarray(disp)
             elif fn.endswith('.png'):
                 disp = cv2.imread(os.path.join(disp_path, fn), cv2.IMREAD_UNCHANGED)
-                disp = np.nan_to_num(self.basefocal / (disp.astype(np.float32) / self.depth_scale), nan=0, posinf=0, neginf=0)                
+                disp = np.nan_to_num(self.basefocal / (disp.astype(np.float32) / self.depth_scale), nan=0, posinf=0, neginf=0) # TODO: BASEFOCAL
             else:
                 raise f'Unsupported disparity format {fn}'
 
@@ -377,7 +376,6 @@ class VOLDOR_SLAM:
             np.save(os.path.join(save_dir, f'{str(fid).zfill(zfill)}_depth.npy'), self.frames[fid].get_scaled_depth())
             np.save(os.path.join(save_dir, f'{str(fid).zfill(zfill)}_depth_conf.npy'), self.frames[fid].depth_conf)
         print(f'{len(self.kf_ids)} depth maps saved to {save_dir}')
-
 
     def enable_loop_closure(self, voc_path='./ORBvoc.bin'):
         if pyvoldor_module != 'full':
@@ -484,26 +482,46 @@ class VOLDOR_SLAM:
             if not self.flow_loader_sync(min(self.fid_cur+self.voldor_winsize-1, self.N_FRAMES-2)):
                 print('MISSING FLOW 1')
                 raise 'Flow loader not working or files are missing.'
-            if not self.flow_2_loader_sync(min(self.fid_cur+self.voldor_winsize-1, self.N_FRAMES-3)):
-                print('MISSING FLOW 2')
-                raise 'Flow 2 loader not working or files are missing.'
-            if self.mode=='stereo':
-                if not self.disp_loader_sync(self.fid_cur):
+            flows_1_wnd = self.flows[self.fid_cur:self.fid_cur+self.voldor_winsize]
+            
+            if self.enable_flow_2:
+                if not self.flow_2_loader_sync(min(self.fid_cur+self.voldor_winsize-2, self.N_FRAMES-3)):
+                    print('MISSING FLOW 2')
+                    raise 'Flow 2 loader not working or files are missing.'
+                flows_2_wnd = self.flows_2[self.fid_cur:self.fid_cur+self.voldor_winsize-1]
+            else:
+                flows_2_wnd = []
+                
+            if self.mode=='stereo':                
+                if not self.disp_loader_sync(min(self.fid_cur+self.voldor_winsize, self.N_FRAMES-1)):
                     print('MISSING DISP')
                     raise 'Disparity loader not working or files are missing.'
+                disp_wnd = self.disps[self.fid_cur:self.fid_cur+self.voldor_winsize+1]
+            else:
+                disp_wnd = []
+                        
             py_voldor_kwargs = {
-                'flows'   : np.stack(self.flows[  self.fid_cur:self.fid_cur+self.voldor_winsize], axis=0),
-                'flows_2' : np.stack(self.flows_2[self.fid_cur:self.fid_cur+self.voldor_winsize-1], axis=0),
-                'fx':self.fx, 'fy':self.fy, 'cx':self.cx, 'cy':self.cy, 'basefocal':self.basefocal,
-                'disparity' : self.disps[self.fid_cur] if self.mode=='stereo' else None,
+                'flows'   : np.stack(flows_1_wnd, axis=0),
+                'flows_2' : np.stack(flows_2_wnd, axis=0) if len(flows_2_wnd)>0 else None,
+                'fx' : self.fx,
+                'fy' : self.fy,
+                'cx' : self.cx,
+                'cy' : self.cy,
+                'basefocal' : self.basefocal,
+                'disparity' : disp_wnd[0] if len(disp_wnd)>0 else None,
                 'depth_priors' : np.stack(depth_priors, axis=0) if len(depth_priors)>0 else None,
                 'depth_prior_pconfs' : np.stack(depth_prior_pconfs, axis=0) if len(depth_prior_pconfs)>0 else None,
                 'depth_prior_poses' : np.stack(depth_prior_poses, axis=0) if len(depth_prior_poses)>0 else None,
-                'disparities' : np.stack(self.disps[  self.fid_cur:self.fid_cur+self.voldor_winsize+1], axis=0) if self.mode=='stereo' else None,
-                'config' : self.voldor_config + ' ' + self.voldor_user_config}
+                'disparities' : np.stack(disp_wnd, axis=0) if len(disp_wnd)>0 else None,
+                'config' : self.voldor_config + ' ' + self.voldor_user_config
+            }
+
+
 
             py_voldor_funmap = partial(pyvoldor.voldor, **py_voldor_kwargs)
+            print('BEFORE_VOLDOR')
             vo_ret = self.cython_process_pool.apply(py_voldor_funmap)
+            print('AFTER_VOLDOR')
 
             
             # if vo failed

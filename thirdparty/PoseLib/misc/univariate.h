@@ -26,8 +26,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef POSELIB_MISC_UNIVARIATE_H_
-#define POSELIB_MISC_UNIVARIATE_H_
+#pragma once
 
 #include <Eigen/Eigen>
 #include <complex>
@@ -44,7 +43,7 @@ int solve_quadratic_real(double a, double b, double c, double roots[2]);
 double sign2(const std::complex<double> z);
 
 /* Finds a single real root of x^3 + b*x^2 + c*x + d = 0 */
-void solve_cubic_single_real(double b, double c, double d, double &root);
+bool solve_cubic_single_real(double b, double c, double d, double &root);
 
 /* Finds the real roots of x^3 + b*x^2 + c*x + d = 0 */
 int solve_cubic_real(double b, double c, double d, double roots[3]);
@@ -57,5 +56,3 @@ int solve_quartic_real(double b, double c, double d, double e, double roots[4]);
 
 }; // namespace univariate
 }; // namespace poselib
-
-#endif

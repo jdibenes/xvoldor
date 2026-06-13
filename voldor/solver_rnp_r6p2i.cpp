@@ -5,7 +5,7 @@
 #include "helpers_geometry.h"
 
 // OK
-bool solver_r6p2i(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12, int max_iterations)
+bool solver_rnp_r6p2i(float const* p3d_1, float const* p2d_2, bool direction, float r0, float* r_12, float* t_12, float* dr_12, float* dt_12, int max_iterations)
 {
 	cv::Mat r_initial;
 	cv::Mat t_initial;

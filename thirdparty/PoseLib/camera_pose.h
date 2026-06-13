@@ -26,12 +26,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef POSELIB_CAMERA_POSE_H_
-#define POSELIB_CAMERA_POSE_H_
+#pragma once
 
 #include "PoseLib/misc/quaternion.h"
 #include "alignment.h"
-#include "misc/colmap_models.h"
+#include "misc/camera_models.h"
 
 #include <Eigen/Dense>
 #include <vector>
@@ -62,11 +61,49 @@ struct alignas(32) CameraPose {
     inline Eigen::Vector3d rotate(const Eigen::Vector3d &p) const { return quat_rotate(q, p); }
     inline Eigen::Vector3d derotate(const Eigen::Vector3d &p) const { return quat_rotate(quat_conj(q), p); }
     inline Eigen::Vector3d apply(const Eigen::Vector3d &p) const { return rotate(p) + t; }
-
+    inline Eigen::Vector3d apply_inverse(const Eigen::Vector3d &p) const { return derotate(p - t); }
+    inline CameraPose inverse() const { return CameraPose(quat_conj(q), -derotate(t)); }
+    inline CameraPose compose(const CameraPose &p) { return CameraPose(quat_multiply(q, p.q), t + rotate(p.t)); }
     inline Eigen::Vector3d center() const { return -derotate(t); }
 };
 
 typedef std::vector<CameraPose> CameraPoseVector;
+
+// The new subclass with extra parameters
+struct alignas(32) MonoDepthTwoViewGeometry {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    CameraPose pose;
+
+    // Extra members
+    double scale;
+    double shift1;
+    double shift2;
+
+    MonoDepthTwoViewGeometry() : pose(), scale(1.0), shift1(0.0), shift2(0.0) {}
+
+    MonoDepthTwoViewGeometry(const Eigen::Vector4d &qq, const Eigen::Vector3d &tt, double scale, double shift1,
+                             double shift2)
+        : pose(qq, tt), scale(scale), shift1(shift1), shift2(shift2) {}
+
+    MonoDepthTwoViewGeometry(const Eigen::Vector4d &qq, const Eigen::Vector3d &tt, double scale)
+        : pose(qq, tt), scale(scale), shift1(0.0), shift2(0.0) {}
+
+    MonoDepthTwoViewGeometry(const Eigen::Matrix3d &R, const Eigen::Vector3d &tt, double scale, double shift1,
+                             double shift2)
+        : pose(R, tt), scale(scale), shift1(shift1), shift2(shift2) {}
+
+    MonoDepthTwoViewGeometry(const Eigen::Matrix3d &R, const Eigen::Vector3d &tt, double scale)
+        : pose(R, tt), scale(scale), shift1(0.0), shift2(0.0) {}
+
+    explicit MonoDepthTwoViewGeometry(CameraPose pose) : pose(std::move(pose)), scale(1.0), shift1(0.0), shift2(0.0) {}
+
+    MonoDepthTwoViewGeometry(CameraPose pose, double scale)
+        : pose(std::move(pose)), scale(scale), shift1(0.0), shift2(0.0) {}
+
+    MonoDepthTwoViewGeometry(const CameraPose &pose, double scale, double s1, double s2)
+        : pose(pose), scale(scale), shift1(s1), shift2(s2) {}
+};
 
 struct alignas(32) Image {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -76,7 +113,7 @@ struct alignas(32) Image {
 
     // Constructors (Defaults to identity camera and pose)
     Image() : pose(CameraPose()), camera(Camera()) {}
-    Image(CameraPose pose, Camera camera) : pose(pose), camera(camera) {}
+    Image(CameraPose pose, Camera camera) : pose(std::move(pose)), camera(std::move(camera)) {}
 };
 
 typedef std::vector<Image> ImageVector;
@@ -90,43 +127,30 @@ struct alignas(32) ImagePair {
 
     // Constructors (Defaults to identity camera and poses)
     ImagePair() : pose(CameraPose()), camera1(Camera()), camera2(Camera()) {}
-    ImagePair(CameraPose pose, Camera camera1, Camera camera2) : pose(pose), camera1(camera1), camera2(camera2) {}
+    ImagePair(CameraPose pose, Camera camera1, Camera camera2)
+        : pose(std::move(pose)), camera1(std::move(camera1)), camera2(std::move(camera2)) {}
 };
 
-struct alignas(32) ThreeViewCameraPose {
+struct alignas(32) MonoDepthImagePair {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // Struct simply holds information about two cameras and their relative pose
+    MonoDepthTwoViewGeometry geometry;
+    Camera camera1;
+    Camera camera2;
 
-    // Rotation is represented as a unit quaternion
-    // with real part first, i.e. QW, QX, QY, QZ
-    CameraPose pose12;
-    CameraPose pose13;
-
-    // Constructors (Defaults to identity camera)
-    ThreeViewCameraPose() : pose12(CameraPose()), pose13(CameraPose()) {}
-    ThreeViewCameraPose(CameraPose pose12, CameraPose pose13) : pose12(pose12), pose13(pose13) {}
-
-    const CameraPose pose23() const {
-        Eigen::Matrix3d R23 = pose13.R() * pose12.R().transpose();
-        Eigen::Vector3d t23 = - R23 * pose12.t + pose13.t;
-
-        return CameraPose(R23, t23);
-    }
-};
-
-struct alignas(32) ImageTriplet {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    // Rotation is represented as a unit quaternion
-    // with real part first, i.e. QW, QX, QY, QZ
-    ThreeViewCameraPose poses;
-    Camera camera;
-
-    // Constructors (Defaults to identity camera)
-    ImageTriplet() : poses(ThreeViewCameraPose()), camera(Camera()) {}
-    ImageTriplet(ThreeViewCameraPose poses, Camera camera) : poses(poses), camera(camera) {}
+    // Constructors (Defaults to identity camera and poses)
+    MonoDepthImagePair() : geometry(MonoDepthTwoViewGeometry()), camera1(Camera()), camera2(Camera()) {}
+    MonoDepthImagePair(MonoDepthTwoViewGeometry geometry, Camera camera1, Camera camera2)
+        : geometry(std::move(geometry)), camera1(std::move(camera1)), camera2(std::move(camera2)) {}
 };
 
 typedef std::vector<ImagePair> ImagePairVector;
-} // namespace poselib
 
-#endif
+struct alignas(32) ProjectiveImagePair {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Eigen::Matrix3d F;
+    Camera camera1, camera2;
+    ProjectiveImagePair() : F(Eigen::Matrix3d::Identity()), camera1(Camera()), camera2(Camera()) {}
+    ProjectiveImagePair(Eigen::Matrix3d F, Camera camera1, Camera camera2) : F(F), camera1(camera1), camera2(camera2) {}
+};
+} // namespace poselib

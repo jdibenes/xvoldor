@@ -154,7 +154,7 @@ __global__ static void compute_p3p_map(int active_index, float rigidness_thresho
 	bool disparities_copy_0 = disparities_enable && disparities_use_0;
 
 	_d_trifocal_0_map.at(x, y) = make_float3(wx, wy, disparities_copy_0 ? _d_disparities.at_tex(wx, wy, active_index + 0) : oz);
-	_d_trifocal_1_map.at(x, y) = make_float3(px, py, disparities_enable ? _d_disparities.at_tex(px, py, active_index + 1) : 0.0f);
+	_d_trifocal_1_map.at(x, y) = make_float3(px, py, disparities_enable ? _d_disparities.at_tex(px, py, active_index + 1) : 1.0f);
 
 	if (!trifocal_enable) { return; }
 
@@ -188,7 +188,7 @@ __global__ static void compute_p3p_map(int active_index, float rigidness_thresho
 
 	if ((qx <= 0) || (qx >= _w) || (qy <= 0) || (qy >= _h)) { return; }
 
-	_d_trifocal_2_map.at(x, y) = make_float3(qx, qy, disparities_enable ? _d_disparities.at_tex(qx, qy, active_index + 2) : 0.0f);
+	_d_trifocal_2_map.at(x, y) = make_float3(qx, qy, disparities_enable ? _d_disparities.at_tex(qx, qy, active_index + 2) : 1.0f);
 
 	_d_trifocal_squared_error.at(x, y) = squared_error;
 }
