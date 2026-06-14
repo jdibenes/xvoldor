@@ -29,7 +29,7 @@ big_table = [
 
 if __name__ == '__main__':
     multiview_mode = 2
-    solver_id = 16
+    solver_id = 3
 
     batch_workers = 18
     batch_unique = False
@@ -84,8 +84,8 @@ if __name__ == '__main__':
     pose_depth_suffix = f'disp' if (not set_png_depth) else f'depth'
     fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}_{pose_depth_suffix}_{solver_id}.txt')
 
-    #cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe demo.py'
-    cmd = 'python demo.py'
+    cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe demo.py'
+    #cmd = 'python demo.py'
     fx = f'--fx {fx_val}'
     fy = f'--fy {fy_val}'
     cx = f'--cx {cx_val}'

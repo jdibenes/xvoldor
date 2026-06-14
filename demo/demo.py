@@ -56,7 +56,8 @@ sys.path.append('../slam_py')
 #sys.path.append('./lib_build_260414')
 #sys.path.append('./lib_poselib_test')
 #sys.path.append('./lib_focal_test_2026_05_26')
-sys.path.append('./lib_focal_test_2026_06_12')
+#sys.path.append('./lib_focal_test_2026_06_12')
+sys.path.append('./lib_focal_test_2026_06_14')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
