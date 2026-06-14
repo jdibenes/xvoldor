@@ -9,7 +9,7 @@ template <typename _scalar_out, int _rows, int _cols, typename _scalar_in>
 Eigen::Matrix<_scalar_out, _rows, _cols> matrix_from_buffer(_scalar_in const* data, int rows = _rows, int cols = _cols) // default
 {
     Eigen::Map<Eigen::Matrix<_scalar_in, _rows, _cols> const> S(data, rows, cols);
-    if constexpr (std::is_same_v<_scalar_out, _scalar_in>) { return S; } else { return S.cast<_scalar_out>(); }
+    if constexpr (std::is_same_v<_scalar_out, _scalar_in>) { return S; } else { return S.template cast<_scalar_out>(); }
 }
 
 // OK
@@ -17,7 +17,7 @@ template <typename _scalar_in, int _rows, int _cols, typename _scalar_out>
 void matrix_to_buffer(Eigen::Matrix<_scalar_in, _rows, _cols> const& M, _scalar_out* data)
 {
     Eigen::Map<Eigen::Matrix<_scalar_out, _rows, _cols>> D(data, M.rows(), M.cols());
-    if constexpr (std::is_same_v<_scalar_out, _scalar_in>) { D = M; } else { D = M.cast<_scalar_out>(); }
+    if constexpr (std::is_same_v<_scalar_out, _scalar_in>) { D = M; } else { D = M.template cast<_scalar_out>(); }
 }
 
 // OK

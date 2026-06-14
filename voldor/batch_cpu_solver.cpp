@@ -3,6 +3,7 @@
 #include <thread>
 #include <memory>
 #include <cmath>
+#include <cstring>
 #include "batch_cpu_solver.h"
 
 // OK
