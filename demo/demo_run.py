@@ -29,7 +29,7 @@ big_table = [
 
 if __name__ == '__main__':
     multiview_mode = 2
-    solver_id = 3
+    solver_id = 16
 
     batch_workers = 18
     batch_unique = False
