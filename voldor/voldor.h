@@ -1,5 +1,8 @@
+
 #pragma once
-#include "voldor_utils.h"
+
+#include <chrono>
+
 #include "config.h"
 #include "geometry.h"
 #include "kitti.h"
@@ -11,7 +14,6 @@ enum OPTIMIZE_DEPTH_FLAG {
 	OD_UPDATE_RIGIDNESS_ONLY = 2,
 };
 
-
 class VOLDOR {
 public:
 
@@ -22,8 +24,7 @@ public:
 	int iters_remain;
 	Config cfg;
 	bool has_disparity;
-
-	
+		
 	std::vector<cv::Mat> flows_1;
 	std::vector<cv::Mat> flows_2;
 	std::vector<cv::Mat> disparities;
@@ -36,11 +37,10 @@ public:
 	std::vector<cv::Mat> rigidnesses;
 	std::vector<Camera> cams;
 	
-
 	KittiGround ground;
 
-	VOLDOR(Config cfg, bool exclusive_gpu_context = true) :
-		cfg(cfg) {
+	VOLDOR(Config cfg, bool exclusive_gpu_context = true) : cfg(cfg) 
+	{
 		if (!cfg.silent)
 			cfg.print_info();
 	}
@@ -60,7 +60,6 @@ public:
 
 	int solve();
 
-
 	void bootstrap();
 
 	void optimize_cameras();
@@ -75,22 +74,25 @@ public:
 
 	void debug();
 
-
 private:
 #if defined(WIN32) || defined(_WIN32)
 	std::chrono::time_point<std::chrono::steady_clock> time_stamp;
 #else
 	std::chrono::system_clock::time_point time_stamp;
 #endif
-	void tic() {
+
+	void tic()
+	{
 		time_stamp = std::chrono::high_resolution_clock::now();
 	}
 
-	float toc() {
+	float toc()
+	{
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6f;
 	}
-	void toc(std::string job_name) {
+
+	void toc(std::string job_name)
+	{
 		std::cout << job_name << " elapsed time = " << toc() << "ms." << std::endl;
 	}
-
 };

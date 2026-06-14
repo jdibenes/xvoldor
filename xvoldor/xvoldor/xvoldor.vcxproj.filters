@@ -25,12 +25,6 @@
     <Filter Include="Header Files\helpers">
       <UniqueIdentifier>{4550b308-a58e-4c7b-b543-bd98f70afd07}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\wrapper">
-      <UniqueIdentifier>{72c815bb-0150-433c-8525-0d6ccb6813d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\wrapper">
-      <UniqueIdentifier>{8ba73cb3-a2a7-4db9-bc82-fa58602ba132}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\batch_solve">
       <UniqueIdentifier>{238d0488-2951-4de2-b126-17fcf3c30908}</UniqueIdentifier>
     </Filter>
@@ -70,23 +64,23 @@
     <Filter Include="Libraries\PoseLib\robust\optim">
       <UniqueIdentifier>{3bbbe61c-1908-40fe-85f4-802774ce4b6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{72c815bb-0150-433c-8525-0d6ccb6813d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\legacy">
+      <UniqueIdentifier>{23e7cef3-9be0-4f1b-8751-ad2c6f257750}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\test">
+      <UniqueIdentifier>{49ee8728-5bc9-4b67-835b-d9e78be7f242}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{8ba73cb3-a2a7-4db9-bc82-fa58602ba132}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\legacy">
+      <UniqueIdentifier>{5171ff51-a080-4151-b9f8-aacfe1f7f8a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\voldor\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\geometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\voldor_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\voldor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\kitti.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_eigen.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
@@ -122,9 +116,6 @@
     </ClInclude>
     <ClInclude Include="..\..\voldor\helpers_opencv.h">
       <Filter>Header Files\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\voldor\py_export.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\thirdparty\polynomial\polynomial.h">
       <Filter>Libraries\polynomial</Filter>
@@ -408,23 +399,26 @@
     <ClInclude Include="..\..\voldor\helpers_file.h">
       <Filter>Header Files\helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\helpers_camera.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\py_export.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\geometry.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\kitti.h">
+      <Filter>Header Files\legacy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\voldor.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\config.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\voldor\geometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\voldor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\kitti.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\main_solver_test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp">
       <Filter>Source Files\solvers</Filter>
     </ClCompile>
@@ -475,9 +469,6 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rnp_r6p2l.cpp">
       <Filter>Source Files\solvers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\voldor\py_export.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\voldor\solver_rpe_easy.cpp">
       <Filter>Source Files\solvers</Filter>
@@ -724,6 +715,27 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\helpers_file.cpp">
       <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\helpers_camera.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\geometry.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\kitti.cpp">
+      <Filter>Source Files\legacy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\main.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\main_solver_test.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\py_export.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\voldor.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,3 +1,156 @@
+/*
+#pragma once
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#define _USE_MATH_DEFINES
+
+
+
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
+#include <iostream>
+#include <random>
+#include <vector>
+
+#include <cmath>
+#include <random>
+*/
+/*
+		int rvec_zero_count = 0;
+		for (int i = 0; i < poses_pool_used; i++)
+			if (poses_pool.at<float>(i, 0) == 0)
+				rvec_zero_count++;
+		cout << "rvec_zero_count = " << rvec_zero_count << endl;
+		*/
+
+/*
+cv::Mat vis_flow(cv::Mat flow, float mag_scale = 0);
+
+cv::Mat load_flow(const char* file_path);
+*/
+/*
+
+cv::Mat vis_flow(cv::Mat flow, float mag_scale) {
+	cv::Mat flow_xy[2];
+	cv::Mat mag, angle;
+	split(flow, flow_xy);
+	cv::cartToPolar(flow_xy[0], flow_xy[1], mag, angle, true);
+	if (mag_scale <= 0)
+		normalize(mag, mag, 0, 1, cv::NORM_MINMAX);
+	else
+		mag /= mag_scale;
+	cv::Mat dst;
+	std::vector<cv::Mat> src{ angle, mag, cv::Mat::ones(flow.size(), CV_32F) };
+	merge(src, dst);
+	cvtColor(dst, dst, cv::COLOR_HSV2BGR);
+	return dst;
+}
+*/
+
+// apply resize to config params to make life easier
+//if (cfg.resize_factor != 1) {
+//	cfg.fx *= cfg.resize_factor;
+//	cfg.fy *= cfg.resize_factor;
+//	cfg.cx *= cfg.resize_factor;
+//	cfg.cy *= cfg.resize_factor;
+	// if want to rescale world size, apply resize to basefocal
+	//cfg.basefocal *= cfg.resize_factor;
+//}
+//if (cfg.resize_factor != 1) 
+		//{
+		//	cv::resize(flow, flow, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	flow *= cfg.resize_factor;			
+		//}
+		//if (cfg.resize_factor != 1) 
+		//{
+		//	cv::resize(flow_2, flow_2, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	flow_2 *= cfg.resize_factor;
+		//}
+		//if (cfg.resize_factor != 1)
+		//{
+		//	cv::resize(depth, depth, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	depth *= cfg.resize_factor;
+		//}
+		//if (cfg.resize_factor != 1) {
+		//	cv::resize(depth_prior, depth_prior, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
+		//	depth_prior *= cfg.resize_factor;
+		//}
+		// we assume flow, disparity and camera parameters need apply resize
+	// while depth_prior and their poses are pre-resized since they are usually previous VOLDOR result
+	//if (_flows_1.size() != _flows_2.size())
+	//{
+	//	std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
+	//	throw;
+	//}
+	//if (cfg.resize_factor != 1)
+	//{
+	//	std::cout << "WARNING resize_factor != 1" << std::endl;
+	//}
+
+
+//void estimate_depth_closed_form(cv::Mat flow, cv::Mat& depth, Camera cam,	float min_depth = 1e-2f, float max_depth = 1e10f);
+//void estimate_camera_pose_epipolar(cv::Mat flow, Camera& cam,	cv::Mat mask = cv::Mat(), int sampling_2d_step = 4);
+//void estimate_camera_focal(cv::Mat flow, float& fx, float& fy, float cx, float cy, int sampling_2d_step);
+
+
+//void apply_meanshift(cv::Mat& poses_pool, cv::Mat& velocities_pool, cv::Mat& focals_pool, Config const& options, cv::Mat& pose_opm, cv::Mat& velocity_opm, float focal_opm)
+//{
+	// pose: 6 | 3+3
+	// pose&velocity: 12 | 6+6 | 3+3+3+3
+	// pose&focal: 7 | 6+1 | 3+3+1
+	// median algorithm?
+
+	/*
+	cv::Mat poses_pool_r = poses_pool.colRange(0, 3);
+	cv::Mat poses_pool_t = poses_pool.colRange(3, 6);
+
+	meanshift_gpu
+	(
+		reinterpret_cast<float*>(poses_pool_r.data),
+		options.meanshift_kernel_var,
+		reinterpret_cast<float*>(pose_opm.data),
+		&cams[active_idx].pose_density,
+		&cams[active_idx].last_used_ms_iters,
+		successive_pose,
+		poses_pool_r.rows,
+		3,
+		options.meanshift_epsilon,
+		options.meanshift_max_iters,
+		options.meanshift_max_init_trials,
+		options.meanshift_good_init_confidence
+	);
+	*/
+
+
+	/*
+	poses_pool.colRange(0, 3) *= cfg.meanshift_rvec_scale; // depends on translation scale?
+	pose_opm.colRange(0, 3) *= cfg.meanshift_rvec_scale;
+	meanshift_gpu
+	(
+		(float*)poses_pool.data,
+		cfg.meanshift_kernel_var,
+		(float*)pose_opm.data,
+		&cams[active_idx].pose_density,
+		&cams[active_idx].last_used_ms_iters,
+		successive_pose,
+		poses_pool_used,
+		6,
+		cfg.meanshift_epsilon,
+		cfg.meanshift_max_iters,
+		cfg.meanshift_max_init_trials,
+		cfg.meanshift_good_init_confidence
+	);
+	*/
+
+	//}
+
+
+
+
     //Eigen::PermutationMatrix<4> p;
         //p.indices() = { 3, 2, 0, 1 };
     // *p;

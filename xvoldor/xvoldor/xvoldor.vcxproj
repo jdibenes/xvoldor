@@ -120,6 +120,7 @@
     <ClInclude Include="..\..\voldor\batch_cpu_solver.h" />
     <ClInclude Include="..\..\voldor\config.h" />
     <ClInclude Include="..\..\voldor\geometry.h" />
+    <ClInclude Include="..\..\voldor\helpers_camera.h" />
     <ClInclude Include="..\..\voldor\helpers_file.h" />
     <ClInclude Include="..\..\voldor\helpers_math.h" />
     <ClInclude Include="..\..\voldor\helpers_eigen.h" />
@@ -129,7 +130,6 @@
     <ClInclude Include="..\..\voldor\helpers_lock.h" />
     <ClInclude Include="..\..\voldor\py_export.h" />
     <ClInclude Include="..\..\voldor\solvers.h" />
-    <ClInclude Include="..\..\voldor\voldor_utils.h" />
     <ClInclude Include="..\..\voldor\voldor.h" />
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +217,7 @@
     <ClCompile Include="..\..\voldor\batch_gpu_solver_p4p.cpp" />
     <ClCompile Include="..\..\voldor\geometry.cpp" />
     <ClCompile Include="..\..\voldor\helpers_file.cpp" />
+    <ClCompile Include="..\..\voldor\helpers_camera.cpp" />
     <ClCompile Include="..\..\voldor\kitti.cpp" />
     <ClCompile Include="..\..\voldor\helpers_lock.cpp" />
     <ClCompile Include="..\..\voldor\main.cpp">

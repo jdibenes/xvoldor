@@ -1,5 +1,15 @@
 
+#include <opencv2/highgui.hpp>
+
 #include "voldor.h"
+
+#if defined(WIN32) || defined(_WIN32) 
+#define PATH_SEPARATOR '\\'
+#else 
+#define PATH_SEPARATOR '/'
+#endif
+
+#define div_ceil(x, y) ( (x) / (y) + ((x) % (y) > 0) )
 
 void
 VOLDOR::init
@@ -107,12 +117,6 @@ VOLDOR::init
 		depth_prior_poses.push_back(cam);
 	}
 
-
-
-
-
-
-
 	int chop = cfg.multiview_mode - 2;
 
 	// init params
@@ -131,12 +135,6 @@ VOLDOR::init
 	// init rigidnesses
 	for (int i = 0; i < n_flows; i++)
 		rigidnesses.push_back(cv::Mat::ones(cv::Size(w, h), CV_32F));
-
-
-
-
-
-	
 
 	// init cams
 	cv::Mat K = (cv::Mat_<float>(3, 3) <<
@@ -175,7 +173,8 @@ VOLDOR::init
 	}
 }
 
-int VOLDOR::solve() {
+int VOLDOR::solve()
+{
 	if (cfg.debug)
 		debug();
 	if (n_depth_priors == 0)
@@ -191,16 +190,18 @@ int VOLDOR::solve() {
 			debug();
 	}
 	cv::destroyAllWindows();
-	if (cfg.kitti_estimate_ground)
-		estimate_kitti_ground();
+	if (cfg.kitti_estimate_ground) { estimate_kitti_ground(); }
 	return iters_cur;
 }
 
-void VOLDOR::bootstrap() {
+void VOLDOR::bootstrap()
+{
 	tic();
 
-	estimate_camera_pose_epipolar(flows_1[0], cams[0]);
-	estimate_depth_closed_form(flows_1[0], depth, cams[0]);
+	//estimate_camera_pose_epipolar(flows_1[0], cams[0]);
+	estimate_camera_pose_epipolar(flows_1[0], cams[0].K, cams[0].E, cams[0].R, cams[0].t);
+	//estimate_depth_closed_form(flows_1[0], depth, cams[0]);
+	estimate_depth_closed_form(flows_1[0], cams[0].K, cams[0].K_inv, cams[0].R, cams[0].t, depth);
 
 	if (!cfg.silent) {
 		cams[0].print_info();
@@ -209,7 +210,8 @@ void VOLDOR::bootstrap() {
 	}
 }
 
-void VOLDOR::optimize_cameras() {
+void VOLDOR::optimize_cameras()
+{
 	tic();
 
 	bool allow_trunc = iters_cur > cfg.no_trunc_iters;
@@ -261,7 +263,8 @@ void VOLDOR::optimize_cameras() {
 	}
 }
 
-void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
+void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag)
+{
 	if (n_flows == 0 && n_depth_priors == 0)
 		return;
 	tic();
@@ -285,7 +288,6 @@ void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
 			h_ts[i] = (float*)cams[i].t.data;
 		}
 	}
-
 
 	float** h_depth_priors = NULL;
 	float** h_depth_prior_pconfs = NULL;
@@ -350,7 +352,6 @@ void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
 			flag == OD_UPDATE_RIGIDNESS_ONLY);
 	}
 
-
 	delete[] h_flows;
 	delete[] h_rigidnesses;
 	delete[] h_Rs;
@@ -370,18 +371,12 @@ void VOLDOR::optimize_depth(OPTIMIZE_DEPTH_FLAG flag) {
 void VOLDOR::normalize_world_scale() {
 	// normalize world scale 
 	float world_scale = 0;
-	for (int i = 0; i < n_flows; i++)
-		world_scale += norm(cams[i].t);
-	for (int i = 0; i < n_flows; i++)
-		cams[i].t *= (n_flows / world_scale);
+	for (int i = 0; i < n_flows; i++) { world_scale += norm(cams[i].t); }
+	for (int i = 0; i < n_flows; i++) { cams[i].t *= (n_flows / world_scale); }
 	depth *= (n_flows / world_scale);
 }
 
-
-void
-VOLDOR::estimate_kitti_ground
-(
-)
+void VOLDOR::estimate_kitti_ground()
 {
 	tic();
 
@@ -395,11 +390,7 @@ VOLDOR::estimate_kitti_ground
 	}
 }
 
-void
-VOLDOR::save_result
-(
-	std::string save_dir
-)
+void VOLDOR::save_result(std::string save_dir)
 {
 	FILE* fs;
 
@@ -445,10 +436,7 @@ VOLDOR::save_result
 	}
 }
 
-void
-VOLDOR::debug
-(
-)
+void VOLDOR::debug()
 {
 	if (cfg.kitti_estimate_ground)
 		estimate_kitti_ground();
@@ -468,44 +456,3 @@ VOLDOR::debug
 	if (cv::waitKey(0) == 'q')
 		exit(0);
 }
-
-
-// apply resize to config params to make life easier
-//if (cfg.resize_factor != 1) {
-//	cfg.fx *= cfg.resize_factor;
-//	cfg.fy *= cfg.resize_factor;
-//	cfg.cx *= cfg.resize_factor;
-//	cfg.cy *= cfg.resize_factor;
-	// if want to rescale world size, apply resize to basefocal
-	//cfg.basefocal *= cfg.resize_factor;
-//}
-//if (cfg.resize_factor != 1) 
-		//{
-		//	cv::resize(flow, flow, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-		//	flow *= cfg.resize_factor;			
-		//}
-		//if (cfg.resize_factor != 1) 
-		//{
-		//	cv::resize(flow_2, flow_2, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-		//	flow_2 *= cfg.resize_factor;
-		//}
-		//if (cfg.resize_factor != 1)
-		//{
-		//	cv::resize(depth, depth, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-		//	depth *= cfg.resize_factor;
-		//}
-		//if (cfg.resize_factor != 1) {
-		//	cv::resize(depth_prior, depth_prior, cv::Size(0, 0), cfg.resize_factor, cfg.resize_factor);
-		//	depth_prior *= cfg.resize_factor;
-		//}
-		// we assume flow, disparity and camera parameters need apply resize
-	// while depth_prior and their poses are pre-resized since they are usually previous VOLDOR result
-	//if (_flows_1.size() != _flows_2.size())
-	//{
-	//	std::cout << "[ERROR] flows/flows_2 size mismatch!" << std::endl;
-	//	throw;
-	//}
-	//if (cfg.resize_factor != 1)
-	//{
-	//	std::cout << "WARNING resize_factor != 1" << std::endl;
-	//}
