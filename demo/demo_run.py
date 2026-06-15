@@ -24,12 +24,14 @@ big_table = [
     ('hl2_6', 586.27075, 586.27075,  374.04108, 202.26265, 117.254150390625,  1.0, 1.0), # 19
     ('hl2_7', 586.27075, 586.27075,  374.04108, 202.26265, 117.254150390625,  1.0, 1.0), # 20
     ('hl2_5_2', 586.27075, 586.27075,  374.04108, 202.26265, 117.254150390625,  1.0, 1.0), # 21
-    ('zed_x_etna_1', 370.00048828125, 370.00048828125, 477.6654968261719, 270.8048095703125, 44.458960801608859567705078125, 1.0, 1.0) # 22
+    ('zed_x_etna_1', 370.00048828125, 370.00048828125, 477.6654968261719, 270.8048095703125, 44.458960801608859567705078125, 1.0, 1.0), # 22
+    ('hl2_5', 0, 0, 374.04108, 202.26265, 0.2,  1.0, 1.0), # 23
+    ('hl2_5', 0, 0, 760/2, 428/2, 0.2,  1.0, 1.0), # 24
 ]
 
 if __name__ == '__main__':
-    multiview_mode = 2
-    solver_id = 3
+    multiview_mode = 3
+    solver_id = 24
 
     batch_workers = 18
     batch_unique = False
@@ -52,16 +54,16 @@ if __name__ == '__main__':
     square_pixels = False
     shared_focals = False
 
-    sequence_index = 22
-    toolset = 'searaft'
+    sequence_index = 24
+    toolset = 'gt'
     set_png_depth = True
     png_depth_scale = 1000
 
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
-    set_enable_loop_closure = True
-    full_log = True
+    set_enable_loop_closure = False
+    full_log = False
 
     extra_args = ''
     extra_args += f'--multiview_mode {multiview_mode} --solver_select {solver_id} '
@@ -84,14 +86,15 @@ if __name__ == '__main__':
     pose_depth_suffix = f'disp' if (not set_png_depth) else f'depth'
     fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}_{pose_depth_suffix}_{solver_id}.txt')
 
-    cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe demo.py'
+    #cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe demo.py'
+    cmd = 'python demo.py'
     fx = f'--fx {fx_val}'
     fy = f'--fy {fy_val}'
     cx = f'--cx {cx_val}'
     cy = f'--cy {cy_val}'
     bf = f'--bf {bf_val}'
     flow_dir = f'--flow_dir {path_flow}'
-    flow_2_dir = f'--flow_2_dir {path_flow_2}'
+    flow_2_dir = f'--flow_2_dir {path_flow_2}' if (tf_enable_flow_2) else ''
     img_dir = f'--img_dir {path_img}'
     disp_dir = f'--disp_dir {path_disp}' if (mode_name != 'mono') else ''
     mode = f'--mode {mode_name}'

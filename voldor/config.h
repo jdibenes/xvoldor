@@ -1,6 +1,9 @@
 
 #pragma once
-#include "voldor_utils.h"
+
+#include <iostream>
+#include <vector>
+#include <string>
 
 struct Config 
 {
@@ -137,25 +140,6 @@ struct Config
 		exit(1);
 	}
 
-	template <>
-	static void str_to_arg(std::string str, int& arg)
-	{
-		arg = stoi(str);
-	}
-
-	template <>
-	static void str_to_arg(std::string str, float& arg)
-	{
-		arg = stof(str);
-	}
-
-	template <>
-	static void str_to_arg(std::string str, double& arg)
-	{
-		arg = stod(str);
-	}
-
-
 	template <typename T>
 	static T safe_arr_access(std::vector<T> arr, size_t i) 
 	{
@@ -164,190 +148,7 @@ struct Config
 		exit(1);
 	}
 
-	void read_config(std::vector<std::string> cfg_strs) {
-		for (int i = 0; i < cfg_strs.size(); i++) 
-		{
-			if (0)
-			{
-			}
-
-			else if (cfg_strs[i] == "--multiview_mode")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->multiview_mode);
-			else if (cfg_strs[i] == "--solver_select")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->solver_select);
-
-			else if (cfg_strs[i] == "--batch_workers")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->batch_workers);
-			else if (cfg_strs[i] == "--batch_unique")
-				this->batch_unique = true;
-
-			else if (cfg_strs[i] == "--disparities_enable")
-				this->disparities_enable = true;
-			else if (cfg_strs[i] == "--disparities_use_0")
-				this->disparities_use_0 = true;
-
-			else if (cfg_strs[i] == "--rs_direction")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_direction);
-			else if (cfg_strs[i] == "--rs_r0")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_r0);
-			else if (cfg_strs[i] == "--rs_iterations")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_iterations);
-
-			else if (cfg_strs[i] == "--tf_threshold")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_threshold);
-			else if (cfg_strs[i] == "--tf_enable_next_pool")
-				this->tf_enable_next_pool = true;
-			else if (cfg_strs[i] == "--tf_enable_flow_2")
-				this->tf_enable_flow_2 = true;
-			else if (cfg_strs[i] == "--tf_use_flow_2")
-				this->tf_use_flow_2 = true;
-			else if (cfg_strs[i] == "--tf_squared_error_threshold")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_squared_error_threshold);
-			else if (cfg_strs[i] == "--tf_sample_size")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_sample_size);
-
-			else if (cfg_strs[i] == "--estimate_intrinsics")
-				this->estimate_intrinsics = true;
-			else if (cfg_strs[i] == "--square_pixels")
-				this->square_pixels = true;
-			else if (cfg_strs[i] == "--shared_focals")
-				this->shared_focals = true;
-
-			else if (cfg_strs[i] == "--full_log")
-				this->full_log = true;
-
-			// OLD ------------------------------------------------------------
-
-			else if (cfg_strs[i] == "--basefocal")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->basefocal);
-			else if (cfg_strs[i] == "--omega")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->omega);
-			else if (cfg_strs[i] == "--disp_delta")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->disp_delta);
-			else if (cfg_strs[i] == "--delta")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->delta);
-
-			else if (cfg_strs[i] == "--rg_refine")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_refine);
-			else if (cfg_strs[i] == "--rg_refine_last_only")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_refine_last_only);
-			else if (cfg_strs[i] == "--rg_trunc_sigma")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_trunc_sigma);
-			else if (cfg_strs[i] == "--rg_covar_reg_lambda")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_covar_reg_lambda);
-			else if (cfg_strs[i] == "--rg_epsilon")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_epsilon);
-			else if (cfg_strs[i] == "--rg_max_iters")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_max_iters);
-			else if (cfg_strs[i] == "--rg_pose_scaling")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_pose_scaling);
-
-			//else if (cfg_strs[i] == "--resize_factor")
-			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->resize_factor);
-			else if (cfg_strs[i] == "--abs_resize_factor")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->abs_resize_factor);
-			else if (cfg_strs[i] == "--fx")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->fx);
-			else if (cfg_strs[i] == "--fy")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->fy);
-			else if (cfg_strs[i] == "--cx")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->cx);
-			else if (cfg_strs[i] == "--cy")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->cy);
-
-			else if (cfg_strs[i] == "--debug")
-				this->debug = true;
-			else if (cfg_strs[i] == "--silent")
-				this->silent = true;
-			else if (cfg_strs[i] == "--save_everything")
-				this->save_everything = true;
-			else if (cfg_strs[i] == "--viz_img_per_row")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->viz_img_per_row);
-			else if (cfg_strs[i] == "--viz_depth_scale")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->viz_depth_scale);
-			else if (cfg_strs[i] == "--exclusive_gpu_context")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->exclusive_gpu_context);
-
-			else if (cfg_strs[i] == "--lambda")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambda);
-			else if (cfg_strs[i] == "--meanshift_kernel_var")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_kernel_var);
-			else if (cfg_strs[i] == "--meanshift_rvec_scale")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_rvec_scale);
-			else if (cfg_strs[i] == "--norm_world_scale")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->norm_world_scale);
-
-			//else if (cfg_strs[i] == "--cpu_p3p")
-			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->cpu_p3p);
-			//else if (cfg_strs[i] == "--lambdatwist")
-			//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambdatwist);
-			else if (cfg_strs[i] == "--max_trace_on_flow")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->max_trace_on_flow);
-			else if (cfg_strs[i] == "--n_poses_to_sample")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->n_poses_to_sample);
-			else if (cfg_strs[i] == "--pose_sample_min_depth")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->pose_sample_min_depth);
-			else if (cfg_strs[i] == "--pose_sample_max_depth")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->pose_sample_max_depth);
-			else if (cfg_strs[i] == "--rigidness_threshold")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rigidness_threshold);
-			else if (cfg_strs[i] == "--rigidness_sum_threshold")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->rigidness_sum_threshold);
-
-			else if (cfg_strs[i] == "--trunc_rigidness_density")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->trunc_rigidness_density);
-			else if (cfg_strs[i] == "--trunc_sample_density")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->trunc_sample_density);
-			else if (cfg_strs[i] == "--max_iters")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->max_iters);
-			else if (cfg_strs[i] == "--no_trunc_iters")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->no_trunc_iters);
-			else if (cfg_strs[i] == "--min_iters_after_trunc")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->min_iters_after_trunc);
-
-			else if (cfg_strs[i] == "--fb_smooth")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->fb_smooth);
-			else if (cfg_strs[i] == "--fb_emm")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->fb_emm);
-			else if (cfg_strs[i] == "--fb_no_change_prob")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->fb_no_change_prob);
-
-			else if (cfg_strs[i] == "--optimize_depth")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->optimize_depth);
-			else if (cfg_strs[i] == "--depth_rand_samples")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_rand_samples);
-			else if (cfg_strs[i] == "--depth_global_prop_step")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_global_prop_step);
-			else if (cfg_strs[i] == "--depth_local_prop_width")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_local_prop_width);
-			else if (cfg_strs[i] == "--depth_range_factor")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_range_factor);
-
-			else if (cfg_strs[i] == "--meanshift_max_iters")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_max_iters);
-			else if (cfg_strs[i] == "--meanshift_max_init_trials")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_max_init_trials);
-			else if (cfg_strs[i] == "--meanshift_good_init_confidence")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_good_init_confidence);
-			else if (cfg_strs[i] == "--meanshift_epsilon")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_epsilon);
-
-			else if (cfg_strs[i] == "--kitti_estimate_ground")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_estimate_ground);
-			else if (cfg_strs[i] == "--kitti_ground_holo_width")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_ground_holo_width);
-			else if (cfg_strs[i] == "--kitti_ground_roi")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_ground_roi);
-			else if (cfg_strs[i] == "--kitti_ground_meanshift_kernel_var")
-				str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_ground_meanshift_kernel_var);
-
-			else 
-			{
-				std::cout << "Invalid input config : " << cfg_strs[i] << std::endl;
-				exit(1);
-			}
-		}
-	}
+	void read_config(std::vector<std::string> cfg_strs);
 
 	void print_info()
 	{
@@ -421,3 +222,206 @@ struct Config
 		std::cout << "==================================================" << std::endl << std::endl;
 	}
 };
+
+template <>
+inline void Config::str_to_arg(std::string str, int& arg)
+{
+	arg = stoi(str);
+}
+
+template <>
+inline void Config::str_to_arg(std::string str, float& arg)
+{
+	arg = stof(str);
+}
+
+template <>
+inline void Config::str_to_arg(std::string str, double& arg)
+{
+	arg = stod(str);
+}
+
+inline void Config::read_config(std::vector<std::string> cfg_strs) {
+	for (int i = 0; i < cfg_strs.size(); i++) 
+	{
+		if (0)
+		{
+		}
+
+		else if (cfg_strs[i] == "--multiview_mode")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->multiview_mode);
+		else if (cfg_strs[i] == "--solver_select")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->solver_select);
+
+		else if (cfg_strs[i] == "--batch_workers")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->batch_workers);
+		else if (cfg_strs[i] == "--batch_unique")
+			this->batch_unique = true;
+
+		else if (cfg_strs[i] == "--disparities_enable")
+			this->disparities_enable = true;
+		else if (cfg_strs[i] == "--disparities_use_0")
+			this->disparities_use_0 = true;
+
+		else if (cfg_strs[i] == "--rs_direction")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_direction);
+		else if (cfg_strs[i] == "--rs_r0")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_r0);
+		else if (cfg_strs[i] == "--rs_iterations")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rs_iterations);
+
+		else if (cfg_strs[i] == "--tf_threshold")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_threshold);
+		else if (cfg_strs[i] == "--tf_enable_next_pool")
+			this->tf_enable_next_pool = true;
+		else if (cfg_strs[i] == "--tf_enable_flow_2")
+			this->tf_enable_flow_2 = true;
+		else if (cfg_strs[i] == "--tf_use_flow_2")
+			this->tf_use_flow_2 = true;
+		else if (cfg_strs[i] == "--tf_squared_error_threshold")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_squared_error_threshold);
+		else if (cfg_strs[i] == "--tf_sample_size")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->tf_sample_size);
+
+		else if (cfg_strs[i] == "--estimate_intrinsics")
+			this->estimate_intrinsics = true;
+		else if (cfg_strs[i] == "--square_pixels")
+			this->square_pixels = true;
+		else if (cfg_strs[i] == "--shared_focals")
+			this->shared_focals = true;
+
+		else if (cfg_strs[i] == "--full_log")
+			this->full_log = true;
+
+		// OLD ------------------------------------------------------------
+
+		else if (cfg_strs[i] == "--basefocal")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->basefocal);
+		else if (cfg_strs[i] == "--omega")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->omega);
+		else if (cfg_strs[i] == "--disp_delta")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->disp_delta);
+		else if (cfg_strs[i] == "--delta")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->delta);
+
+		else if (cfg_strs[i] == "--rg_refine")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_refine);
+		else if (cfg_strs[i] == "--rg_refine_last_only")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_refine_last_only);
+		else if (cfg_strs[i] == "--rg_trunc_sigma")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_trunc_sigma);
+		else if (cfg_strs[i] == "--rg_covar_reg_lambda")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_covar_reg_lambda);
+		else if (cfg_strs[i] == "--rg_epsilon")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_epsilon);
+		else if (cfg_strs[i] == "--rg_max_iters")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_max_iters);
+		else if (cfg_strs[i] == "--rg_pose_scaling")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rg_pose_scaling);
+
+		//else if (cfg_strs[i] == "--resize_factor")
+		//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->resize_factor);
+		else if (cfg_strs[i] == "--abs_resize_factor")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->abs_resize_factor);
+		else if (cfg_strs[i] == "--fx")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->fx);
+		else if (cfg_strs[i] == "--fy")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->fy);
+		else if (cfg_strs[i] == "--cx")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->cx);
+		else if (cfg_strs[i] == "--cy")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->cy);
+
+		else if (cfg_strs[i] == "--debug")
+			this->debug = true;
+		else if (cfg_strs[i] == "--silent")
+			this->silent = true;
+		else if (cfg_strs[i] == "--save_everything")
+			this->save_everything = true;
+		else if (cfg_strs[i] == "--viz_img_per_row")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->viz_img_per_row);
+		else if (cfg_strs[i] == "--viz_depth_scale")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->viz_depth_scale);
+		else if (cfg_strs[i] == "--exclusive_gpu_context")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->exclusive_gpu_context);
+
+		else if (cfg_strs[i] == "--lambda")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambda);
+		else if (cfg_strs[i] == "--meanshift_kernel_var")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_kernel_var);
+		else if (cfg_strs[i] == "--meanshift_rvec_scale")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_rvec_scale);
+		else if (cfg_strs[i] == "--norm_world_scale")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->norm_world_scale);
+
+		//else if (cfg_strs[i] == "--cpu_p3p")
+		//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->cpu_p3p);
+		//else if (cfg_strs[i] == "--lambdatwist")
+		//	str_to_arg(safe_arr_access(cfg_strs, ++i), this->lambdatwist);
+		else if (cfg_strs[i] == "--max_trace_on_flow")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->max_trace_on_flow);
+		else if (cfg_strs[i] == "--n_poses_to_sample")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->n_poses_to_sample);
+		else if (cfg_strs[i] == "--pose_sample_min_depth")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->pose_sample_min_depth);
+		else if (cfg_strs[i] == "--pose_sample_max_depth")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->pose_sample_max_depth);
+		else if (cfg_strs[i] == "--rigidness_threshold")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rigidness_threshold);
+		else if (cfg_strs[i] == "--rigidness_sum_threshold")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->rigidness_sum_threshold);
+
+		else if (cfg_strs[i] == "--trunc_rigidness_density")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->trunc_rigidness_density);
+		else if (cfg_strs[i] == "--trunc_sample_density")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->trunc_sample_density);
+		else if (cfg_strs[i] == "--max_iters")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->max_iters);
+		else if (cfg_strs[i] == "--no_trunc_iters")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->no_trunc_iters);
+		else if (cfg_strs[i] == "--min_iters_after_trunc")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->min_iters_after_trunc);
+
+		else if (cfg_strs[i] == "--fb_smooth")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->fb_smooth);
+		else if (cfg_strs[i] == "--fb_emm")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->fb_emm);
+		else if (cfg_strs[i] == "--fb_no_change_prob")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->fb_no_change_prob);
+
+		else if (cfg_strs[i] == "--optimize_depth")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->optimize_depth);
+		else if (cfg_strs[i] == "--depth_rand_samples")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_rand_samples);
+		else if (cfg_strs[i] == "--depth_global_prop_step")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_global_prop_step);
+		else if (cfg_strs[i] == "--depth_local_prop_width")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_local_prop_width);
+		else if (cfg_strs[i] == "--depth_range_factor")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->depth_range_factor);
+
+		else if (cfg_strs[i] == "--meanshift_max_iters")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_max_iters);
+		else if (cfg_strs[i] == "--meanshift_max_init_trials")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_max_init_trials);
+		else if (cfg_strs[i] == "--meanshift_good_init_confidence")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_good_init_confidence);
+		else if (cfg_strs[i] == "--meanshift_epsilon")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->meanshift_epsilon);
+
+		else if (cfg_strs[i] == "--kitti_estimate_ground")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_estimate_ground);
+		else if (cfg_strs[i] == "--kitti_ground_holo_width")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_ground_holo_width);
+		else if (cfg_strs[i] == "--kitti_ground_roi")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_ground_roi);
+		else if (cfg_strs[i] == "--kitti_ground_meanshift_kernel_var")
+			str_to_arg(safe_arr_access(cfg_strs, ++i), this->kitti_ground_meanshift_kernel_var);
+
+		else 
+		{
+			std::cout << "Invalid input config : " << cfg_strs[i] << std::endl;
+			exit(1);
+		}
+	}
+}

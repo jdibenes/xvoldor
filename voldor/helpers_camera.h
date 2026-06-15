@@ -1,30 +1,8 @@
+
 #pragma once
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
 
-#define _USE_MATH_DEFINES
-
-#if defined(WIN32) || defined(_WIN32) 
-#define PATH_SEPARATOR '\\'
-#else 
-#define PATH_SEPARATOR '/'
-#endif
-
-
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/calib3d.hpp>
 #include <iostream>
-#include <random>
-#include <vector>
-#include <chrono>
-#include <cmath>
-#include <random>
-
-
-#define div_ceil(x, y) ( (x) / (y) + ((x) % (y) > 0) )
-
+#include <opencv2/calib3d.hpp>
 
 struct Camera
 {
@@ -39,10 +17,6 @@ struct Camera
 
 	cv::Mat dr = cv::Mat::zeros(3, 1, CV_32F);
 	cv::Mat dt = cv::Mat::zeros(3, 1, CV_32F);
-	//float focal = 1;
-
-	
-
 
 	float pose_density = 0;
 	int pose_sample_count = 0;
@@ -50,18 +24,21 @@ struct Camera
 	int last_used_ms_iters = 0; // statistics
 	int last_used_gu_iters = 0; // statistics
 
-	cv::Vec6f pose6() {
+	cv::Vec6f pose6() 
+	{
 		cv::Vec3f r = this->rvec();
 		return cv::Vec6f(r.val[0], r.val[1], r.val[2], t.at<float>(0), t.at<float>(1), t.at<float>(2));
 	}
 
-	cv::Vec3f rvec() {
+	cv::Vec3f rvec()
+	{
 		cv::Vec3f ret;
 		Rodrigues(this->R, ret);
 		return ret;
 	}
 
-	void save(FILE* fs) {
+	void save(FILE* fs)
+	{
 		cv::Vec3f r = this->rvec();
 		//           r1 r2 r3 t1 t2 t3
 		fprintf(fs, "%f %f %f %f %f %f\n",
@@ -69,7 +46,8 @@ struct Camera
 			t.at<float>(0), t.at<float>(1), t.at<float>(2));
 	}
 
-	void print_info() {
+	void print_info()
+	{
 		std::cout << "pose pool size = " << this->pose_sample_count << std::endl;
 		std::cout << "rigidness density = " << this->pose_rigidness_density << std::endl;
 		std::cout << "pose density = " << this->pose_density << std::endl;
@@ -82,28 +60,6 @@ struct Camera
 	}
 };
 
-
-/*
-cv::Mat vis_flow(cv::Mat flow, float mag_scale = 0);
-
-cv::Mat load_flow(const char* file_path);
-*/
-/*
-#include "voldor_utils.h"
-
-cv::Mat vis_flow(cv::Mat flow, float mag_scale) {
-	cv::Mat flow_xy[2];
-	cv::Mat mag, angle;
-	split(flow, flow_xy);
-	cv::cartToPolar(flow_xy[0], flow_xy[1], mag, angle, true);
-	if (mag_scale <= 0)
-		normalize(mag, mag, 0, 1, cv::NORM_MINMAX);
-	else
-		mag /= mag_scale;
-	cv::Mat dst;
-	std::vector<cv::Mat> src{ angle, mag, cv::Mat::ones(flow.size(), CV_32F) };
-	merge(src, dst);
-	cvtColor(dst, dst, cv::COLOR_HSV2BGR);
-	return dst;
-}
-*/
+void estimate_depth_closed_form(cv::Mat const& flow, cv::Mat const& K, cv::Mat const& K_inv, cv::Mat const& R, cv::Mat const& t, cv::Mat& depth, float min_depth = 1e-2f, float max_depth = 1e10f);
+void estimate_camera_pose_epipolar(cv::Mat const& flow, cv::Mat const& K, cv::Mat& E, cv::Mat& R, cv::Mat& t, cv::Mat const& mask = cv::Mat(), int sampling_2d_step = 4);
+void estimate_camera_focal(cv::Mat const& flow, float& fx, float& fy, float cx, float cy, int sampling_2d_step = 4);

@@ -13,23 +13,33 @@ nvcc_machine_code = '' #'-m64 -arch=compute_61 -code=sm_61'
 gpu_sources_cpp = ' '.join(glob('../../gpu-kernels/*.cpp'))
 gpu_sources_cu = ' '.join(glob('../../gpu-kernels/*.cu'))
 
-gpu_kernel_build_cmd = f'nvcc --std=c++11 --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code} -I/usr/include/opencv4'
+gpu_kernel_build_cmd = f'nvcc -ccbin /home/jcds/miniconda3/envs/voldor/bin/x86_64-conda-linux-gnu-cc --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code} -I../../thirdparty'
 os.system(gpu_kernel_build_cmd)
 
-opencv_libs = subprocess.check_output('pkg-config --libs opencv4'.split())
+opencv_libs = subprocess.check_output('pkg-config --libs opencv'.split())
 opencv_libs = [name[2:] for name in str(opencv_libs, 'utf-8').split()][1:]
 
 ext = Extension('pyvoldor_full',
     sources = ['pyvoldor_full.pyx'] + \
             [x for x in glob('../../voldor/*.cpp') if 'main.cpp' not in x] + \
             [x for x in glob('../../frame-alignment/*.cpp') if 'main.cpp' not in x] + \
-            [x for x in glob('../../pose-graph/*.cpp') if 'main.cpp' not in x],
+            [x for x in glob('../../pose-graph/*.cpp') if 'main.cpp' not in x] + \
+            [x for x in glob('../../thirdparty/rnp/*.cpp')] + \
+            [x for x in glob('../../thirdparty/PoseLib/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/misc/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/estimators/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/hybrid_estimators/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/robust/optim/*.cc')] + \
+            [x for x in glob('../../thirdparty/PoseLib/solvers/*.cc')],
     language = 'c++',
-    library_dirs = ['.', '/usr/local/lib', '/usr/local/cuda/lib64'],
+    library_dirs = ['.', '/home/jcds/miniconda3/envs/voldor/lib'],
     libraries = ['gpu-kernels', 'cudart', 'ceres', 'glog', \
             'amd','btf','camd','ccolamd','cholmod','colamd','cxsparse',\
-            'graphblas','klu','ldl','rbio','spqr','umfpack', 'lapack', 'blas', 'gcc'] + opencv_libs,
-    include_dirs = [numpy.get_include()]+['/usr/include/eigen3']+['/usr/include/opencv4']
+            'klu','ldl','rbio','spqr','umfpack', 'lapack', 'blas', 'gcc'] + opencv_libs,
+    include_dirs = [numpy.get_include()]+['/home/jcds/miniconda3/envs/voldor/include/eigen3'] + ['../../thirdparty'],
+    extra_compile_args = ['-std=c++17'],
+    define_macros = [('GLOG_USE_GLOG_EXPORT','')]
 )
 
 setup(

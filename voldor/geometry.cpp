@@ -1,8 +1,11 @@
 
-#include <PoseLib/robust.h>
+#include <chrono>
+#include <memory>
+
 #include "geometry.h"
 #include "batch_solvers.h"
 #include "helpers_opencv.h"
+#include "helpers_camera.h"
 
 #include "../gpu-kernels/gpu_kernels.h"
 
@@ -296,15 +299,13 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 	//----------------------------------------------------------------------------
 	// scale and do meanshift
 
-
-
 	// pose: 6 | 3+3
 	// pose&velocity: 12 | 6+6 | 3+3+3+3
 	// pose&focal: 7 | 6+1 | 3+3+1
+	// pose&velocity&focal | 13 | 6+6+1 | 3+3+3+3+1
 		
 	time_stamp = std::chrono::high_resolution_clock::now();
 
-	///*
 	poses_pool.colRange(0, 3) *= options.meanshift_rvec_scale; // depends on translation scale?
 	pose_opm.colRange(0, 3) *= options.meanshift_rvec_scale;
 	meanshift_gpu
@@ -322,12 +323,10 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		options.meanshift_max_init_trials,
 		options.meanshift_good_init_confidence
 	);
-	//*/
 
 	if (focals_pool.total() > 0)
 	{
-		std::cout << "focal ms input: " << focal_opm << std::endl;
-		float focals_scale = (25.0f / std::sqrt(w*w + h*h));//610.0f);
+		float focals_scale = (25.0f / static_cast<float>(std::sqrt(w * w + h * h)));
 		focals_pool *= focals_scale;
 		focal_opm *= focals_scale;
 		meanshift_gpu
@@ -346,17 +345,9 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 			options.meanshift_good_init_confidence
 		);
 		focal_opm /= focals_scale;
-		std::cout << "focal ms output: " << focal_opm << std::endl;
 	}
 
-
-
-
-	if (!options.silent)
-	{
-		std::cout << "meanshift time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
-	}
-
+	if (!options.silent) { std::cout << "meanshift time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
 
 	//-------------------------------------------------------------------------
 
@@ -370,15 +361,6 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		cameras[active_index].pose_covar *= (options.rg_pose_scaling* options.rg_pose_scaling);
 		pose_opm *= options.rg_pose_scaling;
 		poses_pool *= options.rg_pose_scaling;
-
-		/*
-		int rvec_zero_count = 0;
-		for (int i = 0; i < poses_pool_used; i++)
-			if (poses_pool.at<float>(i, 0) == 0)
-				rvec_zero_count++;
-		cout << "rvec_zero_count = " << rvec_zero_count << endl;
-		*/
-
 
 		int fit_rg_ret = fit_robust_gaussian((float*)poses_pool.data, (float*)pose_opm.data, (float*)cameras[active_index].pose_covar.data,
 			options.rg_trunc_sigma, options.rg_covar_reg_lambda, &cameras[active_index].pose_density, &cameras[active_index].last_used_gu_iters, poses_pool_used, 6, options.rg_epsilon, options.rg_max_iters);
@@ -402,17 +384,11 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		pose_opm /= options.rg_pose_scaling;
 		//poses_pool /= cfg.rg_pose_scaling; // this is not used later, no need scale back
 
-
-		if (!options.silent)
-			std::cout << "gu fit time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl;
+		if (!options.silent) { std::cout << "gu fit time = " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - time_stamp).count() / 1e6 << "ms." << std::endl; }
 	}
-
 
 	pose_opm.colRange(0, 3) /= options.meanshift_rvec_scale;
 	//poses_pool.colRange(0, 3) /= cfg.meanshift_rvec_scale; // this is not used later, no need scale back
-
-
-
 
 	time_stamp = std::chrono::high_resolution_clock::now();
 
@@ -440,266 +416,3 @@ int optimize_camera_pose(std::vector<cv::Mat> const& flows_1, std::vector<cv::Ma
 		return 0;
 
 }
-
-
-void
-estimate_depth_closed_form
-(
-	cv::Mat flow,
-	cv::Mat& depth,
-	Camera cam,
-	float min_depth,
-	float max_depth
-)
-{
-	cv::Mat b = cam.K * cam.t;
-	cv::Mat KRKinv = cam.K * cam.R * cam.K_inv;
-
-	float b1 = b.at<float>(0), b2 = b.at<float>(1), b3 = b.at<float>(2);
-	for (int y = 0; y < flow.rows; y++) {
-		for (int x = 0; x < flow.cols; x++) {
-			cv::Point2f delta = flow.at<cv::Point2f>(y, x);
-			cv::Mat P = (cv::Mat_<float>(3, 1) << x, y, 1);
-			P = KRKinv * P;
-			float w1 = P.at<float>(0), w2 = P.at<float>(1), w3 = P.at<float>(2);
-			float a1 = x + delta.x, a2 = y + delta.y;
-			float z_nume = (a1 * b3 - b1)*(w1 - a1 * w3) + (a2 * b3 - b2)*(w2 - a2 * w3);
-			float z_deno = (w1 - a1 * w3)*(w1 - a1 * w3) + (w2 - a2 * w3)*(w2 - a2 * w3);
-			depth.at<float>(y, x) = fminf(fmaxf(z_nume / z_deno, min_depth), max_depth);
-		}
-	}
-}
-
-
-void
-estimate_camera_pose_epipolar
-(
-	cv::Mat flow,
-	Camera& cam,
-	cv::Mat mask,
-	int sampling_2d_step
-)
-{
-	int w = flow.cols, h = flow.rows;
-	bool use_external_mask = !mask.empty();
-
-	cv::Mat pts1(w*h, 2, CV_32F);
-	cv::Mat pts2(w*h, 2, CV_32F);
-	float* pts1_iter = (float*)pts1.data;
-	float* pts2_iter = (float*)pts2.data;
-	int N_used = 0;
-	for (int y = 0; y < h; y += sampling_2d_step) {
-		for (int x = 0; x < w; x += sampling_2d_step) {
-			if (use_external_mask && mask.at<float>(y, x) < 0.5)
-				continue;
-			N_used++;
-			*pts1_iter++ = x + 0.0f;
-			*pts1_iter++ = y + 0.0f;
-			*pts2_iter++ = x + flow.at<cv::Vec2f>(y, x)[0];
-			*pts2_iter++ = y + flow.at<cv::Vec2f>(y, x)[1];
-		}
-	}
-
-	pts1 = pts1.rowRange(0, N_used);
-	pts2 = pts2.rowRange(0, N_used);
-	//cam.F = findFundamentalMat(pts1, pts2, CV_RANSAC);
-
-	if (use_external_mask) {
-		cv::Mat pts_mask;
-		cam.E = findEssentialMat(pts1, pts2, cam.K, cv::LMEDS, 0.999, 1.0, pts_mask);
-		//cam.E = findHomography(pts1, pts2, LMEDS, 3.0, pts_mask);
-	}
-	else {
-		cv::Mat pts_mask;
-		cam.E = findEssentialMat(pts1, pts2, cam.K, cv::LMEDS, 0.999, 1.0, pts_mask);
-		//cam.E = findHomography(pts1, pts2, LMEDS, 3.0, pts_mask);
-	}
-
-
-	recoverPose(cam.E, pts1, pts2, cam.K, cam.R, cam.t);
-	cam.E.convertTo(cam.E, CV_32F);
-	cam.R.convertTo(cam.R, CV_32F);
-	cam.t.convertTo(cam.t, CV_32F);
-	//cam.t = cam.R*cam.t;
-
-}
-
-void estimate_camera_focal(
-	cv::Mat flow,
-	float& fx,
-	float& fy,
-	float cx,
-	float cy,
-	int sampling_2d_step)
-{
-	int w = flow.cols;
-	int h = flow.rows;
-
-	std::vector<poselib::Point2D> p2k_1;
-	std::vector<poselib::Point2D> p2k_2;
-
-	for (int y = 0; y < h; y += sampling_2d_step)
-	{
-		for (int x = 0; x < w; x += sampling_2d_step)
-		{
-			p2k_1.push_back({ x, y });
-			p2k_2.push_back({ x + flow.at<cv::Vec2f>(y, x)[0], y + flow.at<cv::Vec2f>(y, x)[1] });
-		}
-	}
-
-	poselib::Point2D pp{ cx, cy };
-
-	poselib::RelativePoseOptions rpo;
-	poselib::ImagePair ip;
-	std::vector<char> inliers;
-
-	poselib::RansacStats rs = poselib::estimate_shared_focal_relative_pose(p2k_1, p2k_2, pp, rpo, &ip, &inliers);
-
-	fx = ip.camera1.focal_x();
-	fy = ip.camera1.focal_y();
-}
-
-
-
-//void apply_meanshift(cv::Mat& poses_pool, cv::Mat& velocities_pool, cv::Mat& focals_pool, Config const& options, cv::Mat& pose_opm, cv::Mat& velocity_opm, float focal_opm)
-//{
-	// pose: 6 | 3+3
-	// pose&velocity: 12 | 6+6 | 3+3+3+3
-	// pose&focal: 7 | 6+1 | 3+3+1
-	// median algorithm?
-
-	/*
-	cv::Mat poses_pool_r = poses_pool.colRange(0, 3);
-	cv::Mat poses_pool_t = poses_pool.colRange(3, 6);
-
-	meanshift_gpu
-	(
-		reinterpret_cast<float*>(poses_pool_r.data),
-		options.meanshift_kernel_var,
-		reinterpret_cast<float*>(pose_opm.data),
-		&cams[active_idx].pose_density,
-		&cams[active_idx].last_used_ms_iters,
-		successive_pose,
-		poses_pool_r.rows,
-		3,
-		options.meanshift_epsilon,
-		options.meanshift_max_iters,
-		options.meanshift_max_init_trials,
-		options.meanshift_good_init_confidence
-	);
-	*/
-
-
-	/*
-	poses_pool.colRange(0, 3) *= cfg.meanshift_rvec_scale; // depends on translation scale?
-	pose_opm.colRange(0, 3) *= cfg.meanshift_rvec_scale;
-	meanshift_gpu
-	(
-		(float*)poses_pool.data,
-		cfg.meanshift_kernel_var,
-		(float*)pose_opm.data,
-		&cams[active_idx].pose_density,
-		&cams[active_idx].last_used_ms_iters,
-		successive_pose,
-		poses_pool_used,
-		6,
-		cfg.meanshift_epsilon,
-		cfg.meanshift_max_iters,
-		cfg.meanshift_max_init_trials,
-		cfg.meanshift_good_init_confidence
-	);
-	*/
-
-	//}
-
-/*
-	int n_p3p_points = 0;
-	int n_p3v_points = 0;
-
-	cv::Point2f const* pts2_src = p2k_2.data();
-	cv::Point3f const* pts3_src = p3d_1.data();
-	cv::Point3f const* p3v0_src = p2z_1.data();
-	cv::Point3f const* p3v1_src = p2z_2.data();
-	cv::Point3f const* p3v2_src = p2z_3.data();
-	float const* tse2_src = trifocal_squared_error.data();
-
-	cv::Point2f* pts2_dst = p2k_2.data();
-	cv::Point3f* pts3_dst = p3d_1.data();
-	cv::Point3f* p3v0_dst = p2z_1.data();
-	cv::Point3f* p3v1_dst = p2z_2.data();
-	cv::Point3f* p3v2_dst = p2z_3.data();
-	float* tse2_dst = trifocal_squared_error.data();
-
-	for (int i = 0; i < w * h; i++)
-	{
-		float pts2_sum = pts2_src->x + pts2_src->y;
-		float pts3_sum = pts3_src->x + pts3_src->y + pts3_src->z;
-
-		float ptsX_sum = pts2_sum + pts3_sum;
-
-		float p3v0_sum = p3v0_src->x + p3v0_src->y + p3v0_src->z;
-		float p3v1_sum = p3v1_src->x + p3v1_src->y + p3v1_src->z;
-		float p3v2_sum = p3v2_src->x + p3v2_src->y + p3v2_src->z;
-
-		float p3vX_sum = p3v0_sum + p3v1_sum + ((cfg.multiview_mode == 3) ? p3v2_sum : 0.0f);
-
-		if (isfinite(ptsX_sum) && isfinite(p3vX_sum))
-		{
-			pts2_dst[n_p3p_points] = *pts2_src;
-			pts3_dst[n_p3p_points] = *pts3_src;
-
-			p3v0_dst[n_p3v_points] = *p3v0_src;
-			p3v1_dst[n_p3v_points] = *p3v1_src;
-			p3v2_dst[n_p3v_points] = *p3v2_src;
-			tse2_dst[n_p3v_points] = *tse2_src;
-
-			n_p3v_points++;
-
-			n_p3p_points++;
-		}
-
-		pts2_src++;
-		pts3_src++;
-
-
-		p3v0_src++;
-		p3v1_src++;
-		p3v2_src++;
-		tse2_src++;
-	}
-
-	p2k_2.resize(n_p3p_points);
-	p3d_1.resize(n_p3p_points);
-
-	p2z_1.resize(n_p3v_points);
-	p2z_2.resize(n_p3v_points);
-	p2z_3.resize(n_p3v_points);
-
-	trifocal_squared_error.resize(n_p3v_points);
-	*/
-
-	// pts2 is related to frame(active_idx)
-		// pts3 is related to frame(active_idx-1)
-		// Thus, the relative pose describe frame(active_idx-1)--[R|Rt]-->frame(active_idx).
-
-	//if (h_flows_1) { delete[] h_flows_1; }
-	//if (h_flows_2) { delete[] h_flows_2; }
-	//if (h_disparities) { delete[] h_disparities; }
-	//if (h_rigidnesses) { delete[] h_rigidnesses; }
-	//if (h_Rs) { delete[] h_Rs; }
-	//if (h_ts) { delete[] h_ts; }
-
-	//float const** h_flows_1 = NULL;
-	//float const** h_flows_2 = NULL;
-	//float const** h_disparities = NULL;
-	//float const** h_rigidnesses = NULL;
-	//float const** h_Rs = NULL;
-	//float const** h_ts = NULL;
-
-//h_flows_1 = new float const* [flows_1.size()];
-	//h_flows_2 = new float const* [flows_2.size()];
-	//h_disparities = new float const* [disparities.size()];
-
-	//new float const* [n_flows];
-	 //new float const* [n_flows];
-	//new float const* [n_flows];

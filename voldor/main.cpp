@@ -4,7 +4,6 @@
 
 #include "helpers_eigen.h"
 #include "helpers_geometry.h"
-#include "voldor_utils.h"
 #include "config.h"
 #include "geometry.h"
 #include "voldor.h"
@@ -32,15 +31,15 @@ int main(int argc, char* argv[])
 	int w = 760;
 	int h = 428;
 
-	float fx = 586.27075;
-	float fy = 586.27075;
-	float cx = 374.04108;
-	float cy = 202.26265;
+	float fx = 586.27075f;
+	float fy = 586.27075f;
+	float cx = 374.04108f;
+	float cy = 202.26265f;
 	//float basefocal = 117.254150390625;
 	
 	//float cx = w / 2.0;
 	//float cy = h / 2.0;
-	float basefocal = 0.2000000006662877; // for estimate intrinsics
+	float basefocal = 0.2000000006662877f; // for estimate intrinsics
 	
 	int fid = 61;
 	int last = 250;

@@ -312,3 +312,10 @@ slam_py/install/pyvoldor_full.cp36-win_amd64.pyd
 /demo/lib_focal_test_2026_05_26
 /slam_py/install/bak
 /demo/lib_focal_test_2026_06_12
+/slam_py/install/voldor
+/slam_py/install/build
+/slam_py/install/frame-alignment
+/slam_py/install/pose-graph
+/slam_py/install/thirdparty
+/demo/lib_focal_test_2026_06_14
+/demo/lib_focal_test_2026_06_14_sc

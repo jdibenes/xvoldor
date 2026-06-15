@@ -61,7 +61,7 @@ Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> triangulate(Ei
     ls_matrix(Eigen::seqN(2 * m, 2), Eigen::indexing::all) = L * P(Eigen::indexing::all, Eigen::seqN(4 * m, 4));
     }
 
-    p3h.col(n) = ls_matrix.jacobiSvd<Eigen::ComputeFullV>().matrixV().col(3); // Previously BDC SVD, Full = Thin
+    p3h.col(n) = ls_matrix.template jacobiSvd<Eigen::ComputeFullV>().matrixV().col(3); // Previously BDC SVD, Full = Thin
     }
 
     return p3h;
@@ -89,7 +89,7 @@ result_R_t_from_E<typename A::Scalar> R_t_from_E(Eigen::MatrixBase<A> const& E, 
 
     Eigen::Matrix<typename A::Scalar, 3, 3> W{ {0, -1, 0}, {1, 0, 0}, {0, 0, 1} };
 
-    Eigen::JacobiSVD<typename A::PlainObject, Eigen::ComputeFullU | Eigen::ComputeFullV> E_svd = E.jacobiSvd<Eigen::ComputeFullU | Eigen::ComputeFullV>(); // Full = Thin
+    Eigen::JacobiSVD<typename A::PlainObject, Eigen::ComputeFullU | Eigen::ComputeFullV> E_svd = E.template jacobiSvd<Eigen::ComputeFullU | Eigen::ComputeFullV>(); // Full = Thin
 
     Eigen::Matrix<typename A::Scalar, 3, 3> U  = E_svd.matrixU();
     Eigen::Matrix<typename A::Scalar, 3, 3> Vt = E_svd.matrixV().transpose();
@@ -233,7 +233,7 @@ Eigen::Matrix<typename A::Scalar, 3, 3> matrix_cross(Eigen::MatrixBase<A> const&
 template <typename A>
 Eigen::Matrix<typename A::Scalar, 3, 3> normalize_E(Eigen::MatrixBase<A> const& E)
 {
-    Eigen::JacobiSVD<typename A::PlainObject, Eigen::ComputeFullU | Eigen::ComputeFullV> E_svd = E.jacobiSvd<Eigen::ComputeFullU | Eigen::ComputeFullV>();
+    Eigen::JacobiSVD<typename A::PlainObject, Eigen::ComputeFullU | Eigen::ComputeFullV> E_svd = E.template jacobiSvd<Eigen::ComputeFullU | Eigen::ComputeFullV>();
     return E_svd.matrixU() * Eigen::Matrix<typename A::Scalar, 3, 3>{ { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } } * E_svd.matrixV().transpose();
 }
 
@@ -434,9 +434,9 @@ Eigen::Matrix<typename A::Scalar, 3, 2> epipoles_from_TFT(Eigen::MatrixBase<A> c
     Eigen::Matrix<typename A::Scalar, 3, 3> t2 = TFT(Eigen::seqN( 9, 9)).reshaped(3, 3);
     Eigen::Matrix<typename A::Scalar, 3, 3> t3 = TFT(Eigen::seqN(18, 9)).reshaped(3, 3);
 
-    Eigen::JacobiSVD<Eigen::Matrix<typename A::Scalar, 3, 3>, Eigen::ComputeFullV | Eigen::ComputeFullU> svd_t1 = t1.jacobiSvd<Eigen::ComputeFullV | Eigen::ComputeFullU>(); // Full = Thin
-    Eigen::JacobiSVD<Eigen::Matrix<typename A::Scalar, 3, 3>, Eigen::ComputeFullV | Eigen::ComputeFullU> svd_t2 = t2.jacobiSvd<Eigen::ComputeFullV | Eigen::ComputeFullU>(); // Full = Thin
-    Eigen::JacobiSVD<Eigen::Matrix<typename A::Scalar, 3, 3>, Eigen::ComputeFullV | Eigen::ComputeFullU> svd_t3 = t3.jacobiSvd<Eigen::ComputeFullV | Eigen::ComputeFullU>(); // Full = Thin
+    Eigen::JacobiSVD<Eigen::Matrix<typename A::Scalar, 3, 3>, Eigen::ComputeFullV | Eigen::ComputeFullU> svd_t1 = t1.template jacobiSvd<Eigen::ComputeFullV | Eigen::ComputeFullU>(); // Full = Thin
+    Eigen::JacobiSVD<Eigen::Matrix<typename A::Scalar, 3, 3>, Eigen::ComputeFullV | Eigen::ComputeFullU> svd_t2 = t2.template jacobiSvd<Eigen::ComputeFullV | Eigen::ComputeFullU>(); // Full = Thin
+    Eigen::JacobiSVD<Eigen::Matrix<typename A::Scalar, 3, 3>, Eigen::ComputeFullV | Eigen::ComputeFullU> svd_t3 = t3.template jacobiSvd<Eigen::ComputeFullV | Eigen::ComputeFullU>(); // Full = Thin
 
     Eigen::Matrix<typename A::Scalar, 3, 3> vx;
     Eigen::Matrix<typename A::Scalar, 3, 3> ux;
@@ -450,8 +450,8 @@ Eigen::Matrix<typename A::Scalar, 3, 2> epipoles_from_TFT(Eigen::MatrixBase<A> c
     ux.col(1) = -svd_t2.matrixU().col(2);
     ux.col(2) = -svd_t3.matrixU().col(2);
 
-    e.col(0) = -ux.jacobiSvd<Eigen::ComputeFullU>().matrixU().col(2); // Full = Thin
-    e.col(1) = -vx.jacobiSvd<Eigen::ComputeFullU>().matrixU().col(2); // Full = Thin
+    e.col(0) = -ux.template jacobiSvd<Eigen::ComputeFullU>().matrixU().col(2); // Full = Thin
+    e.col(1) = -vx.template jacobiSvd<Eigen::ComputeFullU>().matrixU().col(2); // Full = Thin
 
     return e;
 }
@@ -470,7 +470,7 @@ struct result_linear_TFT
 template <typename A>
 result_linear_TFT<typename A::Scalar> linear_TFT(Eigen::MatrixBase<A> const& Q, typename A::Scalar threshold = 0) // default
 {
-    Eigen::Matrix<typename A::Scalar, 27, 1> t = -(Q.bdcSvd<Eigen::ComputeThinU>().matrixU().col(26)); // Previously BDC SVD, jacobiSVD drift
+    Eigen::Matrix<typename A::Scalar, 27, 1> t = -(Q.template bdcSvd<Eigen::ComputeThinU>().matrixU().col(26)); // Previously BDC SVD, jacobiSVD drift
     Eigen::Matrix<typename A::Scalar,  3, 2> e = epipoles_from_TFT(t); // OK
 
     Eigen::Matrix<typename A::Scalar, 3, 3> I3 = Eigen::Matrix<typename A::Scalar, 3, 3>::Identity();
@@ -481,13 +481,13 @@ result_linear_TFT<typename A::Scalar> linear_TFT(Eigen::MatrixBase<A> const& Q, 
     E(Eigen::indexing::all, Eigen::seqN(0, 9)) = Eigen::kroneckerProduct(I3, Eigen::kroneckerProduct(e.col(1), I3));
     E(Eigen::indexing::all, Eigen::seqN(9, 9)) = Eigen::kroneckerProduct(I9,                        -e.col(0));         
 
-    Eigen::BDCSVD<Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic>, Eigen::ComputeThinU | Eigen::ComputeThinV> svd_E = E.bdcSvd<Eigen::ComputeThinU | Eigen::ComputeThinV>(); // BDC SVD gives NaN sometimes, Jacobi SVD doesn't
+    Eigen::BDCSVD<Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic>, Eigen::ComputeThinU | Eigen::ComputeThinV> svd_E = E.template bdcSvd<Eigen::ComputeThinU | Eigen::ComputeThinV>(); // BDC SVD gives NaN sometimes, Jacobi SVD doesn't
     if (threshold > 0) { svd_E.setThreshold(threshold); }
     Eigen::Index r = svd_E.rank();
 
     Eigen::Matrix<typename A::Scalar, Eigen::Dynamic, Eigen::Dynamic> Up = svd_E.matrixU()(Eigen::indexing::all, Eigen::seqN(0, r)); // Rank seems to be always 15
 
-    Eigen::Vector<typename A::Scalar, Eigen::Dynamic> tp = ((Q.transpose() * Up).bdcSvd<Eigen::ComputeThinV>().matrixV()(Eigen::indexing::all, Eigen::indexing::last)); // Previously BDC SVD
+    Eigen::Vector<typename A::Scalar, Eigen::Dynamic> tp = ((Q.transpose() * Up).template bdcSvd<Eigen::ComputeThinV>().matrixV()(Eigen::indexing::all, Eigen::indexing::last)); // Previously BDC SVD
     Eigen::Vector<typename A::Scalar, Eigen::Dynamic> ap = svd_E.matrixV()(Eigen::indexing::all, Eigen::seqN(0, r)) * svd_E.singularValues()(Eigen::seqN(0, r)).asDiagonal().inverse() * tp;
 
     result_linear_TFT<typename A::Scalar> result;

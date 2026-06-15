@@ -33,3 +33,16 @@ py_voldor_wrapper
 	// EXTRA
 	float* focals
 );
+
+extern
+int
+py_selfcalibration_wrapper
+(
+	float const* flows_1_pt,
+	float const cx,
+	float const cy,
+	int const w,
+	int const h,
+	int const sampling_step,
+	float* focals
+);

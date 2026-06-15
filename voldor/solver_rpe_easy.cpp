@@ -106,7 +106,7 @@ static bool solver_rpe_easy(float const* p3d_1, float const* p2h_2, float* r_12,
     {
     float z = roots[i];
 
-    Eigen::Matrix<float, 10, 1> monomial_eigenvector = x38::slice(x38::substitute(S, { true }, x38::monomial_values<float, 1>{ z }), {}).bdcSvd<Eigen::ComputeFullV>().matrixV().col(9);
+    Eigen::Matrix<float, 10, 1> monomial_eigenvector = x38::slice(x38::substitute(S, { true }, x38::monomial_values<float, 1>{ z }), {}).template bdcSvd<Eigen::ComputeFullV>().matrixV().col(9);
 
     float x = monomial_eigenvector(8) / monomial_eigenvector(9);
     float y = monomial_eigenvector(7) / monomial_eigenvector(9);

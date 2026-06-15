@@ -59,20 +59,20 @@ T& negate(T& x)
 // array operations
 //=============================================================================
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 using array_type = std::array<scalar, variables>;
 
 //-----------------------------------------------------------------------------
 // +
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables> operator+(array_type<scalar, variables> const& x)
 {
     return x;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables> operator+(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
 {
     array_type<scalar, variables> result;
@@ -80,7 +80,7 @@ array_type<scalar, variables> operator+(array_type<scalar, variables> const& lhs
     return result;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 scalar sum(array_type<scalar, variables> const& x)
 {
     scalar s = 0;
@@ -92,7 +92,7 @@ scalar sum(array_type<scalar, variables> const& x)
 // +=
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables>& operator+=(array_type<scalar, variables>& lhs, array_type<scalar, variables> const& rhs)
 {
     for (int i = 0; i < variables; ++i) { lhs[i] += rhs[i]; }
@@ -103,7 +103,7 @@ array_type<scalar, variables>& operator+=(array_type<scalar, variables>& lhs, ar
 // -
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables> operator-(array_type<scalar, variables> const& x)
 {
     array_type<scalar, variables> result;
@@ -111,14 +111,14 @@ array_type<scalar, variables> operator-(array_type<scalar, variables> const& x)
     return result;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables>& negate(array_type<scalar, variables>& x)
 {
     for (int i = 0; i < variables; ++i) { negate(x[i]); }
     return x;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables> operator-(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
 {
     array_type<scalar, variables> result;
@@ -130,7 +130,7 @@ array_type<scalar, variables> operator-(array_type<scalar, variables> const& lhs
 // -=
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables>& operator-=(array_type<scalar, variables>& lhs, array_type<scalar, variables> const& rhs)
 {
     for (int i = 0; i < variables; ++i) { lhs[i] -= rhs[i]; }
@@ -141,7 +141,7 @@ array_type<scalar, variables>& operator-=(array_type<scalar, variables>& lhs, ar
 // min
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables> min(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
 {
     array_type<scalar, variables> result;
@@ -153,7 +153,7 @@ array_type<scalar, variables> min(array_type<scalar, variables> const& lhs, arra
 // max
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables> max(array_type<scalar, variables> const& lhs, array_type<scalar, variables> const& rhs)
 {
     array_type<scalar, variables> result;
@@ -165,7 +165,7 @@ array_type<scalar, variables> max(array_type<scalar, variables> const& lhs, arra
 // recombine
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables - 1> split(array_type<scalar, variables> const& x, int index)
 {
     array_type<scalar, variables - 1> result;
@@ -174,7 +174,7 @@ array_type<scalar, variables - 1> split(array_type<scalar, variables> const& x, 
     return result;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 array_type<scalar, variables + 1> merge(array_type<scalar, variables> const& x, int index, scalar const& pick)
 {
     array_type<scalar, variables + 1> result;
@@ -187,20 +187,20 @@ array_type<scalar, variables + 1> merge(array_type<scalar, variables> const& x, 
 // monomial aliases
 //=============================================================================
 
-template <int variables>
+template <std::size_t variables>
 using monomial_indices = std::array<int, variables>;
 
-template <int variables>
+template <std::size_t variables>
 using monomial_mask = std::array<bool, variables>;
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 using monomial_values = std::array<scalar, variables>;
 
 //-----------------------------------------------------------------------------
 // <<
 //-----------------------------------------------------------------------------
 
-template <int variables>
+template <std::size_t variables>
 std::ostream& operator<<(std::ostream& os, monomial_indices<variables> const& indices)
 {
     char const* const prefix = "";
@@ -224,39 +224,39 @@ std::ostream& operator<<(std::ostream& os, monomial_indices<variables> const& in
 // compare
 //-----------------------------------------------------------------------------
 
-template <int variables>
+template <std::size_t variables>
 bool is_integral(monomial_indices<variables> const& indices)
 {
     for (int i = 0; i < variables; ++i) { if (indices[i] < 0) { return false; } };
     return true;
 }
 
-template <int variables>
+template <std::size_t variables>
 bool is_multiple(monomial_indices<variables> const& num, monomial_indices<variables> const& den)
 {
     for (int i = 0; i < variables; ++i) { if ((num[i] - den[i]) < 0) { return false; } };
     return true;
 }
 
-template <int variables>
+template <std::size_t variables>
 int total_degree(monomial_indices<variables> const& indices)
 {
     return sum(indices);
 }
 
-template <int variables>
+template <std::size_t variables>
 monomial_indices<variables> gcd(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
 {
     return min(lhs, rhs);
 }
 
-template <int variables>
+template <std::size_t variables>
 monomial_indices<variables> lcm(monomial_indices<variables> const& lhs, monomial_indices<variables> const& rhs)
 {
     return max(lhs, rhs);
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_values<scalar, variables> select(monomial_values<scalar, variables> const& x, monomial_mask<variables> const& mask, bool complement)
 {
     monomial_values<scalar, variables> result;
@@ -268,7 +268,7 @@ monomial_values<scalar, variables> select(monomial_values<scalar, variables> con
 // monomial_powers
 //=============================================================================
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 class monomial_powers
 {
 public:
@@ -355,7 +355,7 @@ public:
 // monomial
 //=============================================================================
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 class monomial
 {
 public:
@@ -544,14 +544,14 @@ public:
 // monomial_vector
 //=============================================================================
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 using monomial_vector = std::vector<monomial<scalar, variables>>;
 
 //-----------------------------------------------------------------------------
 // +
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator+(monomial_vector<scalar, variables> const& x)
 {
     return x;
@@ -561,7 +561,7 @@ monomial_vector<scalar, variables> operator+(monomial_vector<scalar, variables> 
 // -
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> const& x)
 {
     monomial_vector<scalar, variables> result = x;
@@ -569,7 +569,7 @@ monomial_vector<scalar, variables> operator-(monomial_vector<scalar, variables> 
     return x;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables>& negate(monomial_vector<scalar, variables>& x)
 {
     for (auto& m : x) { negate(m); }
@@ -580,14 +580,14 @@ monomial_vector<scalar, variables>& negate(monomial_vector<scalar, variables>& x
 // *=
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables>& operator*=(monomial_vector<scalar, variables>& lhs, monomial<scalar, variables> const& rhs)
 {
     for (auto& m : lhs) { m *= rhs; }
     return lhs;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables>& operator*=(monomial_vector<scalar, variables>& lhs, scalar const& rhs)
 {
     for (auto& m : lhs) { m *= rhs; }
@@ -598,27 +598,27 @@ monomial_vector<scalar, variables>& operator*=(monomial_vector<scalar, variables
 // *
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator*(monomial_vector<scalar, variables> const& lhs, monomial<scalar, variables> const& rhs)
 {
     monomial_vector<scalar, variables> result = lhs;
     return result *= rhs;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator*(monomial<scalar, variables> const& lhs, monomial_vector<scalar, variables> const& rhs)
 {
     return rhs * lhs;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator*(monomial_vector<scalar, variables> const& lhs, scalar const& rhs)
 {
     monomial_vector<scalar, variables> result = lhs;
     return result *= rhs;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator*(scalar const& lhs, monomial_vector<scalar, variables> const& rhs)
 {
     return rhs * lhs;
@@ -628,7 +628,7 @@ monomial_vector<scalar, variables> operator*(scalar const& lhs, monomial_vector<
 // /=
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables>& operator/=(monomial_vector<scalar, variables>& lhs, scalar const& rhs)
 {
     for (auto& m : lhs) { m /= rhs; }
@@ -639,7 +639,7 @@ monomial_vector<scalar, variables>& operator/=(monomial_vector<scalar, variables
 // /
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator/(monomial_vector<scalar, variables> const& lhs, scalar const& rhs)
 {
     monomial_vector<scalar, variables> result = lhs;
@@ -650,7 +650,7 @@ monomial_vector<scalar, variables> operator/(monomial_vector<scalar, variables> 
 // %=
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables>& operator%=(monomial_vector<scalar, variables>& lhs, scalar const& rhs)
 {
     for (auto& m : lhs) { m %= rhs; }
@@ -661,7 +661,7 @@ monomial_vector<scalar, variables>& operator%=(monomial_vector<scalar, variables
 // %
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> operator%(monomial_vector<scalar, variables> const& lhs, scalar const& rhs)
 {
     monomial_vector<scalar, variables> result = lhs;
@@ -672,7 +672,7 @@ monomial_vector<scalar, variables> operator%(monomial_vector<scalar, variables> 
 // <<
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 std::ostream& operator<<(std::ostream& os, monomial_vector<scalar, variables> const& v)
 {
     char const* const prefix = "";
@@ -695,7 +695,7 @@ std::ostream& operator<<(std::ostream& os, monomial_vector<scalar, variables> co
 // compare
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> find_multiples(monomial_vector<scalar, variables> const& v, monomial_indices<variables> const& f)
 {
     monomial_vector<scalar, variables> multiples;
@@ -707,7 +707,7 @@ monomial_vector<scalar, variables> find_multiples(monomial_vector<scalar, variab
 // polynomial
 //=============================================================================
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 class polynomial
 {
 public:
@@ -1289,7 +1289,7 @@ public:
 // compare
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 monomial_vector<scalar, variables> find_multiples(polynomial<scalar, variables> const& p, monomial_indices<variables> const& f)
 {
     monomial_vector<scalar, variables> multiples;
@@ -1301,7 +1301,7 @@ monomial_vector<scalar, variables> find_multiples(polynomial<scalar, variables> 
 // hidden variable
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 polynomial<polynomial<scalar, 1>, variables - 1> hide_in(polynomial<scalar, variables> const& p, int index)
 {
     polynomial<polynomial<scalar, 1>, variables - 1> result;
@@ -1309,7 +1309,7 @@ polynomial<polynomial<scalar, 1>, variables - 1> hide_in(polynomial<scalar, vari
     return result;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 polynomial<polynomial<scalar, variables - 1>, 1> hide_out(polynomial<scalar, variables> const& p, int index)
 {
     polynomial<polynomial<scalar, variables - 1>, 1> result;
@@ -1317,7 +1317,7 @@ polynomial<polynomial<scalar, variables - 1>, 1> hide_out(polynomial<scalar, var
     return result;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 polynomial<scalar, variables + 1> unhide_in(polynomial<polynomial<scalar, 1>, variables> const& p, int index)
 {
     polynomial<scalar, variables + 1> result;
@@ -1325,7 +1325,7 @@ polynomial<scalar, variables + 1> unhide_in(polynomial<polynomial<scalar, 1>, va
     return result;
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, variables>, 1> const& p, int index)
 {
     polynomial<scalar, variables + 1> result;
@@ -1337,7 +1337,7 @@ polynomial<scalar, variables + 1> unhide_out(polynomial<polynomial<scalar, varia
 // substitute
 //-----------------------------------------------------------------------------
 
-template<typename scalar, int variables>
+template<typename scalar, std::size_t variables>
 polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, monomial_values<polynomial<scalar, variables>, variables> const& values)
 {
     polynomial<scalar, variables> result;
@@ -1346,7 +1346,7 @@ polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p,
     return result;
 }
 
-template<typename scalar, int variables>
+template<typename scalar, std::size_t variables>
 polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, monomial_values<monomial<scalar, variables>, variables> const& values)
 {
     polynomial<scalar, variables> result;
@@ -1355,7 +1355,7 @@ polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p,
     return result;
 }
 
-template<typename scalar, int variables>
+template<typename scalar, std::size_t variables>
 polynomial<scalar, variables> substitute(polynomial<scalar, variables> const& p, monomial_mask<variables> const& mask, monomial_values<scalar, variables> const& values)
 {
     polynomial<scalar, variables> result;
@@ -1375,7 +1375,7 @@ struct remove_polynomial
     typedef std::tuple<Args...> indices;
 };
 
-template <typename scalar, int variables, typename... Args>
+template <typename scalar, std::size_t variables, typename... Args>
 struct remove_polynomial<polynomial<scalar, variables>, Args...>
 {
     typedef typename remove_polynomial<scalar, Args..., monomial_indices<variables>>::type type;
@@ -1388,19 +1388,19 @@ using remove_polynomial_type = typename remove_polynomial<T>::type;
 template <typename T>
 using remove_polynomial_indices = typename remove_polynomial<T>::indices;
 
-template <typename scalar, int variables, int... Args>
+template <typename scalar, std::size_t variables, int... Args>
 struct add_polynomial
 {
     typedef typename add_polynomial<polynomial<scalar, variables>, Args...>::type type;
 };
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 struct add_polynomial<scalar, variables>
 {
     typedef polynomial<scalar, variables> type;
 };
 
-template<typename scalar, int variables, int... Args>
+template<typename scalar, std::size_t variables, int... Args>
 using add_polynomial_type = typename add_polynomial<scalar, variables, Args...>::type;
 
 //=============================================================================
@@ -1436,7 +1436,7 @@ using add_polynomial_type = typename add_polynomial<scalar, variables, Args...>:
 *   19 [0,0,3] z^3
 */
 
-template <int variables>
+template <std::size_t variables>
 class grevlex_generator
 {
 public:
@@ -1593,7 +1593,7 @@ public:
 // division
 //=============================================================================
 
-template <typename generator, typename scalar, int variables>
+template <typename generator, typename scalar, std::size_t variables>
 monomial<scalar, variables> leading_term(polynomial<scalar, variables> const& p)
 {
     monomial<scalar, variables> result = p[{}];
@@ -1601,26 +1601,26 @@ monomial<scalar, variables> leading_term(polynomial<scalar, variables> const& p)
     return result;
 }
 
-template <typename generator, typename scalar, int variables>
+template <typename generator, typename scalar, std::size_t variables>
 void sort(monomial_vector<scalar, variables>& monomials, bool descending)
 {
     std::sort(monomials.begin(), monomials.end(), [&](monomial<scalar, variables> const& a, monomial<scalar, variables> const& b) { return generator::compare(a.indices, b.indices) - descending; });
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 polynomial<scalar, variables> simple_reduce(polynomial<scalar, variables> const& f, polynomial<scalar, variables> const& g, monomial<scalar, variables> const& mt_f, monomial<scalar, variables> const& mt_g)
 {
     return (mt_g * f) - (mt_f * g);
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 polynomial<scalar, variables> s_polynomial(polynomial<scalar, variables> const& f, polynomial<scalar, variables> const& g, monomial<scalar, variables> const& lt_f, monomial<scalar, variables> const& lt_g)
 {
     monomial_indices<variables> gcd_fg = gcd(lt_f.indices, lt_g.indices);
     return simple_reduce(f, g, { lt_f.coefficient, lt_f.indices - gcd_fg }, { lt_g.coefficient, lt_g.indices - gcd_fg });
 }
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 struct result_reduce
 {
     polynomial<scalar, variables> quotient;
@@ -1628,7 +1628,7 @@ struct result_reduce
     bool irreducible;
 };
 
-template <typename scalar, int variables>
+template <typename scalar, std::size_t variables>
 result_reduce<scalar, variables> reduce(polynomial<scalar, variables> const& dividend, polynomial<scalar, variables> const& divisor, monomial<scalar, variables> const& mt_dividend, monomial<scalar, variables> const& lt_divisor)
 {
     monomial<scalar, variables> q = monomial(mt_dividend.coefficient, mt_dividend.indices - lt_divisor.indices);
@@ -1641,7 +1641,7 @@ result_reduce<scalar, variables> reduce(polynomial<scalar, variables> const& div
 
 // src:    Matrix MxN, interpreted as vector of MxN monomials [A(0,0), A(1,0), ..., A(M-2,N-1), A(M-1,N-1)] in grevlex order
 // return: polynomial
-template <typename scalar, int variables, typename A>
+template <typename scalar, std::size_t variables, typename A>
 polynomial<scalar, variables> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> const& src)
 {
     polynomial<scalar, variables> dst;
@@ -1654,7 +1654,7 @@ polynomial<scalar, variables> matrix_to_polynomial_grevlex(Eigen::DenseBase<A> c
 // rows:   Rows of result matrix (P with PxQ=M)
 // cols:   Cols of result matrix (Q with PxQ=M)
 // return: Matrix of polynomial PxQ with PxQ=M filled in order [A(0,0), A(1,0), A(2,0), ..., A(P-2,Q-1), A(P-1,Q-1)]
-template <typename scalar, int variables, int output_rows, int output_cols, typename A>
+template <typename scalar, std::size_t variables, int output_rows, int output_cols, typename A>
 Eigen::Matrix<polynomial<scalar, variables>, output_rows, output_cols> matrix_to_polynomial_grevlex(Eigen::MatrixBase<A> const& src, int rows = output_rows, int cols = output_cols)
 {
     Eigen::Matrix<polynomial<scalar, variables>, output_rows, output_cols> dst(rows, cols);
@@ -1666,7 +1666,7 @@ Eigen::Matrix<polynomial<scalar, variables>, output_rows, output_cols> matrix_to
 // rows:   Rows of result matrix (M)
 // cols:   Cols of result matrix (N)
 // return: Matrix MxN filled as vector in grevlex order [A(0,0), A(1,0), ..., A(M-2,N-1), A(M-1,N-1)] for MxN maximum polynomials
-template <typename other_scalar, int output_rows, int output_cols, typename scalar, int variables>
+template <typename other_scalar, int output_rows, int output_cols, typename scalar, std::size_t variables>
 Eigen::Matrix<other_scalar, output_rows, output_cols> matrix_from_polynomial_grevlex(polynomial<scalar, variables> const& src, int rows = output_rows, int cols = output_cols)
 {
     Eigen::Matrix<other_scalar, output_rows, output_cols> dst(rows, cols);
@@ -1704,7 +1704,7 @@ Eigen::Matrix<scalar, rows, cols>& negate(Eigen::Matrix<scalar, rows, cols>& src
 // hidden variable
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int variables, int rows, int cols>
+template <typename scalar, std::size_t variables, int rows, int cols>
 Eigen::Matrix<polynomial<polynomial<scalar, 1>, variables - 1>, rows, cols> hide_in(Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src, int index)
 {
     Eigen::Matrix<polynomial<polynomial<scalar, 1>, variables - 1>, rows, cols> dst(src.rows(), src.cols());
@@ -1712,7 +1712,7 @@ Eigen::Matrix<polynomial<polynomial<scalar, 1>, variables - 1>, rows, cols> hide
     return dst;
 }
 
-template <typename scalar, int variables, int rows, int cols>
+template <typename scalar, std::size_t variables, int rows, int cols>
 Eigen::Matrix<polynomial<polynomial<scalar, variables - 1>, 1>, rows, cols> hide_out(Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src, int index)
 {
     Eigen::Matrix<polynomial<polynomial<scalar, variables - 1>, 1>, rows, cols> dst(src.rows(), src.cols());
@@ -1720,7 +1720,7 @@ Eigen::Matrix<polynomial<polynomial<scalar, variables - 1>, 1>, rows, cols> hide
     return dst;
 }
 
-template <typename scalar, int variables, int rows, int cols>
+template <typename scalar, std::size_t variables, int rows, int cols>
 Eigen::Matrix<polynomial<scalar, variables + 1>, rows, cols> unhide_in(Eigen::Matrix<polynomial<polynomial<scalar, 1>, variables>, rows, cols> const& src, int index)
 {
     Eigen::Matrix<polynomial<scalar, variables + 1>, rows, cols> dst(src.rows(), src.cols());
@@ -1728,7 +1728,7 @@ Eigen::Matrix<polynomial<scalar, variables + 1>, rows, cols> unhide_in(Eigen::Ma
     return dst;
 }
 
-template <typename scalar, int variables, int rows, int cols>
+template <typename scalar, std::size_t variables, int rows, int cols>
 Eigen::Matrix<polynomial<scalar, variables + 1>, rows, cols> unhide_out(Eigen::Matrix<polynomial<polynomial<scalar, variables>, 1>, rows, cols> const& src, int index)
 {
     Eigen::Matrix<polynomial<scalar, variables + 1>, rows, cols> dst(src.rows(), src.cols());
@@ -1740,7 +1740,7 @@ Eigen::Matrix<polynomial<scalar, variables + 1>, rows, cols> unhide_out(Eigen::M
 // substitute
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 Eigen::Matrix<polynomial<scalar, variables>, rows, cols> substitute(Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src, monomial_mask<variables> const& mask, monomial_values<polynomial<scalar, variables>, variables> const& values)
 {
     Eigen::Matrix<polynomial<scalar, variables>, rows, cols> dst(src.rows(), src.cols());
@@ -1748,7 +1748,7 @@ Eigen::Matrix<polynomial<scalar, variables>, rows, cols> substitute(Eigen::Matri
     return dst;
 }
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 Eigen::Matrix<polynomial<scalar, variables>, rows, cols> substitute(Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src, monomial_mask<variables> const& mask, monomial_values<monomial<scalar, variables>, variables> const& values)
 {
     Eigen::Matrix<polynomial<scalar, variables>, rows, cols> dst(src.rows(), src.cols());
@@ -1756,7 +1756,7 @@ Eigen::Matrix<polynomial<scalar, variables>, rows, cols> substitute(Eigen::Matri
     return dst;
 }
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 Eigen::Matrix<polynomial<scalar, variables>, rows, cols> substitute(Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src, monomial_mask<variables> const& mask, monomial_values<scalar, variables> const& values)
 {
     Eigen::Matrix<polynomial<scalar, variables>, rows, cols> dst(src.rows(), src.cols());
@@ -1768,7 +1768,7 @@ Eigen::Matrix<polynomial<scalar, variables>, rows, cols> substitute(Eigen::Matri
 // slice
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 Eigen::Matrix<scalar, rows, cols> slice(Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src, monomial_indices<variables> const& indices)
 {
     Eigen::Matrix<scalar, rows, cols> dst(src.rows(), src.cols());
@@ -1780,7 +1780,7 @@ Eigen::Matrix<scalar, rows, cols> slice(Eigen::Matrix<polynomial<scalar, variabl
 // <<
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 std::ostream& operator<<(std::ostream& os, Eigen::Matrix<polynomial<scalar, variables>, rows, cols> const& src)
 {
     for (int i = 0; i < src.rows(); ++i) {
@@ -1795,7 +1795,7 @@ std::ostream& operator<<(std::ostream& os, Eigen::Matrix<polynomial<scalar, vari
 // row echelon
 //-----------------------------------------------------------------------------
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 void row_echelon_sort(Eigen::Matrix<polynomial<scalar, variables>, rows, cols>& M, int row, int col, monomial_indices<variables> const& monomial)
 {
     scalar max_s = 0;
@@ -1812,7 +1812,7 @@ void row_echelon_sort(Eigen::Matrix<polynomial<scalar, variables>, rows, cols>& 
     if (max_r != row) { M.row(row).swap(M.row(max_r)); }
 }
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 bool row_echelon_eliminate(Eigen::Matrix<x38::polynomial<scalar, variables>, rows, cols>& M, int row, int col, x38::monomial_indices<variables> const& monomial, bool all)
 {
     scalar a = M(row, col)[monomial];
@@ -1830,7 +1830,7 @@ bool row_echelon_eliminate(Eigen::Matrix<x38::polynomial<scalar, variables>, row
     return true;
 }
 
-template <typename scalar, int rows, int cols, int variables>
+template <typename scalar, int rows, int cols, std::size_t variables>
 bool row_echelon_step(Eigen::Matrix<x38::polynomial<scalar, variables>, rows, cols>& M, int row, int col, x38::monomial_indices<variables> const& monomial, bool all)
 {
     row_echelon_sort(M, row, col, monomial);
