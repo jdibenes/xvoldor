@@ -248,11 +248,6 @@
     <ClCompile Include="..\..\voldor\solver_tft_p4p.cpp" />
     <ClCompile Include="..\..\voldor\voldor.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\voldor\voldor_bin.txt">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </Text>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

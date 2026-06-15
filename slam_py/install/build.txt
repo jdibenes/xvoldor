@@ -1,7 +1,0 @@
-run native tools x64 vs 2019
-cd C:\Users\jcds\Documents\GitHub\xvoldor\slam_py\install
-SET DISTUTILS_USE_SDK=1
-delete previous build
-then run
-C:\Users\jcds\AppData\Local\Programs\Python\Python36\python.exe c:/Users/jcds/Documents/GitHub/xvoldor/slam_py/install/setup_win_full.py build_ext -i
-

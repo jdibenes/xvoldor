@@ -738,9 +738,4 @@
       <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\voldor\voldor_bin.txt">
-      <Filter>Source Files</Filter>
-    </Text>
-  </ItemGroup>
 </Project>
