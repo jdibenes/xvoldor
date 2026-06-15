@@ -8,7 +8,7 @@ import subprocess
 import shutil
 
 prefix = os.getenv('CONDA_PREFIX') #'/home/jcds/miniconda3/envs/voldor'
-cc_path = f'{prefix}/bin/x86_64-conda-linux-gnu-cc'
+cc_path = os.getenv('CXX') #f'{prefix}/bin/x86_64-conda-linux-gnu-cc'
 
 # Change this if you target different host/device
 nvcc_machine_code = '' #'-m64 -arch=compute_61 -code=sm_61'
@@ -16,7 +16,7 @@ nvcc_machine_code = '' #'-m64 -arch=compute_61 -code=sm_61'
 gpu_sources_cpp = ' '.join(glob('../../gpu-kernels/*.cpp'))
 gpu_sources_cu = ' '.join(glob('../../gpu-kernels/*.cu'))
 
-gpu_kernel_build_cmd = f'nvcc -ccbin {cc_path} --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code} -I../../thirdparty'
+gpu_kernel_build_cmd = f'nvcc -ccbin {cc_path} --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code} -I../../thirdparty -I{prefix}/include'
 os.system(gpu_kernel_build_cmd)
 
 opencv_libs = subprocess.check_output('pkg-config --libs opencv'.split())
