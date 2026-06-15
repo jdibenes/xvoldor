@@ -67,7 +67,7 @@ pip install -r requirements.txt
 
 Build:
 1. Modify the paths in `setup_win_full.py` to point to the OpenCV and Ceres files.
-2. Run `x64 Native Tools Command Prompt for VS 2019`.
+2. Run `x64 Native Tools Command Prompt for VS 2019`. You can search for it in the Start menu.
 3. `cd slam_py/install`.
 4. `SET DISTUTILS_USE_SDK=1`.
 5. `path\to\conda\envs\xvoldor\python.exe setup_win_full.py build_ext -i -j 8`. Example `path\to\conda` -> `C:\Users\{your_username}\miniconda3`.
