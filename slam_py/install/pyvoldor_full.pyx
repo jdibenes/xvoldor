@@ -81,6 +81,40 @@ def voldor(
             'depth_conf': depth_conf,
             'focals' : focals}
 
+cdef extern from "../../voldor/py_export.h":
+    int py_selfcalibration_wrapper(
+        const float* flows_1_pt,
+	    const float cx,
+	    const float cy,
+	    const int w,
+	    const int h,
+	    const int sampling_step,
+	    float* focals)
+
+def selfcalibration(
+    np.ndarray[float, ndim=3] flows not None,
+    float cx, 
+    float cy,
+    int sampling_step):
+    
+    cdef int h = flows.shape[0]
+    cdef int w = flows.shape[1]
+
+    flows = np.ascontiguousarray(flows)
+    
+    cdef np.ndarray[float, ndim=2, mode='c'] focals = \
+        np.ascontiguousarray(np.zeros((2, 1), dtype=np.float32))
+
+    py_selfcalibration_wrapper(
+                &flows[0,0,0],
+                cx,
+                cy,
+                w,
+                h,
+                sampling_step,
+                &focals[0,0])
+
+    return {'focals' : focals}
 
 cdef extern from "../../frame-alignment/py_export.h":
     int py_falign_wrapper(
