@@ -54,7 +54,7 @@ if __name__ == '__main__':
     square_pixels = False
     shared_focals = False
 
-    sequence_index = 18
+    sequence_index = 24
     toolset = 'gt'
     set_png_depth = True
     png_depth_scale = 1000
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     set_save_pose = True
     set_enable_mapping = True
     set_enable_loop_closure = True
-    full_log = True
+    full_log = False
 
     extra_args = ''
     extra_args += f'--multiview_mode {multiview_mode} --solver_select {solver_id} '
