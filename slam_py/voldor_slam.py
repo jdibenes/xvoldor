@@ -195,6 +195,22 @@ class VOLDOR_SLAM:
             self.falign_thread_pool = multiprocessing.pool.ThreadPool(12)
 
     def set_cam_params(self, fx, fy, cx, cy, basefocal='auto', rescale=1.0, depth_scale=1000):
+        if ((fx <= 0) or (fy <= 0)):
+            print(f'Estimating focals using pp ({cx}, {cy})')
+            if not self.flow_loader_sync(0):
+                print('MISSING FLOW 1')
+                raise 'Flow loader not working or files are missing.'
+            flows_calib = self.flows[0]
+            result = pyvoldor.selfcalibration(flows_calib, cx*rescale, cy*rescale, 4)
+            focals = result['focals']
+            fx = focals[0,0]/rescale;
+            fy = focals[1,0]/rescale;
+            if basefocal == 'auto' or basefocal<=0:
+                basefocal = (fx+fy)*0.25
+            else:
+                basefocal *= fx
+            print(f'Computed focals ({fx}, {fy}) with bf {basefocal}')
+
         self.fx = fx*rescale
         self.fy = fy*rescale
         self.cx = cx*rescale
@@ -516,14 +532,9 @@ class VOLDOR_SLAM:
                 'config' : self.voldor_config + ' ' + self.voldor_user_config
             }
 
-
-
             py_voldor_funmap = partial(pyvoldor.voldor, **py_voldor_kwargs)
-            print('BEFORE_VOLDOR')
             vo_ret = self.cython_process_pool.apply(py_voldor_funmap)
-            print('AFTER_VOLDOR')
 
-            
             # if vo failed
             if vo_ret['n_registered'] == 0:
                 print(f'Tracking lost at {self.fid_cur}')
