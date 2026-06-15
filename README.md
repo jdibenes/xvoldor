@@ -15,6 +15,61 @@ VOLDOR-SLAM is a real-time dense-indirect SLAM system takes dense optical flows 
 > Zhixiang Min, Yiding Yang, Enrique Dunn  
 > CVPR 2020 [[paper]](https://arxiv.org/abs/2104.06789) [[video]](https://www.youtube.com/watch?v=wlWjSTiyE4s)
 
+## **Instalation (NEW)**
+
+> Windows 11 + Visual Studio 2019  &nbsp;/&nbsp;  Ubuntu 22.04 and 24.04  
+> CUDA 11.7  
+> Python 3.6.X  
+> [OpenCV 3.4.X](https://opencv.org/)  
+> [Ceres 2.2](http://ceres-solver.org/) &nbsp;&nbsp; (Optional for mapping)  
+> [pyDBoW3](https://github.com/htkseason/pyDBoW3) &nbsp; (Optional for loop closure)
+
+### ***Ubuntu***
+
+Install dependencies:
+```Shell
+conda create --name xvoldor python=3.6.8
+conda activate xvoldor
+conda install -c conda-forge gcc_linux-64=11 gxx_linux-64=11 cudatoolkit-dev=11.7 libxcrypt opencv=3.4.9 ceres-solver=2.2.0 freeglut
+```
+Install dependencies (Python):
+```Shell
+cd slam_py/install
+pip install -r requirements.txt
+```
+Build:
+```Shell
+export PKG_CONFIG_PATH=$CONDA_PREFIX/lib/pkgconfig
+python setup_linux_full.py build_ext -i -j 8
+```
+If succeed, `libgpu-kernels.so` and `pyvoldor_full.xxx.so` will appear in the `install` folder. Copy them to the `demo` folder.
+
+### ***Windows***
+
+Install dependencies:
+
+1. If you don't have Visual Studio 2019, get it from https://download.visualstudio.microsoft.com/download/pr/e84651e1-d13a-4bd2-a658-f47a1011ffd1/e17f0d85d70dc9f1e437a78a90dcfc527befe3dc11644e02435bdfe8fd51da27/vs_Community.exe and install it with the `Desktop development with C++` workload.
+2. If you don't have the CUDA 11.7.1 toolkit, get it from https://developer.nvidia.com/cuda-toolkit-archive. Deselect (do not install) older components (including the Driver) when running the installer.
+3. Get the OpenCV 3.4.16 binaries from https://opencv.org/releases/ and extract them somewhere in your system.
+4. Install Ceres using vcpkg follwing the instructions in http://ceres-solver.org/installation.html#using-a-library-manager.
+
+Create environment:
+```Shell
+conda create --name xvoldor python=3.6.8
+conda activate xvoldor
+cd slam_py/install
+pip install -r requirements.txt
+```
+
+Build:
+1. Modify the paths in `setup_win_full.py` to point to the OpenCV and Ceres files.
+2. Run `x64 Native Tools Command Prompt for VS 2019`.
+3. `cd slam_py/install`.
+4. `SET DISTUTILS_USE_SDK=1`.
+5. `path/to/conda/envs/xvoldor/python.exe setup_win_full.py build_ext -i -j 8`.
+
+If succeed, `gpu-kernels.dll` and `pyvoldor_full.xxx.pyd` will appear in the `install` folder. Copy them to the `demo` folder. You will also need to copy the OpenCV and Ceres DLLs to the `demo` folder.
+
 ## **Installation**
 Our system is built with cuda, cython and python. We will support the compatibility under the following configurations:  
 > Windows 10 + Visual Studio 2017  &nbsp;/&nbsp;  Ubuntu 18.04  
