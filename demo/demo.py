@@ -6,7 +6,7 @@ import argparse
 parser = argparse.ArgumentParser(description='VOLDOR-SLAM demo script')
 parser.add_argument('--mode', type=str, required=True, help='One from stereo/mono-scaled/mono. For stereo and mono-scaled, disparity input will be required.')
 parser.add_argument('--flow_dir', type=str, required=True)
-parser.add_argument('--flow_2_dir', type=str, required=True)
+parser.add_argument('--flow_2_dir', type=str)
 parser.add_argument('--disp_dir', type=str)
 parser.add_argument('--img_dir', type=str)
 parser.add_argument('--fx', type=float, required=True)
@@ -57,7 +57,8 @@ sys.path.append('../slam_py')
 #sys.path.append('./lib_poselib_test')
 #sys.path.append('./lib_focal_test_2026_05_26')
 #sys.path.append('./lib_focal_test_2026_06_12')
-sys.path.append('./lib_focal_test_2026_06_14')
+#sys.path.append('./lib_focal_test_2026_06_14')
+sys.path.append('./lib_focal_test_2026_06_14_sc')
 from voldor_viewer import VOLDOR_Viewer
 from voldor_slam import VOLDOR_SLAM
 
@@ -80,6 +81,10 @@ if __name__ == '__main__':
     extra_args += ('--estimate_intrinsics' if (opt.estimate_intrinsics) else '') + f' ' + ('--square_pixels' if (opt.square_pixels) else '') + f' ' + ('--shared_focals' if (opt.shared_focals) else '') + f' '
     extra_args += ('--full_log' if (opt.full_log) else '') + f' '
 
+    # start flow loader
+    threading.Thread(target=slam.flow_loader, kwargs={'flow_path':opt.flow_dir, 'resize':opt.resize}).start()
+    slam.flow_loader_sync(0, block_when_uninit=True)
+    
     # set camera intrinsic
     slam.set_cam_params(opt.fx,opt.fy,opt.cx,opt.cy,opt.bf, rescale=opt.resize, depth_scale=opt.depth_scale)
     slam.voldor_user_config = f'--abs_resize_factor {opt.abs_resize} ' + extra_args
@@ -88,10 +93,6 @@ if __name__ == '__main__':
     # enable loop closure
     if opt.enable_loop_closure is not None:
         slam.enable_loop_closure(opt.enable_loop_closure)
-
-    # start flow loader
-    threading.Thread(target=slam.flow_loader, kwargs={'flow_path':opt.flow_dir, 'resize':opt.resize}).start()
-    slam.flow_loader_sync(0, block_when_uninit=True)
 
     # start image loader
     if opt.img_dir is not None:
@@ -107,8 +108,10 @@ if __name__ == '__main__':
         slam.disp_loader_sync(0, block_when_uninit=True)
 
     # start flow 2 loader
-    threading.Thread(target=slam.flow_2_loader, kwargs={'flow_2_path':opt.flow_2_dir, 'resize':opt.resize}).start()
-    slam.flow_2_loader_sync(0, block_when_uninit=True)
+    if opt.flow_2_dir is not None:
+        slam.enable_flow_2 = True
+        threading.Thread(target=slam.flow_2_loader, kwargs={'flow_2_path':opt.flow_2_dir, 'resize':opt.resize}).start()
+        slam.flow_2_loader_sync(0, block_when_uninit=True)
     
     # start viewer
     viewer = VOLDOR_Viewer(slam)
