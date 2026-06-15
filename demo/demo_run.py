@@ -62,7 +62,7 @@ if __name__ == '__main__':
     mode_name = 'stereo'
     set_save_pose = True
     set_enable_mapping = True
-    set_enable_loop_closure = True
+    set_enable_loop_closure = False
     full_log = False
 
     extra_args = ''
@@ -86,8 +86,8 @@ if __name__ == '__main__':
     pose_depth_suffix = f'disp' if (not set_png_depth) else f'depth'
     fname_pose = os.path.join(pose_base, f'pose_{sequence}_{mode_name}_{toolset}_{pose_depth_suffix}_{solver_id}.txt')
 
-    cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe demo.py'
-    #cmd = 'python demo.py'
+    #cmd = 'C:/Users/jcds/AppData/Local/Programs/Python/Python36/python.exe demo.py'
+    cmd = 'python demo.py'
     fx = f'--fx {fx_val}'
     fy = f'--fy {fy_val}'
     cx = f'--cx {cx_val}'
