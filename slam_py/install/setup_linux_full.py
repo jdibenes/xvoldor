@@ -7,13 +7,16 @@ import numpy
 import subprocess
 import shutil
 
+prefix = os.getenv('CONDA_PREFIX') #'/home/jcds/miniconda3/envs/voldor'
+cc_path = f'{prefix}/bin/x86_64-conda-linux-gnu-cc'
+
 # Change this if you target different host/device
 nvcc_machine_code = '' #'-m64 -arch=compute_61 -code=sm_61'
 
 gpu_sources_cpp = ' '.join(glob('../../gpu-kernels/*.cpp'))
 gpu_sources_cu = ' '.join(glob('../../gpu-kernels/*.cu'))
 
-gpu_kernel_build_cmd = f'nvcc -ccbin /home/jcds/miniconda3/envs/voldor/bin/x86_64-conda-linux-gnu-cc --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code} -I../../thirdparty'
+gpu_kernel_build_cmd = f'nvcc -ccbin {cc_path} --compiler-options "-shared -fPIC" {gpu_sources_cpp} {gpu_sources_cu} -lib -o libgpu-kernels.so -O3 {nvcc_machine_code} -I../../thirdparty'
 os.system(gpu_kernel_build_cmd)
 
 opencv_libs = subprocess.check_output('pkg-config --libs opencv'.split())
@@ -33,11 +36,11 @@ ext = Extension('pyvoldor_full',
             [x for x in glob('../../thirdparty/PoseLib/robust/optim/*.cc')] + \
             [x for x in glob('../../thirdparty/PoseLib/solvers/*.cc')],
     language = 'c++',
-    library_dirs = ['.', '/home/jcds/miniconda3/envs/voldor/lib'],
+    library_dirs = ['.', f'{prefix}/lib'],
     libraries = ['gpu-kernels', 'cudart', 'ceres', 'glog', \
             'amd','btf','camd','ccolamd','cholmod','colamd','cxsparse',\
             'klu','ldl','rbio','spqr','umfpack', 'lapack', 'blas', 'gcc'] + opencv_libs,
-    include_dirs = [numpy.get_include()]+['/home/jcds/miniconda3/envs/voldor/include/eigen3'] + ['../../thirdparty'],
+    include_dirs = [numpy.get_include()]+[f'{prefix}/include/eigen3'] + ['../../thirdparty'],
     extra_compile_args = ['-std=c++17'],
     define_macros = [('GLOG_USE_GLOG_EXPORT','')]
 )
@@ -48,4 +51,3 @@ setup(
     author='Zhixiang Min',
     ext_modules=cythonize([ext])
 )
-
