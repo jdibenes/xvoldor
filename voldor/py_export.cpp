@@ -131,3 +131,20 @@ py_voldor_wrapper
 
 	return 0;
 }
+
+int
+py_selfcalibration_wrapper
+(
+	float const* flows_1_pt,
+	float const cx,
+	float const cy,
+	int const w,
+	int const h,
+	int const sampling_step,
+	float* focals
+)
+{
+	cv::Mat flow = cv::Mat(cv::Size(w, h), CV_32FC2, (void*)(flows_1_pt));
+	estimate_camera_focal(flow, focals[0], focals[1], cx, cy, sampling_step);
+	return 0;
+}
