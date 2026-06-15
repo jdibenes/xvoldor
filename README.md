@@ -48,15 +48,19 @@ If succeed, `libgpu-kernels.so` and `pyvoldor_full.xxx.so` will appear in the `i
 
 Install dependencies:
 
-1. If you don't have Visual Studio 2019, get it from https://download.visualstudio.microsoft.com/download/pr/e84651e1-d13a-4bd2-a658-f47a1011ffd1/e17f0d85d70dc9f1e437a78a90dcfc527befe3dc11644e02435bdfe8fd51da27/vs_Community.exe and install it with the `Desktop development with C++` workload.
+1. If you don't have Visual Studio 2019, get it from https://download.visualstudio.microsoft.com/download/pr/e84651e1-d13a-4bd2-a658-f47a1011ffd1/e17f0d85d70dc9f1e437a78a90dcfc527befe3dc11644e02435bdfe8fd51da27/vs_Community.exe and install it with the `Desktop development with C++` workload. Avoid updating Visual Studio 2019 to prevent compatibility issues with `nvcc` (CUDA).
 2. If you don't have the CUDA 11.7.1 toolkit, get it from https://developer.nvidia.com/cuda-toolkit-archive. Deselect (do not install) older components (including the Driver) when running the installer.
 3. Get the OpenCV 3.4.16 binaries from https://opencv.org/releases/ and extract them somewhere in your system.
-4. Install Ceres using vcpkg follwing the instructions in http://ceres-solver.org/installation.html#using-a-library-manager.
+4. Install Ceres using vcpkg following the instructions in http://ceres-solver.org/installation.html#using-a-library-manager.
 
 Create environment:
 ```Shell
 conda create --name xvoldor python=3.6.8
 conda activate xvoldor
+```
+
+Install dependencies (Python):
+```Shell
 cd slam_py/install
 pip install -r requirements.txt
 ```
@@ -66,9 +70,9 @@ Build:
 2. Run `x64 Native Tools Command Prompt for VS 2019`.
 3. `cd slam_py/install`.
 4. `SET DISTUTILS_USE_SDK=1`.
-5. `path/to/conda/envs/xvoldor/python.exe setup_win_full.py build_ext -i -j 8`.
+5. `path\to\conda\envs\xvoldor\python.exe setup_win_full.py build_ext -i -j 8`. Example `path\to\conda` -> `C:\Users\{your_username}\miniconda3`.
 
-If succeed, `gpu-kernels.dll` and `pyvoldor_full.xxx.pyd` will appear in the `install` folder. Copy them to the `demo` folder. You will also need to copy the OpenCV and Ceres DLLs to the `demo` folder.
+If succeed, `gpu-kernels.dll` and `pyvoldor_full.xxx.pyd` will appear in the `install` folder. Copy them to the `demo` folder. You will also need to copy the OpenCV and Ceres DLLs to the `demo` folder. You can find the OpenCV DLL (`opencv_world3416.dll`) in `{opencv_folder}\build\x64\vc15\bin` and the Ceres DLLs in `{vcpkg_folder}\installed\x64-windows\bin`.
 
 ## **Installation**
 Our system is built with cuda, cython and python. We will support the compatibility under the following configurations:  
