@@ -1,5 +1,6 @@
 
 #include <chrono>
+#include <memory>
 
 #include "geometry.h"
 #include "batch_solvers.h"
