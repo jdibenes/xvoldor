@@ -116,3 +116,10 @@ void put_solution_f(job_descriptor& jd, float* base, float const* f)
     out[0] = f[0];
     out[1] = f[1];
 }
+
+void put_solution_1(job_descriptor& jd, float* base, float const* f)
+{
+    float* out = &base[1 * (jd.start + jd.valid)];
+
+    out[0] = f[0];
+}

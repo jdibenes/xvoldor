@@ -4,6 +4,7 @@
 
 #include "geometry.h"
 #include "batch_solvers.h"
+#include "batch_detect.h"
 #include "helpers_opencv.h"
 #include "helpers_camera.h"
 
@@ -187,6 +188,27 @@ static int solve_pose_pool(cv::Mat const& K, std::vector<cv::Point3f> const& p3d
 	}
 
 	int poses_pool_used = 0;
+
+
+	//
+	
+	std::unique_ptr<float[]> cos_kt = std::make_unique<float[]>(options.n_poses_to_sample);
+	int used_planar = batch_cpu_detect_planar(p2z_1_data, p2z_2_data, tf_count, K, 0, options.n_poses_to_sample, cos_kt.get(), options.batch_workers, options.batch_unique);
+	float cos_kt_sum = 0;
+	for (int i = 0; i < used_planar; ++i)
+	{
+		cos_kt_sum += cos_kt[i];
+	}
+	if (used_planar < 1) {
+		std::cout << "NO PLANAR DETECTIONS" << std::endl;
+	}
+	else {
+		std::cout << "PLANAR INDEX (" << used_planar << "): " << cos_kt_sum / used_planar << std::endl;
+	}
+
+
+	//
+
 
 	switch (options.solver_select)
 	{

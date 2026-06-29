@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	char const* cfg =
 		"--silent --meanshift_kernel_var 0.1 --disp_delta 1 --delta 0.2 --max_iters 5 "
 		"--pose_sample_min_depth 0.586270751953125 --pose_sample_max_depth 117.254150390625 "
-		"--multiview_mode 2 --solver_select 33 --batch_workers 18 --estimate_intrinsics --square_pixels --shared_focals ";
+		"--multiview_mode 2 --solver_select 3 --batch_workers 18 --disparities_enable ";
 		//"--multiview_mode 2 --solver_select 3 --batch_workers 18 ";
 		//"--multiview_mode 3 --solver_select 26 --batch_workers 18 ";
 	    
@@ -35,11 +35,11 @@ int main(int argc, char* argv[])
 	float fy = 586.27075f;
 	float cx = 374.04108f;
 	float cy = 202.26265f;
-	//float basefocal = 117.254150390625;
+	float basefocal = 117.254150390625;
 	
 	//float cx = w / 2.0;
 	//float cy = h / 2.0;
-	float basefocal = 0.2000000006662877f; // for estimate intrinsics
+	//float basefocal = 0.2000000006662877f; // for estimate intrinsics
 	
 	int fid = 61;
 	int last = 250;

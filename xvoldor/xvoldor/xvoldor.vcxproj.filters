@@ -79,6 +79,9 @@
     <Filter Include="Header Files\legacy">
       <UniqueIdentifier>{5171ff51-a080-4151-b9f8-aacfe1f7f8a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\detector">
+      <UniqueIdentifier>{23674dbe-79bd-4679-96c1-cf42f47df285}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\voldor\helpers_eigen.h">
@@ -417,6 +420,12 @@
     <ClInclude Include="..\..\voldor\config.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\voldor\detect.h">
+      <Filter>Header Files\solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\voldor\batch_detect.h">
+      <Filter>Header Files\batch_solve</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\voldor\solver_gpm_hpc0.cpp">
@@ -736,6 +745,12 @@
     </ClCompile>
     <ClCompile Include="..\..\voldor\voldor.cpp">
       <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\detect_planar_3d.cpp">
+      <Filter>Source Files\detector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\voldor\batch_cpu_detect_planar.cpp">
+      <Filter>Source Files\batch_solve</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

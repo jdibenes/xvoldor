@@ -37,3 +37,4 @@ bool is_valid_solution_f(float const* f);
 
 void put_solution_6(job_descriptor& jd, float* base, float const* r, float const* t);
 void put_solution_f(job_descriptor& jd, float* base, float const* f);
+void put_solution_1(job_descriptor& jd, float* base, float const* f);

@@ -115,6 +115,8 @@
     <ClInclude Include="..\..\thirdparty\rnp\rnp.h" />
     <ClInclude Include="..\..\thirdparty\rnp\sturm.h" />
     <ClInclude Include="..\..\thirdparty\rnp\utils.h" />
+    <ClInclude Include="..\..\voldor\batch_detect.h" />
+    <ClInclude Include="..\..\voldor\detect.h" />
     <ClInclude Include="..\..\voldor\helpers_algebra.h" />
     <ClInclude Include="..\..\voldor\batch_solvers.h" />
     <ClInclude Include="..\..\voldor\batch_cpu_solver.h" />
@@ -207,6 +209,7 @@
     <ClCompile Include="..\..\thirdparty\rnp\rnp.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\rnp_utils.cpp" />
     <ClCompile Include="..\..\thirdparty\rnp\sturm.cpp" />
+    <ClCompile Include="..\..\voldor\batch_cpu_detect_planar.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_ppf.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_rnp.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver.cpp" />
@@ -215,6 +218,7 @@
     <ClCompile Include="..\..\voldor\batch_cpu_solver_gpm.cpp" />
     <ClCompile Include="..\..\voldor\batch_cpu_solver_p4p.cpp" />
     <ClCompile Include="..\..\voldor\batch_gpu_solver_p4p.cpp" />
+    <ClCompile Include="..\..\voldor\detect_planar_3d.cpp" />
     <ClCompile Include="..\..\voldor\geometry.cpp" />
     <ClCompile Include="..\..\voldor\helpers_file.cpp" />
     <ClCompile Include="..\..\voldor\helpers_camera.cpp" />
